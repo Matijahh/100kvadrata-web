@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.stokvadrata.app",
+      "sha256_cert_fingerprints": [
+        "B1:E5:21:36:41:03:FD:70:DA:8B:84:C0:2D:EE:07:32:DF:0D:74:ED:76:D3:E5:00:0F:33:DF:F7:19:C4:89:2B"
+      ]
+    }
+  }
+]

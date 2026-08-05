@@ -1,0 +1,1574 @@
+/* ==========================================================================
+   100m² — marketing site
+   Palette and type are taken from the app itself:
+   colors from src/theme/colors.ts, fonts from assets/fonts/.
+   ========================================================================== */
+
+@font-face {
+  font-family: "Cal Sans";
+  src: url("/fonts/CalSans.ttf") format("truetype");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans";
+  src: url("/fonts/NotoSans-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans";
+  src: url("/fonts/NotoSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans";
+  src: url("/fonts/NotoSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-display: swap;
+}
+
+:root {
+  /* Surfaces — darkColors.surfaceMuted / surface / surfaceElevated */
+  --ink: #161722;
+  --ink-deep: #101217;
+  --ink-raised: #20242b;
+
+  /* Ink — darkColors.text / textMuted / placeholder */
+  --paper: #f5f7fa;
+  --muted: #a4acb8;
+  --dim: #78808e;
+
+  /* Accents — notification accent + darkColors.primary */
+  --vermilion: #db492b;
+  --rose: #f0616d;
+
+  --line: #2a2e36;
+
+  --display: "Cal Sans", "Trebuchet MS", sans-serif;
+  --body:
+    "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  --gutter: clamp(1.25rem, 5vw, 5rem);
+  --measure: 74rem;
+
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--body);
+  font-weight: 300;
+  font-size: clamp(1rem, 0.96rem + 0.2vw, 1.0625rem);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+img,
+svg {
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--vermilion);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--vermilion);
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  z-index: 100;
+}
+.skip:focus {
+  left: 0;
+}
+
+/* --------------------------------------------------------------- layout - */
+
+.wrap {
+  width: 100%;
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.band {
+  padding-block: clamp(4.5rem, 11vw, 9rem);
+  position: relative;
+}
+
+.band--deep {
+  background: var(--ink-deep);
+}
+
+/* ---------------------------------------------------------------- type --- */
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+/* Capped so the three headline lines stay three lines on a desktop column. */
+h1 {
+  font-size: clamp(2.5rem, 1.5rem + 4.4vw, 5rem);
+}
+
+h2 {
+  font-size: clamp(2rem, 1.2rem + 3.6vw, 3.75rem);
+}
+
+h3 {
+  font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.6rem);
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0;
+}
+
+.eyebrow {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--vermilion);
+  margin: 0 0 1.5rem;
+}
+
+.lede {
+  color: var(--muted);
+  font-size: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
+  max-width: 34em;
+}
+
+/* -------------------------------------------------------------- header --- */
+
+.masthead {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: color-mix(in srgb, var(--ink) 82%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s var(--ease);
+}
+
+.masthead[data-stuck="true"] {
+  border-bottom-color: var(--line);
+}
+
+.masthead__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1.1rem;
+}
+
+.mark {
+  display: block;
+  line-height: 0;
+}
+
+.mark svg {
+  height: 34px;
+  width: auto;
+  display: block;
+}
+
+.langswitch {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.langswitch a {
+  text-decoration: none;
+  color: var(--dim);
+  padding: 0.35rem 0.55rem;
+  border-radius: 4px;
+  transition: color 0.2s var(--ease);
+}
+
+.langswitch a:hover {
+  color: var(--paper);
+}
+
+.langswitch a[aria-current="true"] {
+  color: var(--paper);
+}
+
+.langswitch span {
+  color: var(--line);
+}
+
+/* --------------------------------------------------------------- hero ---- */
+
+.hero {
+  padding-block: clamp(3rem, 7vw, 6rem) clamp(4rem, 9vw, 7.5rem);
+  position: relative;
+  overflow: hidden;
+}
+
+.hero__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(3rem, 7vw, 5rem);
+  align-items: center;
+}
+
+@media (min-width: 62rem) {
+  .hero__grid {
+    grid-template-columns: 1.15fr 0.85fr;
+  }
+}
+
+.hero h1 {
+  margin-bottom: 1.75rem;
+}
+
+/* headline reveal — each line clipped, rises on load */
+.line {
+  display: block;
+  overflow: hidden;
+}
+
+/* Reveal states are gated on .js so the page is fully readable without it. */
+.js .line > i {
+  display: block;
+  font-style: normal;
+  transform: translateY(105%);
+}
+
+.line > i {
+  display: block;
+  font-style: normal;
+}
+
+.is-lit .line > i {
+  transform: translateY(0);
+  transition: transform 0.9s var(--ease);
+}
+
+.is-lit .line:nth-child(2) > i {
+  transition-delay: 0.09s;
+}
+.is-lit .line:nth-child(3) > i {
+  transition-delay: 0.18s;
+}
+
+.hero__sub {
+  font-family: var(--display);
+  font-size: clamp(1.1rem, 1rem + 0.7vw, 1.5rem);
+  color: var(--vermilion);
+  letter-spacing: 0.01em;
+  margin-bottom: 1.25rem;
+}
+
+.hero__lede {
+  margin-bottom: 2.5rem;
+}
+
+/* staged fade for everything under the headline */
+.js .stage {
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.is-lit .stage {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.8s var(--ease),
+    transform 0.8s var(--ease);
+}
+
+.is-lit .stage--1 {
+  transition-delay: 0.3s;
+}
+.is-lit .stage--2 {
+  transition-delay: 0.4s;
+}
+.is-lit .stage--3 {
+  transition-delay: 0.5s;
+}
+.is-lit .stage--4 {
+  transition-delay: 0.15s;
+}
+
+/* -------------------------------------------------------------- buttons -- */
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  background: var(--vermilion);
+  color: #fff;
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  padding: 1rem 1.6rem;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  /* --mx/--my are nudged toward the cursor by script.js (magnetic). */
+  transform: translate(var(--mx, 0px), var(--my, 0px));
+  transition:
+    transform 0.2s var(--ease),
+    box-shadow 0.25s var(--ease),
+    background-color 0.25s var(--ease);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.14) inset;
+}
+
+.cta:hover {
+  --my: -2px;
+  background: #e8542f;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 12px 34px -10px rgba(219, 73, 43, 0.72);
+}
+
+.cta:active {
+  --my: 0px;
+}
+
+.cta__arrow {
+  transition: transform 0.25s var(--ease);
+}
+
+.cta:hover .cta__arrow {
+  transform: translateX(4px);
+}
+
+.cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem 1.75rem;
+}
+
+.soon {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--dim);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+}
+
+.soon svg {
+  flex: none;
+  opacity: 0.55;
+}
+
+/* ---------------------------------------------------------------- phone -- */
+
+/* The mockup is sized in em from this root, so the same markup renders at
+   hero size and at gallery size without a second set of rules. */
+.phone {
+  --w: clamp(16rem, 78vw, 20rem);
+  width: var(--w);
+  font-size: calc(var(--w) / 20);
+  aspect-ratio: 9 / 19.2;
+  margin-inline: auto;
+  background: #0b0d12;
+  border: 1px solid var(--line);
+  border-radius: 2.6rem;
+  padding: 0.5rem;
+  position: relative;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 40px 80px -30px rgba(0, 0, 0, 0.9);
+}
+
+.phone::before {
+  content: "";
+  position: absolute;
+  top: 0.9rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28%;
+  height: 0.35rem;
+  background: #0b0d12;
+  border-radius: 999px;
+  z-index: 8;
+}
+
+.phone__screen {
+  height: 100%;
+  border-radius: 2.15rem;
+  background: #12141b;
+  overflow: hidden;
+  position: relative;
+}
+
+.phone__screen--light {
+  background: #fff;
+}
+
+/* ---- app chrome: light, matching how the app ships ---- */
+
+.app__top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  background: #fff;
+  border-radius: 0 0 1.7em 1.7em;
+  padding: 0.5em 0.8em 0.62em;
+}
+
+.app__status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.45em 0.55em;
+  font-size: 0.72em;
+  font-weight: 600;
+  color: #161722;
+}
+
+.app__status svg {
+  display: block;
+}
+
+.app__search {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  background: #f5f5f5;
+  border-radius: 1.6em;
+  padding: 0.6em 0.65em 0.6em 0.9em;
+}
+
+.app__search span {
+  flex: 1;
+  font-size: 0.85em;
+  color: #8b94a3;
+}
+
+.app__search svg {
+  color: #8b94a3;
+  flex: none;
+}
+
+.app__title {
+  font-size: 0.95em;
+  font-weight: 600;
+  color: #161722;
+  padding: 0.15em 0.5em 0.2em;
+}
+
+/* Offsets here are a % of the screen height, not em: these elements set their
+   own font-size, and an em `top` would resolve against that instead of the
+   phone's scale. */
+.app__tabs {
+  position: absolute;
+  top: 14.2%;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7em;
+  font-size: 0.9em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+}
+
+.app__tabs span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.app__tabs b {
+  color: #fff;
+  font-weight: 600;
+}
+
+.app__tabs i {
+  width: 1px;
+  height: 1.05em;
+  background: rgba(255, 255, 255, 0.38);
+}
+
+.app__nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  background: #fff;
+  border-radius: 2.2em 2.2em 0 0;
+  height: 4em;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 0.9em 0.7em;
+  color: #6e1515;
+  box-shadow: 0 -0.5em 1.5em rgba(0, 0, 0, 0.26);
+}
+
+.app__nav svg {
+  display: block;
+}
+
+.nav__av {
+  position: relative;
+  overflow: hidden;
+  width: 2.1em;
+  height: 2.1em;
+  border-radius: 50%;
+  border: 0.19em solid #6e1515;
+  background: linear-gradient(140deg, #7a6252, #3d3430);
+}
+
+/* ---- the vertical feed ---- */
+
+.reels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  touch-action: pan-y; /* page scrolling must win on touch */
+}
+
+.reels:focus-visible {
+  outline: 2px solid var(--vermilion);
+  outline-offset: -3px;
+  border-radius: 2rem;
+}
+
+/* Only the hero feed is interactive — [data-deck] is what marks it, so the
+   static gallery screens keep the default cursor. */
+.reels[data-deck] {
+  cursor: pointer;
+}
+
+.reels[data-deck]:active {
+  cursor: grabbing;
+}
+
+.reel {
+  position: absolute;
+  inset: 0;
+  transform: translateY(calc(var(--pos, 0) * 100% + var(--dy, 0px)));
+  will-change: transform;
+}
+
+.reels.is-settling .reel {
+  transition: transform 0.45s var(--ease);
+}
+
+/* ---- the room behind the copy: a drawing, not a photo ---- */
+
+.reel__art {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(172deg, #c2ac93 0%, #8f7a63 46%, #574739 100%);
+}
+
+.reel:nth-child(2) .reel__art {
+  background: linear-gradient(172deg, #aeb5bb 0%, #7f878d 48%, #4a5055 100%);
+}
+
+.reel:nth-child(3) .reel__art {
+  background: linear-gradient(172deg, #b08a6b 0%, #7b5d47 50%, #46352a 100%);
+}
+
+/* Drop a real photo into web/img/ and it covers the drawing below. If the
+   file is missing, script.js removes the broken <img> and the drawing shows. */
+.art__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+/* scrim, so the overlay copy stays legible over any room or photo */
+.reel__art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.46), transparent 19%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.74), transparent 42%);
+}
+
+.art__window {
+  position: absolute;
+  right: 13%;
+  top: 27%;
+  width: 25%;
+  height: 21%;
+  border-radius: 2px;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.42)),
+    linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.42)),
+    linear-gradient(158deg, #f8ecd8, #eed6ae 58%, #d9bb92);
+  background-size:
+    1.5px 100%,
+    100% 1.5px,
+    100% 100%;
+  background-position:
+    50% 0,
+    0 46%,
+    0 0;
+  background-repeat: no-repeat;
+  border: 0.12em solid rgba(56, 42, 30, 0.4);
+  box-shadow: 0 0 2.2em 0.5em rgba(255, 232, 195, 0.26);
+}
+
+.art__floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 33%;
+  border-top: 1px solid rgba(255, 255, 255, 0.13);
+  background: linear-gradient(
+    180deg,
+    rgba(78, 60, 46, 0.32),
+    rgba(44, 34, 27, 0.58)
+  );
+}
+
+.art__lamp {
+  position: absolute;
+  left: 15%;
+  top: 24%;
+  width: 24%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 226, 156, 0.7),
+    transparent 65%
+  );
+  filter: blur(0.35em);
+}
+
+/* ---- per-listing overlays ---- */
+
+/* Deliberately not flex — the price is one run of text, and flex would put
+   gaps between "76m" and its exponent. */
+.reel__price {
+  position: absolute;
+  top: 18.8%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  background: #fff;
+  border-radius: 1.4em;
+  padding: 0.38em 0.95em;
+  font-size: 0.9em;
+  font-weight: 600;
+  color: #161722;
+  white-space: nowrap;
+  box-shadow: 0 0.3em 1em rgba(0, 0, 0, 0.28);
+}
+
+.reel__price b {
+  color: #6e1515;
+  font-weight: 600;
+}
+
+.reel__price s {
+  text-decoration: none;
+  color: #c9ccd2;
+  font-weight: 400;
+  margin: 0 0.15em;
+}
+
+.reel__rail {
+  position: absolute;
+  right: 0.7em;
+  bottom: 7.6em;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.15em;
+  color: #fff;
+}
+
+.rail__av {
+  position: relative;
+  overflow: hidden;
+  width: 2.6em;
+  height: 2.6em;
+  border-radius: 50%;
+  border: 0.15em solid #fff;
+  background: linear-gradient(140deg, #96745c, #4a3830);
+  box-shadow: 0 0.2em 0.7em rgba(0, 0, 0, 0.45);
+}
+
+/* Same deal as the room photos: present a real face if there is one. */
+.av__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.rail__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.22em;
+  filter: drop-shadow(0 0.1em 0.35em rgba(0, 0, 0, 0.6));
+}
+
+.rail__btn svg {
+  display: block;
+}
+
+.rail__btn i {
+  font-style: normal;
+  font-size: 0.62em;
+  font-weight: 600;
+}
+
+.reel__meta {
+  position: absolute;
+  left: 0.95em;
+  right: 4.7em;
+  bottom: 4.9em;
+  z-index: 3;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+}
+
+.meta__user {
+  font-size: 0.92em;
+  font-weight: 600;
+  margin-bottom: 0.12em;
+}
+
+.meta__loc,
+.meta__more {
+  display: flex;
+  align-items: center;
+  gap: 0.32em;
+  font-size: 0.7em;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.meta__loc {
+  margin-bottom: 0.45em;
+}
+
+.meta__more {
+  margin-top: 0.3em;
+}
+
+/* Clamped like the app truncates it — and it keeps the block a predictable
+   height, so the carousel dots above it never collide with the text. */
+.meta__desc {
+  font-size: 0.74em;
+  line-height: 1.42;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.reel__dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 13.2em;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.reel__dots i {
+  width: 0.32em;
+  height: 0.32em;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.reel__dots i.on {
+  width: 0.44em;
+  height: 0.44em;
+  background: #fff;
+}
+
+/* Instruction to the site visitor, so it sits outside the app frame. */
+.reels__hint {
+  margin: 1rem 0 0;
+  text-align: center;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  transition: opacity 0.4s var(--ease);
+}
+
+/* ---- the two static screens in the gallery ---- */
+
+/* Both sit on the app's grey page colour with white cards on top. */
+.phone__screen--grey {
+  background: #f2f2f2;
+}
+
+/* Status bar + centred screen title, on the grey page rather than a white bar. */
+.app__plain {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  padding: 0.5em 0.8em 0;
+}
+
+.app__screenTitle {
+  text-align: center;
+  font-size: 1em;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  color: #161722;
+  padding: 0.5em 0 0.7em;
+}
+
+/* white card the conversation list sits in */
+.app__card {
+  position: absolute;
+  top: 6em;
+  left: 0;
+  right: 0;
+  /* meets the nav's top edge exactly, so its shadow reads against the card */
+  bottom: 4em;
+  background: #fff;
+  border-radius: 1.7em 1.7em 0 0;
+  overflow: hidden;
+  padding: 0 0.9em;
+}
+
+.convo {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+}
+
+.convo__av {
+  position: relative;
+  overflow: hidden;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  flex: none;
+  background: linear-gradient(140deg, #a98d78, #6d5a4d);
+}
+
+.convo:nth-child(2) .convo__av {
+  background: linear-gradient(140deg, #8d98a6, #5b6470);
+}
+.convo:nth-child(4) .convo__av {
+  background: linear-gradient(140deg, #ab8f96, #6b555c);
+}
+
+/* The divider is on the body, not the row, so it stays indented past the
+   avatar exactly like the app. */
+.convo__body {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.85em 0;
+  border-bottom: 1px solid #ededed;
+  min-width: 0;
+}
+
+.convo:last-child .convo__body {
+  border-bottom: 0;
+}
+
+.convo__txt {
+  flex: 1;
+  display: grid;
+  gap: 0.34em;
+  min-width: 0;
+}
+
+.convo__txt i {
+  display: block;
+  height: 0.42em;
+  border-radius: 999px;
+  background: #e6e9ed;
+}
+
+.convo__txt i:first-child {
+  width: 52%;
+  height: 0.5em;
+  background: #c8ced6;
+}
+
+.convo__txt i:last-child {
+  width: 78%;
+}
+
+.convo__time {
+  width: 1.5em;
+  height: 0.4em;
+  border-radius: 999px;
+  background: #e6e9ed;
+  flex: none;
+}
+
+/* uneven, so the list reads as content rather than a loading state */
+.convo:nth-child(2) .convo__txt i:first-child {
+  width: 43%;
+}
+.convo:nth-child(2) .convo__txt i:last-child {
+  width: 64%;
+}
+.convo:nth-child(3) .convo__txt i:first-child {
+  width: 60%;
+}
+.convo:nth-child(3) .convo__txt i:last-child {
+  width: 86%;
+}
+.convo:nth-child(4) .convo__txt i:first-child {
+  width: 47%;
+}
+.convo:nth-child(4) .convo__txt i:last-child {
+  width: 71%;
+}
+.convo:nth-child(5) .convo__txt i:first-child {
+  width: 56%;
+}
+.convo:nth-child(5) .convo__txt i:last-child {
+  width: 60%;
+}
+
+/* ---- chat ---- */
+
+/* The chat header is a flat white bar, not the rounded search panel. */
+.app__top--flat {
+  border-radius: 0;
+  padding-bottom: 0.45em;
+  box-shadow: 0 1px 0 rgba(22, 23, 34, 0.07);
+}
+
+.chat__head {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.15em 0.1em 0.1em;
+  color: #161722;
+}
+
+.chat__head svg {
+  display: block;
+  flex: none;
+}
+
+.chat__head .flag {
+  color: #8b94a3;
+  margin-left: auto;
+}
+
+.chat__av {
+  position: relative;
+  overflow: hidden;
+  width: 1.85em;
+  height: 1.85em;
+  border-radius: 50%;
+  flex: none;
+  background: linear-gradient(140deg, #8d98a6, #5b6470);
+}
+
+.chat__name {
+  font-size: 0.95em;
+  font-weight: 600;
+}
+
+.chat {
+  position: absolute;
+  top: 5.4em;
+  left: 0;
+  right: 0;
+  bottom: 3.5em;
+  padding: 0.8em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.bubble {
+  max-width: 78%;
+  padding: 0.5em 0.7em;
+  border-radius: 1em;
+  font-size: 0.7em;
+  line-height: 1.45;
+}
+
+.bubble--them {
+  background: #fff;
+  color: #161722;
+  border-bottom-left-radius: 0.3em;
+  box-shadow: 0 1px 2px rgba(22, 23, 34, 0.07);
+}
+
+.bubble--me {
+  background: #6e1515;
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 0.3em;
+}
+
+.chat__input {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.55em 0.7em 0.85em;
+  background: #f7f7f7;
+  border-top: 1px solid #e8e8e8;
+}
+
+.chat__input > svg {
+  color: #6b7280;
+  flex: none;
+}
+
+.chat__field {
+  flex: 1;
+  background: #f0f0f0;
+  border: 1px solid #e5e7eb;
+  border-radius: 1.4em;
+  padding: 0.5em 0.85em;
+  font-size: 0.7em;
+  color: #8b94a3;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.chat__send {
+  width: 2em;
+  height: 2em;
+  border-radius: 50%;
+  background: #a55a5a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+/* --------------------------------------------------------------- pitch --- */
+
+.pitch h2 {
+  max-width: 16em;
+  margin-bottom: 1.75rem;
+}
+
+.pitch h2 em {
+  font-style: normal;
+  color: var(--vermilion);
+}
+
+/* ---------------------------------------------------------------- steps -- */
+
+.steps {
+  display: grid;
+  gap: clamp(2.5rem, 5vw, 4rem);
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+@media (min-width: 56rem) {
+  .steps {
+    grid-template-columns: 0.9fr 1.1fr;
+  }
+  .steps--flip .steps__head {
+    order: 2;
+  }
+}
+
+.steps__head h2 {
+  margin-bottom: 1.25rem;
+}
+
+/* The arrow from the logo flies down the section as you scroll, drawing its
+   trail behind it and lighting each step as it passes. --p (0→1) is the
+   scroll progress, set by script.js. */
+.track {
+  position: relative;
+  padding-left: 4.25rem;
+  display: grid;
+  gap: 2.25rem;
+}
+
+.track__arc {
+  position: absolute;
+  left: 0;
+  top: 0.4rem;
+  width: 3.5rem;
+  height: calc(100% - 1rem);
+  overflow: visible;
+  pointer-events: none;
+}
+
+/* The trail — only ever drawn as far as the arrow has flown, so it grows and
+   retreats with the scroll. Weight and round caps echo the logo's swoosh. */
+.track__arc path {
+  fill: none;
+  stroke: var(--vermilion);
+  stroke-width: 8;
+  stroke-linecap: round;
+  /* dasharray + dashoffset are set from script.js, in px */
+  opacity: 0.9;
+}
+
+.track__arrow {
+  position: absolute;
+  left: 0;
+  top: 0.4rem;
+  width: 1.05rem;
+  height: 1.37rem;
+  margin-left: -0.525rem;
+  margin-top: -0.685rem;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 0 0.6rem rgba(219, 73, 43, 0.55));
+}
+
+.track__arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* only visible once the flight has actually started */
+.track[data-flying="true"] .track__arrow {
+  opacity: 1;
+}
+
+.step {
+  position: relative;
+}
+
+/* Steps wait their turn — the arrow passing is what brings them up. Gated on
+   the flight actually being live, so any failure leaves them fully readable. */
+.track[data-flight="on"] .step {
+  opacity: 0.32;
+  transition: opacity 0.55s var(--ease);
+}
+
+.track[data-flight="on"] .step[data-lit="true"] {
+  opacity: 1;
+}
+
+.step h3 {
+  margin-bottom: 0.4rem;
+}
+
+.step p {
+  color: var(--muted);
+  max-width: 32em;
+}
+
+/* --------------------------------------------------------------- screens - */
+
+.screens {
+  display: flex;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 3.5rem;
+}
+
+.screens .phone {
+  --w: clamp(13rem, 60vw, 15.5rem);
+}
+
+.screen-note {
+  text-align: center;
+  color: var(--dim);
+  font-size: 0.8125rem;
+  margin-top: 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+/* ----------------------------------------------------------------- last -- */
+
+.last {
+  text-align: center;
+}
+
+.last h2 {
+  max-width: 14em;
+  margin-inline: auto;
+  margin-bottom: 1.5rem;
+}
+
+.last .lede {
+  margin-inline: auto;
+  margin-bottom: 2.5rem;
+}
+
+.last .cta-row {
+  justify-content: center;
+}
+
+/* --------------------------------------------------------------- footer -- */
+
+.foot {
+  border-top: 1px solid var(--line);
+  padding-block: 3rem;
+  background: var(--ink-deep);
+}
+
+.foot__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem 2rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.foot__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.85rem;
+  color: var(--dim);
+}
+
+.foot__links a {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s var(--ease);
+}
+
+.foot__links a:hover {
+  color: var(--paper);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.foot__note {
+  color: var(--dim);
+  font-size: 0.8125rem;
+}
+
+/* ---------------------------------------------------------- legal pages -- */
+
+.legal {
+  padding-block: clamp(3rem, 8vw, 5.5rem);
+  max-width: 46rem;
+}
+
+.legal h1 {
+  font-size: clamp(2.25rem, 1.6rem + 2.6vw, 3.5rem);
+  margin-bottom: 0.75rem;
+}
+
+.legal__meta {
+  color: var(--dim);
+  font-size: 0.85rem;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.legal h2 {
+  font-size: clamp(1.35rem, 1.2rem + 0.7vw, 1.75rem);
+  margin-top: 3rem;
+  margin-bottom: 0.85rem;
+}
+
+/* Long-form prose reads better a notch heavier than the marketing copy. */
+.legal p,
+.legal li {
+  color: var(--muted);
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+.legal ul {
+  padding-left: 1.15rem;
+  margin: 0 0 1rem;
+}
+
+.legal li {
+  margin-bottom: 0.5rem;
+}
+
+.legal a {
+  color: var(--rose);
+  text-underline-offset: 3px;
+}
+
+/* The waitlist button on the listing fallback pages is a .cta inside .legal;
+   keep its label white instead of inheriting the rose link colour. */
+.legal a.cta {
+  color: #fff;
+}
+
+.legal strong {
+  color: var(--paper);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------- scroll reveal - */
+
+.js .reveal {
+  opacity: 0;
+  transform: translateY(22px);
+}
+
+.reveal.is-seen {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.85s var(--ease),
+    transform 0.85s var(--ease);
+}
+
+/* --------------------------------------------------------- brand intro --- */
+
+/* One-time load sequence: the vermilion swoosh wipes in, the wordmark rises,
+   then the whole curtain lifts to reveal the hero. Only shown with JS (so it
+   can never trap content), removed once it plays, skipped for reduced motion. */
+#intro {
+  display: none;
+}
+
+.js #intro {
+  display: grid;
+  place-items: center;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--ink);
+  will-change: opacity, transform;
+}
+
+#intro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(219, 73, 43, 0.16),
+    transparent 55%
+  );
+}
+
+.intro__logo {
+  position: relative;
+  width: min(46vw, 220px);
+  height: auto;
+  overflow: visible;
+  filter: drop-shadow(0 0.5rem 2rem rgba(0, 0, 0, 0.4));
+}
+
+/* start states — swoosh clipped away, wordmark low and hidden */
+.intro__swoosh {
+  clip-path: inset(0 100% 0 0);
+}
+
+.intro__type {
+  opacity: 0;
+  transform: translateY(7px);
+}
+
+#intro.is-play .intro__swoosh {
+  animation: intro-swoosh 0.62s var(--ease) forwards;
+}
+
+#intro.is-play .intro__type {
+  animation: intro-type 0.5s var(--ease) 0.5s forwards;
+}
+
+@keyframes intro-swoosh {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes intro-type {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* curtain lift — exits faster than it entered */
+#intro.is-done {
+  opacity: 0;
+  transform: scale(1.05);
+  pointer-events: none;
+  transition:
+    opacity 0.5s ease-in,
+    transform 0.5s ease-in;
+}
+
+/* --------------------------------------------------- scroll progress ----- */
+
+.masthead__progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  transform: scaleX(var(--sp, 0));
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--vermilion), var(--rose));
+  opacity: 0;
+  transition: opacity 0.3s var(--ease);
+}
+
+.masthead[data-stuck="true"] .masthead__progress {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------- hero depth ---- */
+
+.hero__glow {
+  position: absolute;
+  z-index: 0;
+  top: -22%;
+  right: -12%;
+  width: 70vw;
+  max-width: 880px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 60% 40%,
+    rgba(219, 73, 43, 0.22),
+    rgba(240, 97, 109, 0.1) 40%,
+    transparent 70%
+  );
+  filter: blur(34px);
+  pointer-events: none;
+  animation: hero-glow 15s ease-in-out infinite;
+}
+
+@keyframes hero-glow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-3%, 2%, 0) scale(1.07);
+  }
+}
+
+/* hero content sits above the glow */
+.hero .wrap {
+  position: relative;
+  z-index: 1;
+}
+
+/* --------------------------------------------------------- phone tilt ---- */
+
+/* Only on the wide layout, where there's a mouse and room for the parallax.
+   --rx/--ry are set from the cursor by script.js. */
+@media (min-width: 62rem) {
+  .hero__grid > div:last-child {
+    perspective: 1200px;
+  }
+
+  .hero .phone {
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform 0.3s var(--ease);
+    will-change: transform;
+  }
+}
+
+/* --------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .js .reveal,
+  .js .stage,
+  .js .line > i {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Never show the intro curtain or drift the glow for a reduced-motion visitor. */
+  #intro {
+    display: none !important;
+  }
+
+  .hero__glow {
+    animation: none;
+  }
+
+  /* The trail still tracks the scroll — that is direct manipulation, not
+     autonomous motion. What we drop is the step dimming, so nothing is ever
+     hidden from someone who asked for less movement. */
+  .track[data-flight="on"] .step {
+    opacity: 1;
+  }
+}
