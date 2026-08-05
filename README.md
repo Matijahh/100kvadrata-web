@@ -1,4 +1,4 @@
-# 100m² — marketing site (Next.js)
+# 100m² - marketing site (Next.js)
 
 The public marketing site for the **100 Kvadrata (100m²)** real-estate app,
 ported from a static HTML/CSS/JS site to Next.js so it can grow interactive
@@ -7,7 +7,7 @@ features. It is deployed independently of the Expo app.
 ## Stack
 
 - **Next.js 15** (App Router) + **React 19** + **TypeScript**
-- **next-intl** for locale routing — Serbian at `/`, English at `/en`
+- **next-intl** for locale routing - Serbian at `/`, English at `/en`
 - Hand-authored CSS in `src/app/[locale]/globals.css` (carried over verbatim
   from the original site; colors/type match the app)
 
