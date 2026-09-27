@@ -1,6 +1,8 @@
 import type { Locale } from "@/i18n/routing";
 
-export const WAITLIST_URL = "https://tally.so/r/7RzoL2";
+export const APP_STORE_URL = "https://apps.apple.com/rs/app/100m/id6794867780";
+export const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.stokvadrata.app";
 export const CONTACT_EMAIL = "podrska@100-kvadrata.rs";
 export const SITE_ORIGIN = "https://100-kvadrata.rs";
 
@@ -16,6 +18,8 @@ type Chrome = {
   homeAria: string;
   langAria: string;
   footNote: string;
+  /** Alt text for the store badges (the badge artwork itself is English). */
+  stores: { appStore: string; googlePlay: string };
   labels: {
     home: string;
     privacy: string;
@@ -31,6 +35,10 @@ export const chrome: Record<Locale, Chrome> = {
     homeAria: "100m² - Početna",
     langAria: "Jezik",
     footNote: "© 2026 100m². Sva prava zadržana.",
+    stores: {
+      appStore: "Preuzmi na App Store-u",
+      googlePlay: "Preuzmi na Google Play-u",
+    },
     labels: {
       home: "Početna",
       privacy: "Politika privatnosti",
@@ -44,6 +52,10 @@ export const chrome: Record<Locale, Chrome> = {
     homeAria: "100m² — home",
     langAria: "Language",
     footNote: "© 2026 100m². All rights reserved.",
+    stores: {
+      appStore: "Download on the App Store",
+      googlePlay: "Get it on Google Play",
+    },
     labels: {
       home: "Home",
       privacy: "Privacy Policy",

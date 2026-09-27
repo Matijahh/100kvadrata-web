@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { routing, type Locale } from "@/i18n/routing";
-import {
-  CONTACT_EMAIL,
-  WAITLIST_URL,
-  chrome,
-  withLocale,
-} from "@/content/common";
+import { CONTACT_EMAIL, chrome, withLocale } from "@/content/common";
 import { listing } from "@/content/listing";
 import { Footer, type FooterLink } from "@/components/Footer";
 import { Masthead } from "@/components/Masthead";
+import { StoreBadges } from "@/components/StoreBadges";
 
 export async function generateMetadata({
   params,
@@ -68,12 +64,7 @@ export default async function ListingFallbackPage({
         <h1>{t.h1}</h1>
         <p className="lede">{t.lede}</p>
 
-        <div className="cta-row">
-          <a className="cta" href={WAITLIST_URL} target="_blank" rel="noopener">
-            {t.cta}
-          </a>
-          <p className="soon">{t.soon}</p>
-        </div>
+        <StoreBadges labels={c.stores} />
 
         <p>
           {/* Lets an app-user who lands here jump straight into the app; a

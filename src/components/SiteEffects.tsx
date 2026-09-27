@@ -311,21 +311,6 @@ export function SiteEffects() {
           heroPhone.style.setProperty("--ry", "0deg");
         });
       }
-
-      document.querySelectorAll<HTMLElement>(".cta").forEach((btn) => {
-        on(btn, "pointermove", (e) => {
-          const ev = e as PointerEvent;
-          const r = btn.getBoundingClientRect();
-          const dx = ev.clientX - r.left - r.width / 2;
-          const dy = ev.clientY - r.top - r.height / 2;
-          btn.style.setProperty("--mx", (dx * 0.18).toFixed(1) + "px");
-          btn.style.setProperty("--my", (-2 + dy * 0.18).toFixed(1) + "px");
-        });
-        on(btn, "pointerleave", () => {
-          btn.style.removeProperty("--mx");
-          btn.style.removeProperty("--my");
-        });
-      });
     }
 
     /* ----------------------------------------------------- the feed --- */

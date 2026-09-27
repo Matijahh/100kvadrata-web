@@ -7,52 +7,6 @@ type IconProps = {
   height?: string | number;
 };
 
-export function IconClock({ className, width = 15, height = 15 }: IconProps) {
-  return (
-    <svg
-      className={className}
-      width={width}
-      height={height}
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-    >
-      <circle cx="8" cy="8" r="6.4" stroke="currentColor" strokeWidth="1.3" />
-      <path
-        d="M8 4.6V8l2.2 1.5"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-export function IconArrow({
-  className = "cta__arrow",
-  width = 16,
-  height = 16,
-}: IconProps) {
-  return (
-    <svg
-      className={className}
-      width={width}
-      height={height}
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-    >
-      <path
-        d="M3 8h9M8.5 4.5 12 8l-3.5 3.5"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function IconHeart({
   className,
   width = "1.6em",

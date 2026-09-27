@@ -10,8 +10,6 @@ export type ListingContent = {
   };
   h1: string;
   lede: string;
-  cta: string;
-  soon: string;
   openApp: string;
 };
 
@@ -25,9 +23,7 @@ export const listing: Record<Locale, ListingContent> = {
       ogLocale: "sr_RS",
     },
     h1: "Ovaj oglas se otvara u aplikaciji",
-    lede: "Da bi video/la ovaj oglas i sve njegove detalje, potrebna ti je aplikacija 100m². Uđi na listu čekanja i prvi/a saznaj kad izađe.",
-    cta: "UĐI NA LISTU ČEKANJA",
-    soon: "App Store i Google Play - uskoro",
+    lede: "Da bi video/la ovaj oglas i sve njegove detalje, potrebna ti je aplikacija 100m². Preuzmi je besplatno za iPhone ili Android.",
     openApp: "Već imaš aplikaciju? Otvori oglas.",
   },
   en: {
@@ -39,9 +35,7 @@ export const listing: Record<Locale, ListingContent> = {
       ogLocale: "en_US",
     },
     h1: "This listing opens in the app",
-    lede: "To view this listing and all its details, you need the 100m² app. Join the waitlist to be first to know when it launches.",
-    cta: "JOIN THE WAITLIST",
-    soon: "App Store & Google Play - coming soon",
+    lede: "To view this listing and all its details, you need the 100m² app. Download it for free on iPhone or Android.",
     openApp: "Already have the app? Open the listing.",
   },
 };

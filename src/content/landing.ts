@@ -16,8 +16,6 @@ export type LandingContent = {
     h1Lines: [string, string, string];
     sub: string;
     lede: string;
-    cta: string;
-    soon: string;
   };
   feed: {
     deckAria: string;
@@ -40,26 +38,24 @@ export type LandingContent = {
     chatField: string;
     note: string;
   };
-  last: { eyebrow: string; h2: string; lede: string; cta: string };
+  last: { eyebrow: string; h2: string; lede: string };
 };
 
 const sr: LandingContent = {
   meta: {
     title: "100m² - Jedan svajp bliže tvom novom domu",
     description:
-      "Svajp aplikacija za nekretnine. Stanovi, kuće, garaže - svajpuj, sačuvaj i useli se. Uskoro na iOS i Android.",
+      "Svajp aplikacija za nekretnine. Stanovi, kuće, garaže - svajpuj, sačuvaj i useli se. Dostupno na iOS i Android.",
     ogTitle: "100m² - Jedan svajp bliže tvom novom domu",
     ogDescription:
       "Svajp aplikacija za nekretnine. Stanovi, kuće, garaže - svajpuj, sačuvaj i useli se.",
     ogLocale: "sr_RS",
   },
   hero: {
-    eyebrow: "Uskoro na iOS i Android uređajima",
+    eyebrow: "Dostupno na iOS i Android uređajima",
     h1Lines: ["Jedan svajp", "bliže tvom", "novom domu."],
     sub: "Kupi. Prodaj. Iznajmi.",
     lede: "Svajp aplikacija za nekretnine. Stanovi, kuće, garaže - svajpuj, sačuvaj i useli se.",
-    cta: "UĐI NA LISTU ČEKANJA",
-    soon: "App Store i Google Play - uskoro",
   },
   feed: {
     deckAria:
@@ -169,10 +165,9 @@ const sr: LandingContent = {
     note: "Prikaz izgleda aplikacije.",
   },
   last: {
-    eyebrow: "Lista čekanja",
-    h2: "Budi među prvima.",
-    lede: "Aplikacija stiže uskoro na iOS i Android uređajima. Ostavi mejl i javljamo ti se na dan objave.",
-    cta: "UĐI NA LISTU ČEKANJA",
+    eyebrow: "Preuzmi aplikaciju",
+    h2: "Počni da svajpuješ.",
+    lede: "100m² je besplatna za iPhone i Android. Preuzmi je i pronađi svoj sledeći dom.",
   },
 };
 
@@ -180,19 +175,17 @@ const en: LandingContent = {
   meta: {
     title: "100m² - One swipe closer to your new home",
     description:
-      "Apartments in Serbia, one at a time. Swipe instead of filling in filters. Coming soon to iOS and Android.",
+      "Apartments in Serbia, one at a time. Swipe instead of filling in filters. Now on iOS and Android.",
     ogTitle: "100m² — One swipe closer to your new home",
     ogDescription:
       "Apartments in Serbia, one at a time. Swipe instead of filling in filters.",
     ogLocale: "en_GB",
   },
   hero: {
-    eyebrow: "Coming soon to iOS and Android",
+    eyebrow: "Now on iOS and Android",
     h1Lines: ["One swipe", "closer to your", "new home."],
     sub: "Buy. Sell. Rent.",
     lede: "A swipe app for real estate. Apartments, houses, garages - swipe, save and move in.",
-    cta: "JOIN THE WAITING LIST",
-    soon: "App Store and Google Play - soon",
   },
   feed: {
     deckAria:
@@ -302,10 +295,9 @@ const en: LandingContent = {
     note: "Representation of the app interface.",
   },
   last: {
-    eyebrow: "Waiting list",
-    h2: "Be there on day one.",
-    lede: "The app lands on iOS and Android soon. Leave your email and we'll tell you the day it does.",
-    cta: "JOIN THE WAITING LIST",
+    eyebrow: "Get the app",
+    h2: "Start swiping.",
+    lede: "100m² is free on iPhone and Android. Download it and find your next home.",
   },
 };
 

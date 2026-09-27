@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
 import { hasLocale } from "next-intl";
 import { routing, type Locale } from "@/i18n/routing";
-import {
-  CONTACT_EMAIL,
-  WAITLIST_URL,
-  chrome,
-  withLocale,
-} from "@/content/common";
+import { CONTACT_EMAIL, chrome, withLocale } from "@/content/common";
 import { BUYER_ARC, OWNER_ARC, landing } from "@/content/landing";
 import { Footer, type FooterLink } from "@/components/Footer";
-import { IconArrow, IconClock } from "@/components/icons";
 import { Intro } from "@/components/Intro";
 import { Masthead } from "@/components/Masthead";
 import { PhoneChat } from "@/components/PhoneChat";
@@ -17,6 +11,7 @@ import { PhoneFeed } from "@/components/PhoneFeed";
 import { PhoneInbox } from "@/components/PhoneInbox";
 import { SiteEffects } from "@/components/SiteEffects";
 import { Steps } from "@/components/Steps";
+import { StoreBadges } from "@/components/StoreBadges";
 
 export async function generateMetadata({
   params,
@@ -94,22 +89,7 @@ export default async function LandingPage({
 
               <p className="lede hero__lede stage stage--2">{t.hero.lede}</p>
 
-              <div className="cta-row stage stage--3">
-                <a
-                  className="cta"
-                  href={WAITLIST_URL}
-                  target="_blank"
-                  rel="noopener"
-                >
-                  {t.hero.cta}
-                  <IconArrow />
-                </a>
-
-                <p className="soon">
-                  <IconClock />
-                  {t.hero.soon}
-                </p>
-              </div>
+              <StoreBadges labels={c.stores} className="stage stage--3" />
             </div>
 
             {/* the signature: the mechanic itself, not a picture of it */}
@@ -179,17 +159,7 @@ export default async function LandingPage({
             <h2>{t.last.h2}</h2>
             <p className="lede">{t.last.lede}</p>
 
-            <div className="cta-row">
-              <a
-                className="cta"
-                href={WAITLIST_URL}
-                target="_blank"
-                rel="noopener"
-              >
-                {t.last.cta}
-                <IconArrow />
-              </a>
-            </div>
+            <StoreBadges labels={c.stores} />
           </div>
         </section>
       </main>
