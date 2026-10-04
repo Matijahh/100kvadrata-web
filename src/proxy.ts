@@ -1,24 +1,13 @@
 import createIntlMiddleware from "next-intl/middleware";
 import { NextResponse, type NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
+import { isPublicPath } from "./lib/publicPaths";
 
 const intl = createIntlMiddleware(routing);
 
-// App routes that need an account. Guests who open one directly are sent to
-// login and brought back afterwards; inside the app the nav opens the sign-in
-// dialog instead of navigating, like the mobile tab bar does.
-const PROTECTED_PREFIXES = [
-  "/profile",
-  "/edit-profile",
-  "/new-listing",
-  "/inbox",
-  "/chat",
-  "/notifications",
-  "/preferences",
-  "/onboarding",
-  "/choose-username",
-  "/update-password",
-];
+// No guest mode: everything except the website and the sign-in screens needs
+// an account (see lib/publicPaths). Visitors who open an app page are sent to
+// login and brought back to it afterwards.
 
 const stripLocale = (pathname: string) => {
   const match = pathname.match(/^\/(en|sr)(\/.*|$)/);
@@ -38,11 +27,7 @@ const hasSessionCookie = (request: NextRequest) =>
 
 export default function proxy(request: NextRequest) {
   const { locale, path } = stripLocale(request.nextUrl.pathname);
-  const isProtected = PROTECTED_PREFIXES.some(
-    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
-  );
-
-  if (isProtected && !hasSessionCookie(request)) {
+  if (!isPublicPath(path) && !hasSessionCookie(request)) {
     const login = request.nextUrl.clone();
     login.pathname = locale === routing.defaultLocale ? "/login" : `/${locale}/login`;
     login.search = "";

@@ -1,5 +1,6 @@
 import type { Locale } from "@/i18n/routing";
 import { chrome, withLocale } from "@/content/common";
+import { AccountLinks } from "./AccountLinks";
 import { Logo } from "./Logo";
 
 type Props = {
@@ -24,7 +25,10 @@ export function Masthead({ locale, path, progress = false }: Props) {
           <Logo />
         </a>
 
-        <nav className="langswitch" aria-label={c.langAria}>
+        <div className="masthead__end">
+          <AccountLinks locale={locale} labels={c.account} />
+
+          <nav className="langswitch" aria-label={c.langAria}>
           <a
             href={srHref}
             hrefLang="sr"
@@ -40,7 +44,8 @@ export function Masthead({ locale, path, progress = false }: Props) {
           >
             EN
           </a>
-        </nav>
+          </nav>
+        </div>
       </div>
       {progress ? (
         <span className="masthead__progress" aria-hidden="true" />

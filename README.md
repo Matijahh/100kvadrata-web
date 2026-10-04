@@ -58,31 +58,33 @@ them is a full page load):
 
 | Group | URL | Page |
 |---|---|---|
-| `(marketing)` | `/`, `/en` | Landing |
+| `(marketing)` | `/`, `/en` | Landing — the domain home. Header: Log in / Sign up, or the signed-in user's name → `/feed` (the app links back via "Website") |
 | `(marketing)` | `/privacy-policy`, `/terms-of-service`, `/delete-account` | Legal (`/delete-account` is the Play Store data-deletion URL) |
-| — | `/sitemap.xml`, `/robots.txt` | Generated (`src/app/sitemap.ts`, `robots.ts`): pages, live listings, their sellers; hourly |
-| `(app)` | `/listing/:id` | Listing page, server-rendered with OG image + JSON-LD (app links open the app on phones) |
-| `(app)` | `/user/:id` | Public profile (sellers indexable, buyers noindex) |
+| — | `/sitemap.xml`, `/robots.txt` | Generated (`src/app/sitemap.ts`, `robots.ts`): the website only; robots keeps crawlers out of the app |
+| `(app)` | `/listing/:id` | Listing page, server-rendered with OG image + JSON-LD (phones with the app open it there via app links) |
+| `(app)` | `/user/:id` | Someone else's profile (sellers: listings; buyers: what they look for) |
 | `(app)` | `/profile`, `/edit-profile` | Own profile (tabs, settings drawer) and editing |
 | `(app)` | `/new-listing` (`?editListingId=`) | Create / edit a listing; buyers get the loan calculator |
-| `(app)` | `/feed` | Home: reel (default) or grid, filters (sidebar from xl, sheet below), saved searches; Buyers tab for sellers |
+| `(app)` | `/feed` | Home: grid from 1024px, reel below (no switch); filters (no free-text search, like the app) as a collapsible panel from xl, a sheet below; saved searches; Buyers tab for sellers |
 | `(app)` | `/preferences/:id` (`new`) | A buyer's "what you're looking for" set |
 | `(app)` | `/inbox`, `/chat/:id` | Messages: two panes on desktop (shared `(messages)` layout), two screens on phones; chat polls every 5 s |
 | `(app)` | `/notifications` | Likes, saves, messages, offers; read / read all |
 | `(app)` | `/login`, `/register`, `/verify-email`, `/forgot-password` | Auth (OTP codes, same as the app) |
 | `(app)` | `/update-password`, `/choose-username`, `/onboarding` | Signed-in setup steps |
 | `(app)` | `/auth/callback` | Google / Apple OAuth return (see `docs/WEB_AUTH_SETUP.md`) |
-| `(app)` | `/get-app` | Sends phones to their store (target of the desktop QR) |
 
-`src/proxy.ts` runs next-intl and redirects guests away from account-only routes
-(`/profile`, `/inbox`, `/new-listing`, ...) to `/login?next=...`. That is a UX
-redirect only - authorization is Supabase RLS on every query.
+**No guest mode:** every `(app)` page needs an account except the sign-in screens
+(`/login`, `/register`, `/verify-email`, `/forgot-password`, `/auth/callback`); the list is `src/lib/publicPaths.ts`. `src/proxy.ts` runs next-intl
+and sends visitors without a session cookie to `/login?next=...`;
+`SessionGuard` does the same in the browser when a session ends (sign-out,
+expiry, another tab). Logging out lands on `/login`. Both are UX redirects only -
+authorization is Supabase RLS on every query.
 
 ## Layout
 
 ```
 src/
-  proxy.ts                 # locale routing + guest redirect
+  proxy.ts                 # locale routing + sign-in redirect
   i18n/                    # next-intl routing; i18next resources/adapter/server
   content/                 # marketing copy (sr/en) + shared chrome
   components/marketing/    # landing-page components
@@ -117,11 +119,13 @@ third-party service means adding its origin there.
 for Playwright's Chromium) on a desktop and a phone viewport. There is only the
 production database, so the suite only reads:
 
-- guest browsing: feed (reel, grid, keyboard, search), sign-in prompts and
-  redirects, listing SSR metadata, 404s, the phone "get the app" sheet;
+- signed out: the website, its header into the app, every app page
+  redirecting to login, no guest option on the auth screens, the phone "get
+  the app" sheet;
 - endpoints: sitemap, robots, security headers, legal pages, app-link files;
 - signed in (skipped unless `E2E_EMAIL` / `E2E_PASSWORD` of a dedicated test
-  account are set): profile, inbox, notifications.
+  account are set): feed (reel, grid, keyboard, search), listing pages and
+  404s, the link back to the website, profile, inbox, notifications, logout.
 
 Publishing a listing and chatting are checked by hand with the test account
 (delete what you create). `E2E_BASE_URL=https://…` runs the suite against a

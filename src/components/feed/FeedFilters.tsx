@@ -31,6 +31,8 @@ type FeedFiltersProps = {
 export function FeedFilters(props: FeedFiltersProps) {
   const { t } = useTranslation();
   const { variant, onApply, onClearAll, onSave, isSaved, canSave } = props;
+  // The desktop panel is a narrow column: pairs go one under the other.
+  const stacked = variant === "sidebar";
   const BookmarkGlyph = isSaved ? BookmarkFilledIcon : BookmarkIcon;
 
   return (
@@ -76,10 +78,16 @@ export function FeedFilters(props: FeedFiltersProps) {
               value={props.draft}
               onChange={(next) => props.onDraftChange(next)}
               columns={1}
+              stacked={stacked}
             />
           </>
         ) : (
-          <CriteriaFields value={props.draft} onChange={(next) => props.onDraftChange(next)} columns={1} />
+          <CriteriaFields
+            value={props.draft}
+            onChange={(next) => props.onDraftChange(next)}
+            columns={1}
+            stacked={stacked}
+          />
         )}
       </div>
 

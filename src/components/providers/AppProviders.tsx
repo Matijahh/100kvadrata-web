@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInPromptDialog } from "@/components/auth/SignInPromptDialog";
+import { SessionGuard } from "@/components/auth/SessionGuard";
 import { AuthSessionSync } from "@/components/providers/AuthSessionSync";
 import { ConfirmDialogHost } from "@/components/providers/ConfirmDialogHost";
 import { LanguageProvider } from "@/components/providers/LanguageProvider";
@@ -39,12 +39,12 @@ export function AppProviders({
       <LanguageProvider locale={locale}>
         <ToastProvider>
           <AuthSessionSync />
+          <SessionGuard />
           <ThemeSync />
           <Suspense fallback={null}>
             <ProfilePreferencesSync />
           </Suspense>
           {children}
-          <SignInPromptDialog />
           <ConfirmDialogHost />
         </ToastProvider>
       </LanguageProvider>

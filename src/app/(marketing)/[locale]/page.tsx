@@ -89,7 +89,13 @@ export default async function LandingPage({
 
               <p className="lede hero__lede stage stage--2">{t.hero.lede}</p>
 
-              <StoreBadges labels={c.stores} className="stage stage--3" />
+              {/* /feed rather than /login: the proxy sends visitors without a
+                  session to login and lets signed-in ones straight in. */}
+              <StoreBadges
+                labels={c.stores}
+                webApp={{ href: withLocale(locale, "/feed"), label: c.account.continueOnWeb }}
+                className="stage stage--3"
+              />
             </div>
 
             {/* the signature: the mechanic itself, not a picture of it */}
@@ -159,7 +165,10 @@ export default async function LandingPage({
             <h2>{t.last.h2}</h2>
             <p className="lede">{t.last.lede}</p>
 
-            <StoreBadges labels={c.stores} />
+            <StoreBadges
+              labels={c.stores}
+              webApp={{ href: withLocale(locale, "/feed"), label: c.account.continueOnWeb }}
+            />
           </div>
         </section>
       </main>

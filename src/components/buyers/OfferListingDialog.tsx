@@ -2,10 +2,10 @@
 
 import ChevronDownIcon from "@assets/icons/chevron-down-icon.svg";
 import CircleCheckFilledIcon from "@assets/icons/circle-check-icon-filled.svg";
-import PlayFilledIcon from "@assets/icons/play-icon-filled.svg";
 import Button from "@/components/genericComponents/Button";
 import { Spinner } from "@/components/genericComponents/EmptyState";
 import { ListingSpecs } from "@/components/listing/ListingSpecs";
+import { VideoPoster } from "@/components/media/VideoPoster";
 import { useToast } from "@/components/providers/ToastProvider";
 import { Modal } from "@/components/ui/Modal";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -162,7 +162,7 @@ function OfferRow({
 }) {
   const { t } = useTranslation();
   const cover = listing.media.find((item) => item.kind === "photo")?.public_url ?? null;
-  const hasVideo = listing.media.some((item) => item.kind === "video") || !!listing.video_url;
+  const videoUrl = listing.media.find((item) => item.kind === "video")?.public_url ?? listing.video_url ?? null;
   const price = getListingPriceLabel(listing, t);
   const street = [listing.street?.trim(), listing.street_number ?? null].filter((part) => part != null && part !== "").join(" ");
   const address = [street, listing.municipality?.trim(), listing.city?.trim()].filter(Boolean).join(", ");
@@ -198,10 +198,9 @@ function OfferRow({
         <span className="relative h-[72px] w-[72px] shrink-0 overflow-hidden rounded-2xl bg-media-placeholder">
           {cover ? (
             <Image src={cover} alt="" fill sizes="72px" className="object-cover" />
-          ) : hasVideo ? (
-            <span className="flex h-full items-center justify-center bg-[#1F1F1F] text-white">
-              <PlayFilledIcon width={18} height={18} aria-hidden />
-            </span>
+          ) : videoUrl ? (
+            // A video-only listing has nothing else to show, so a still from it.
+            <VideoPoster videoUrl={videoUrl} size="small" />
           ) : null}
         </span>
         <span className="min-w-0 flex-1">

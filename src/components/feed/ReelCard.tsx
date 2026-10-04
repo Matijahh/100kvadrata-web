@@ -34,36 +34,32 @@ const LIKED_COLOR = "#FF6B6B";
  *   over it, like the app's card; "Details" opens the full description in a
  *   sheet.
  * - Tablet: the same, as a 9:16 card in the middle of the screen.
- * - Desktop (lg+): the 9:16 media beside a details panel, so nothing is
- *   hidden behind a tap — a desktop has the room.
  *
- * `isNear` (within a couple of cards of the one on screen) decides whether
- * the media and panel render at all: far-away cards are empty boxes of the
- * right height, so the feed does not hold dozens of images in memory.
+ * (Desktop shows the grid instead — the reel is only below 1024px.)
+ *
+ * `isNear` (within a card of the one on screen) decides whether the media
+ * renders at all: far-away cards are empty boxes of the right height, so the
+ * feed does not hold dozens of images in memory.
  */
 export function ReelCard({
   listing,
   isActive,
   isNear,
-  isWide,
 }: {
   listing: Listing;
   isActive: boolean;
   isNear: boolean;
-  /** lg and up — the details panel replaces the overlay. */
-  isWide: boolean;
 }) {
   const { t } = useTranslation();
   const [isDetailsOpen, setDetailsOpen] = useState(false);
   useListingViewTracker(listing, isActive);
 
   return (
-    <div className="flex h-full w-full items-stretch justify-center md:gap-6 md:py-5 md:pl-6 md:pr-20">
+    <div className="flex h-full w-full items-stretch justify-center md:px-6 md:py-5">
       <div
         className={cn(
           "relative h-full w-full overflow-hidden bg-black",
           "md:aspect-[9/16] md:w-auto md:max-w-full md:rounded-[32px] md:shadow-[0_12px_40px_rgba(0,0,0,0.18)]",
-          "lg:max-w-[calc(100%-404px)]",
         )}
       >
         {isNear ? (
@@ -74,24 +70,18 @@ export function ReelCard({
               autoPlay
               priority={isActive}
               sizes="(min-width: 768px) 480px, 100vw"
-              dotsPosition={isWide ? "bottom" : "top"}
-              minimalVideo={!isWide}
+              dotsPosition="top"
+              minimalVideo
               className="h-full w-full bg-black"
             />
-            {!isWide ? <ReelOverlay listing={listing} onOpenDetails={() => setDetailsOpen(true)} /> : null}
+            <ReelOverlay listing={listing} onOpenDetails={() => setDetailsOpen(true)} />
           </>
         ) : null}
       </div>
 
-      <aside className="hidden h-full w-[380px] shrink-0 flex-col overflow-y-auto overscroll-contain rounded-[32px] bg-surface p-6 lg:flex">
-        {isNear && isWide ? <ListingDetails listing={listing} /> : null}
-      </aside>
-
-      {!isWide ? (
-        <Modal open={isDetailsOpen} onOpenChange={setDetailsOpen} title={t("web.feed.details")} hideTitle>
-          <ListingDetails listing={listing} />
-        </Modal>
-      ) : null}
+      <Modal open={isDetailsOpen} onOpenChange={setDetailsOpen} title={t("web.feed.details")} hideTitle>
+        <ListingDetails listing={listing} />
+      </Modal>
     </div>
   );
 }

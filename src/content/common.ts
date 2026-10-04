@@ -28,6 +28,8 @@ type Chrome = {
     contact: string;
     otherLang: string;
   };
+  /** The header's way into the web app. */
+  account: { login: string; register: string; openApp: string; continueOnWeb: string };
 };
 
 export const chrome: Record<Locale, Chrome> = {
@@ -47,6 +49,12 @@ export const chrome: Record<Locale, Chrome> = {
       contact: "Kontakt",
       otherLang: "English",
     },
+    account: {
+      login: "Prijavi se",
+      register: "Napravi nalog",
+      openApp: "Otvori web aplikaciju",
+      continueOnWeb: "Nastavi na webu",
+    },
   },
   en: {
     skip: "Skip to content",
@@ -63,6 +71,12 @@ export const chrome: Record<Locale, Chrome> = {
       terms: "Terms of Service",
       contact: "Contact",
       otherLang: "Srpski",
+    },
+    account: {
+      login: "Log in",
+      register: "Sign up",
+      openApp: "Open the web app",
+      continueOnWeb: "Continue on web",
     },
   },
 };

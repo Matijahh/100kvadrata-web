@@ -16,6 +16,8 @@ type LabeledRadioFieldProps<T extends string> = {
   /** Whether choosing the selected option again clears it. Off for required fields. */
   allowEmpty?: boolean;
   disabled?: boolean;
+  /** One option under the other — for narrow columns like the feed's filter panel. */
+  stacked?: boolean;
   className?: string;
 };
 
@@ -30,6 +32,7 @@ export function LabeledRadioField<T extends string>({
   onChange,
   allowEmpty = false,
   disabled = false,
+  stacked = false,
   className,
 }: LabeledRadioFieldProps<T>) {
   const labelId = useId();
@@ -39,7 +42,7 @@ export function LabeledRadioField<T extends string>({
       <span id={labelId} className="mb-1.5 block text-sm font-light text-form-label">
         {label}
       </span>
-      <div role="radiogroup" aria-labelledby={labelId} className="flex gap-3">
+      <div role="radiogroup" aria-labelledby={labelId} className={cn("flex gap-3", stacked && "flex-col gap-2")}>
         {options.map((option) => {
           const isSelected = option.value === value;
 
@@ -58,7 +61,8 @@ export function LabeledRadioField<T extends string>({
                 onChange(option.value);
               }}
               className={cn(
-                "flex min-h-[54px] flex-1 items-center justify-center gap-2.5 rounded-[25px] border border-transparent bg-surface-muted px-4 py-3.5",
+                "flex min-h-[54px] flex-1 items-center gap-2.5 rounded-[25px] border border-transparent bg-surface-muted px-4 py-3.5",
+                stacked ? "justify-start" : "justify-center",
                 "text-[15px] text-text transition-colors disabled:opacity-70",
                 isSelected && "border-primary bg-surface font-semibold text-primary",
               )}

@@ -6,7 +6,7 @@ export const webEn = {
   nav: {
     main: "Main navigation",
     loanCalculator: "Loan calculator",
-    signIn: "Sign in",
+    website: "Website",
   },
   auth: {
     showPassword: "Show password",
@@ -58,16 +58,9 @@ export const webEn = {
       "Swiping, instant notifications and video are smoother in the app. It's free.",
     open: "Get the app",
     continueOnWeb: "Continue on web",
-    cardTitle: "Get the app",
-    cardMessage: "Scan with your phone",
   },
   feed: {
-    layoutReel: "Reel",
-    layoutGrid: "Grid",
-    layoutLabel: "Feed layout",
     tabsLabel: "What to browse",
-    searchLabel: "Search",
-    clearSearch: "Clear search",
     filters: "Filters",
     details: "Details",
     openListing: "Open listing page",
@@ -75,7 +68,6 @@ export const webEn = {
     unmute: "Turn sound on",
     previous: "Previous listing",
     next: "Next listing",
-    keyboardHint: "Use ↑ and ↓ to browse",
     endOfFeed: "You've seen everything here.",
   },
   chat: {

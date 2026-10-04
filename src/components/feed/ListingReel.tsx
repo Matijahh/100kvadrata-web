@@ -1,8 +1,8 @@
 "use client";
 
-import ArrowUpToLineIcon from "@assets/icons/arrow-up-to-line-icon.svg";
 import ChevronDownIcon from "@assets/icons/chevron-down-icon.svg";
 import ChevronUpIcon from "@assets/icons/chevron-up-icon.svg";
+import { EndOfFeed } from "@/components/feed/EndOfFeed";
 import { ReelCard } from "@/components/feed/ReelCard";
 import { Spinner } from "@/components/genericComponents/EmptyState";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -48,8 +48,8 @@ export function ListingReel({
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(initialIndex);
-  const isWide = useMediaQuery("(min-width: 1024px)");
-  const isPointerDevice = useMediaQuery("(min-width: 768px)");
+  // Tablets with a mouse or trackpad get step buttons; touch swipes.
+  const isPointerDevice = useMediaQuery("(min-width: 768px) and (pointer: fine)");
 
   const scrollToIndex = useCallback((index: number, behavior: ScrollBehavior = "smooth") => {
     const container = containerRef.current;
@@ -137,7 +137,6 @@ export function ListingReel({
               listing={listing}
               isActive={index === activeIndex}
               isNear={Math.abs(index - activeIndex) <= NEAR_DISTANCE}
-              isWide={isWide}
             />
           </section>
         ))}
@@ -147,17 +146,7 @@ export function ListingReel({
             <Spinner />
           </div>
         ) : isAtEnd ? (
-          <div className="flex h-56 snap-end flex-col items-center justify-center gap-3 pb-24 md:pb-0">
-            <p className="text-sm text-text-muted">{t("web.feed.endOfFeed")}</p>
-            <button
-              type="button"
-              onClick={() => scrollToIndex(0)}
-              className="inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:opacity-90"
-            >
-              <ArrowUpToLineIcon width={16} height={16} aria-hidden />
-              {t("feed.backToTop")}
-            </button>
-          </div>
+          <EndOfFeed onBackToTop={() => scrollToIndex(0)} className="h-56 snap-end justify-center py-0 pb-24 md:pb-0" />
         ) : null}
       </div>
 
@@ -178,9 +167,6 @@ export function ListingReel({
           >
             <ChevronDownIcon width={22} height={22} aria-hidden />
           </ReelStepButton>
-          <p className="mt-1 hidden w-12 text-center text-[10px] leading-tight text-text-muted xl:block">
-            {t("web.feed.keyboardHint")}
-          </p>
         </div>
       ) : null}
     </div>

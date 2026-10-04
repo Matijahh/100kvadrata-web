@@ -197,6 +197,7 @@ p {
 
 .mark {
   display: block;
+  flex-shrink: 0;
   line-height: 0;
 }
 
@@ -236,10 +237,123 @@ p {
   color: var(--line);
 }
 
+.masthead__end {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Into the web app: log in / sign up, or the signed-in account's name. */
+.account {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.account[data-pending] {
+  visibility: hidden;
+}
+
+.account a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s var(--ease),
+    border-color 0.2s var(--ease),
+    color 0.2s var(--ease);
+}
+
+.account a:focus-visible {
+  outline: 2px solid var(--rose);
+  outline-offset: 2px;
+}
+
+.account__login {
+  color: var(--muted);
+  padding: 0.5rem 0.75rem;
+}
+
+.account__login:hover {
+  color: var(--paper);
+}
+
+.account__register {
+  color: #fff;
+  background: var(--vermilion);
+  padding: 0.5rem 1rem;
+}
+
+.account__register:hover {
+  background: color-mix(in srgb, var(--vermilion) 85%, #fff);
+}
+
+.account__user {
+  color: var(--paper);
+  background: var(--ink-raised);
+  border: 1px solid var(--line);
+  padding: 0.25rem 0.9rem 0.25rem 0.25rem;
+}
+
+.account__user:hover {
+  border-color: var(--dim);
+}
+
+.account__avatar {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  background: var(--vermilion);
+  color: #fff;
+  font-size: 0.8rem;
+}
+
+.account__name {
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Phones: logo, two buttons and SR/EN do not fit one row, so only the way in
+   stays — as the filled button — and the login screen links to sign-up. */
+@media (max-width: 25rem) {
+  .masthead__end {
+    gap: 0.25rem;
+  }
+
+  .account__register {
+    display: none !important;
+  }
+
+  .account__login {
+    color: #fff;
+    background: var(--vermilion);
+    padding-inline: 1rem;
+  }
+
+  .account__login:hover {
+    color: #fff;
+    background: color-mix(in srgb, var(--vermilion) 85%, #fff);
+  }
+
+  .account__name {
+    max-width: 6rem;
+  }
+}
+
 /* --------------------------------------------------------------- hero ---- */
 
 .hero {
-  padding-block: clamp(3rem, 7vw, 6rem) clamp(4rem, 9vw, 7.5rem);
+  /* Starts close under the header; the bottom keeps its breathing room. */
+  padding-block: clamp(1.5rem, 3.5vw, 3rem) clamp(4rem, 9vw, 7.5rem);
   position: relative;
   overflow: hidden;
 }
@@ -254,6 +368,17 @@ p {
 @media (min-width: 62rem) {
   .hero__grid {
     grid-template-columns: 1.15fr 0.85fr;
+    /* Top-aligned with the phone, not centred on it — centring pushed the
+       headline far below the header. */
+    align-items: start;
+  }
+
+  /* Beside the text, the phone is sized to the copy (~580px tall, a little
+     taller than the 530-555px of text at every desktop width) rather than to
+     its own maximum. Everything inside it is em-based on --w, so it scales
+     as one piece. */
+  .hero .phone {
+    --w: 17rem;
   }
 }
 
@@ -301,6 +426,14 @@ p {
 
 .hero__lede {
   margin-bottom: 2.5rem;
+}
+
+/* Single column: centre the buttons like the closing section's, so the
+   wrapped "Continue on web" sits under the badges rather than at the left. */
+@media (max-width: 61.99rem) {
+  .hero .stores {
+    justify-content: center;
+  }
 }
 
 /* staged fade for everything under the headline */
@@ -360,6 +493,29 @@ p {
   display: block;
   height: 48px;
   width: auto;
+}
+
+/* "Continue on web": shaped like the badges beside it (black, grey outline,
+   48px) so the three read as one row of ways in. */
+.store--web {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  height: 48px;
+  padding-inline: 1rem 1.15rem;
+  background: #000;
+  border: 1px solid #a6a6a6;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.store--web svg {
+  flex-shrink: 0;
+  color: var(--rose);
 }
 
 /* ---------------------------------------------------------------- phone -- */

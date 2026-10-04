@@ -89,11 +89,14 @@ export function CriteriaFields<T extends CriteriaValues>({
   value,
   onChange,
   columns = 2,
+  stacked = false,
 }: {
   value: T;
   onChange: (next: T) => void;
-  /** 2 from `md` up (full-page forms); 1 for the feed's filter sidebar. */
+  /** 2 from `md` up (full-page forms); 1 for the feed's filters. */
   columns?: 1 | 2;
+  /** Pairs (min/max, rent/sale) one under the other — the narrow desktop panel. */
+  stacked?: boolean;
 }) {
   const { t } = useTranslation();
   const grid = cn("grid gap-x-4", columns === 2 && "md:grid-cols-2");
@@ -161,6 +164,7 @@ export function CriteriaFields<T extends CriteriaValues>({
           value={value.listingType ?? null}
           onChange={(next) => set("listingType", next)}
           allowEmpty
+          stacked={stacked}
         />
       </div>
 
@@ -194,6 +198,7 @@ export function CriteriaFields<T extends CriteriaValues>({
       <SectionTitle>{t("feed.filterForm.priceAndSurfaceTitle")}</SectionTitle>
       <div className={cn(grid, "gap-y-0")}>
         <RangeRow
+          stacked={stacked}
           minValue={value.minPriceEur}
           maxValue={value.maxPriceEur}
           minPlaceholder={t("feed.filterForm.minPricePlaceholder")}
@@ -203,6 +208,7 @@ export function CriteriaFields<T extends CriteriaValues>({
           hint={t(priceHintKey)}
         />
         <RangeRow
+          stacked={stacked}
           minValue={value.minSurfaceM2}
           maxValue={value.maxSurfaceM2}
           minPlaceholder={t("feed.filterForm.minSurfacePlaceholder")}
@@ -215,6 +221,7 @@ export function CriteriaFields<T extends CriteriaValues>({
       <SectionTitle>{t("feed.filterForm.roomsLabel")}</SectionTitle>
       <div className={cn(columns === 2 && "md:max-w-[calc(50%-8px)]")}>
         <RangeRow
+          stacked={stacked}
           minValue={value.minRooms}
           maxValue={value.maxRooms}
           minPlaceholder={t("feed.filterForm.minRoomsPlaceholder")}
@@ -331,6 +338,7 @@ function RangeRow({
   onMaxChange,
   hint,
   decimal = false,
+  stacked = false,
 }: {
   minValue?: number | null;
   maxValue?: number | null;
@@ -340,10 +348,11 @@ function RangeRow({
   onMaxChange: (value: number | null) => void;
   hint?: string;
   decimal?: boolean;
+  stacked?: boolean;
 }) {
   return (
     <div className="mb-3">
-      <div className="flex gap-3">
+      <div className={cn("flex gap-3", stacked && "flex-col")}>
         <NumberPill value={minValue} onChange={onMinChange} placeholder={minPlaceholder} decimal={decimal} />
         <NumberPill value={maxValue} onChange={onMaxChange} placeholder={maxPlaceholder} decimal={decimal} />
       </div>

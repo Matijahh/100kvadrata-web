@@ -1,4 +1,4 @@
-import { FEED_LAYOUT_STORAGE_KEY } from "@/constants/storageKeys";
+import { FEED_FILTERS_OPEN_STORAGE_KEY } from "@/constants/storageKeys";
 import type { BuyerFilters, ListingFilters } from "@/types/types";
 import { create } from "zustand";
 
@@ -7,13 +7,16 @@ import { create } from "zustand";
 // listing, so what has to survive the round trip — applied filters, the tab,
 // where they were — lives here instead (in memory: a reload starts fresh,
 // exactly like relaunching the app).
+//
+// The layout is not a choice: the screen decides (grid on desktop, reel from
+// tablets down) — see FeedView.
 
 export type FeedTab = "listings" | "buyers";
-export type FeedLayout = "reel" | "grid";
 
 type FeedStore = {
   tab: FeedTab;
-  layout: FeedLayout;
+  /** Desktop filter panel expanded; remembered between visits. */
+  isFilterPanelOpen: boolean;
   /** Applied (not draft) filters, normalised, with the search term folded in. */
   listingFilters: ListingFilters;
   buyerFilters: BuyerFilters;
@@ -22,47 +25,39 @@ type FeedStore = {
   gridScrollTop: number;
   buyersScrollTop: number;
   setTab: (tab: FeedTab) => void;
-  setLayout: (layout: FeedLayout) => void;
-  hydrateLayout: () => void;
+  setFilterPanelOpen: (open: boolean) => void;
+  hydrateFilterPanel: () => void;
   setListingFilters: (filters: ListingFilters) => void;
   setBuyerFilters: (filters: BuyerFilters) => void;
   setReelIndex: (index: number) => void;
   setGridScrollTop: (top: number) => void;
   setBuyersScrollTop: (top: number) => void;
-  /** New results: everything starts from the top again. */
-  resetPosition: () => void;
-};
-
-const readStoredLayout = (): FeedLayout | null => {
-  try {
-    const stored = window.localStorage.getItem(FEED_LAYOUT_STORAGE_KEY);
-    return stored === "grid" || stored === "reel" ? stored : null;
-  } catch {
-    return null;
-  }
 };
 
 export const useFeedStore = create<FeedStore>()((set) => ({
   tab: "listings",
-  // Reel first, like the app; the grid is a remembered choice.
-  layout: "reel",
+  isFilterPanelOpen: true,
   listingFilters: {},
   buyerFilters: {},
   reelIndex: 0,
   gridScrollTop: 0,
   buyersScrollTop: 0,
   setTab: (tab) => set({ tab }),
-  setLayout: (layout) => {
+  setFilterPanelOpen: (isFilterPanelOpen) => {
     try {
-      window.localStorage.setItem(FEED_LAYOUT_STORAGE_KEY, layout);
+      window.localStorage.setItem(FEED_FILTERS_OPEN_STORAGE_KEY, isFilterPanelOpen ? "1" : "0");
     } catch {
       // Private mode: the choice just lasts for this visit.
     }
-    set({ layout });
+    set({ isFilterPanelOpen });
   },
-  hydrateLayout: () => {
-    const stored = readStoredLayout();
-    if (stored) set({ layout: stored });
+  hydrateFilterPanel: () => {
+    try {
+      const stored = window.localStorage.getItem(FEED_FILTERS_OPEN_STORAGE_KEY);
+      if (stored === "0" || stored === "1") set({ isFilterPanelOpen: stored === "1" });
+    } catch {
+      // Storage blocked: keep the default (open).
+    }
   },
   setListingFilters: (listingFilters) =>
     set({ listingFilters, reelIndex: 0, gridScrollTop: 0 }),
@@ -70,5 +65,4 @@ export const useFeedStore = create<FeedStore>()((set) => ({
   setReelIndex: (reelIndex) => set({ reelIndex }),
   setGridScrollTop: (gridScrollTop) => set({ gridScrollTop }),
   setBuyersScrollTop: (buyersScrollTop) => set({ buyersScrollTop }),
-  resetPosition: () => set({ reelIndex: 0, gridScrollTop: 0, buyersScrollTop: 0 }),
 }));

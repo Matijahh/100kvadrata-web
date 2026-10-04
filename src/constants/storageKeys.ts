@@ -4,8 +4,8 @@
 /** Read by the inline theme script in <ThemeTokens /> before first paint. */
 export const THEME_STORAGE_KEY = "100m2.theme";
 
-/** Feed layout on desktop: "reel" (default) or "grid". */
-export const FEED_LAYOUT_STORAGE_KEY = "100m2.feedLayout";
+/** Whether the desktop feed's filter panel is expanded ("1") or collapsed ("0"). */
+export const FEED_FILTERS_OPEN_STORAGE_KEY = "100m2.feedFiltersOpen";
 
 /** When the mobile "get the app" prompt was last dismissed (epoch ms). */
 export const APP_PROMPT_DISMISSED_KEY = "100m2.appPromptDismissedAt";

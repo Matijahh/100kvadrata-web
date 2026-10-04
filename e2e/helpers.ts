@@ -1,4 +1,4 @@
-import { test as base, type APIRequestContext, type Page } from "@playwright/test";
+import { test as base, type Page } from "@playwright/test";
 
 /**
  * Playwright's `test`, with the phone "get the app" sheet already dismissed —
@@ -26,10 +26,3 @@ export { expect } from "@playwright/test";
  * loaded to make its point.
  */
 export const open = (page: Page, path: string) => page.goto(path, { waitUntil: "domcontentloaded" });
-
-/** A live listing id, read from the sitemap (so tests never hard-code data). */
-export async function findLiveListingId(request: APIRequestContext): Promise<string | null> {
-  const response = await request.get("/sitemap.xml");
-  const xml = await response.text();
-  return xml.match(/<loc>[^<]*\/listing\/(\d+)<\/loc>/)?.[1] ?? null;
-}

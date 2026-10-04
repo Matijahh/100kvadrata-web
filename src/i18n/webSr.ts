@@ -5,7 +5,7 @@ export const webSr: WebDictionary = {
   nav: {
     main: "Glavna navigacija",
     loanCalculator: "Kreditni kalkulator",
-    signIn: "Prijavi se",
+    website: "Sajt",
   },
   auth: {
     showPassword: "Prikaži lozinku",
@@ -57,16 +57,9 @@ export const webSr: WebDictionary = {
       "Svajpovanje, obaveštenja i video rade glatkije u aplikaciji. Besplatna je.",
     open: "Preuzmi aplikaciju",
     continueOnWeb: "Nastavi na webu",
-    cardTitle: "Preuzmi aplikaciju",
-    cardMessage: "Skeniraj telefonom",
   },
   feed: {
-    layoutReel: "Rilovi",
-    layoutGrid: "Mreža",
-    layoutLabel: "Prikaz oglasa",
     tabsLabel: "Šta pregledaš",
-    searchLabel: "Pretraga",
-    clearSearch: "Obriši pretragu",
     filters: "Filteri",
     details: "Detalji",
     openListing: "Otvori stranicu oglasa",
@@ -74,7 +67,6 @@ export const webSr: WebDictionary = {
     unmute: "Uključi zvuk",
     previous: "Prethodni oglas",
     next: "Sledeći oglas",
-    keyboardHint: "Listaj strelicama ↑ i ↓",
     endOfFeed: "Videli ste sve oglase ovde.",
   },
   chat: {

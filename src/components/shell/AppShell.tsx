@@ -1,6 +1,7 @@
 "use client";
 
 import BuildingIcon from "@assets/icons/building-icon.svg";
+import GlobeIcon from "@assets/icons/globe-icon.svg";
 import MessagesIcon from "@assets/icons/messages-icon.svg";
 import PercentCircleIcon from "@assets/icons/percent-circle-icon.svg";
 import PlusCircleIcon from "@assets/icons/plus-circle-icon.svg";
@@ -12,45 +13,35 @@ import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { Link, usePathname } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
+import { websiteHref } from "@/lib/websiteHref";
+import type { AppLanguage } from "@/types/types";
 import { fetchConversations } from "@/services/chat";
 import { useAuthStore } from "@/stores/useAuthStore";
-import {
-  SignInPromptReason,
-  useSignInPromptStore,
-} from "@/stores/useSignInPromptStore";
 import { useQuery } from "@tanstack/react-query";
 import type { FC, SVGProps } from "react";
+import { useLocale } from "next-intl";
 import { useTranslation } from "react-i18next";
 
 // Web counterpart of the app's tab bar (src/app/(protected)/(tabs)/_layout.tsx):
 // the same four destinations, as a left rail on desktop and a floating bottom
-// bar on phones. Guests tapping an account-only tab get the sign-in dialog
-// instead of a navigation, exactly like the app (guideline 5.1.1(v) there).
+// bar on phones. Only signed-in users get here (no guest mode on the web).
 
 type NavItem = {
   href: "/feed" | "/new-listing" | "/inbox" | "/profile";
   label: string;
   icon?: FC<SVGProps<SVGSVGElement>>;
-  guestReason?: SignInPromptReason;
   badge?: number;
 };
 
 const UNREAD_REFRESH_MS = 60_000;
 
-export function AppShell({
-  getAppCard,
-  children,
-}: {
-  /** Server-rendered "get the app" QR card for the desktop rail. */
-  getAppCard?: React.ReactNode;
-  children: React.ReactNode;
-}) {
+export function AppShell({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
   const pathname = usePathname();
   const sessionUser = useAuthStore((state) => state.sessionUser);
-  const promptSignIn = useSignInPromptStore((state) => state.promptSignIn);
+  // From the route, so the server-rendered link is already right.
+  const locale = useLocale() as AppLanguage;
   const { currentUser } = useCurrentUser();
-  const isGuest = !sessionUser;
   // The second tab is the loan calculator for buyers and the listing form for
   // sellers, so its icon and label follow the account type.
   const isBuyer = currentUser?.accountType === "buyer";
@@ -72,16 +63,14 @@ export function AppShell({
       href: "/new-listing",
       label: isBuyer ? t("web.nav.loanCalculator") : t("tabs.newListing"),
       icon: isBuyer ? PercentCircleIcon : PlusCircleIcon,
-      guestReason: "newListing",
     },
     {
       href: "/inbox",
       label: t("tabs.messages"),
       icon: MessagesIcon,
-      guestReason: "inbox",
       badge: totalUnread,
     },
-    { href: "/profile", label: t("tabs.profile"), guestReason: "profile" },
+    { href: "/profile", label: t("tabs.profile") },
   ];
 
   const isActive = (href: NavItem["href"]) =>
@@ -93,11 +82,6 @@ export function AppShell({
   const isFullScreenOnPhone = pathname.startsWith("/chat/");
 
   const onNavigate = (item: NavItem) => (event: React.MouseEvent) => {
-    if (isGuest && item.guestReason) {
-      event.preventDefault();
-      promptSignIn(item.guestReason);
-      return;
-    }
     // Already on the feed: Home clears filters, goes back to the top and
     // refreshes, like re-tapping the tab in the app.
     if (item.href === "/feed" && pathname === "/feed") {
@@ -146,9 +130,9 @@ export function AppShell({
         <Link
           href="/feed"
           aria-label="100m²"
-          className="mb-6 flex h-[56px] w-[72px] items-center justify-center rounded-2xl bg-[#161722]"
+          className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#161722]"
         >
-          <Logo width={52} height={30} aria-hidden />
+          <Logo width={46} height={26} aria-hidden />
         </Link>
         {items.map((item) => {
           const active = isActive(item.href);
@@ -157,9 +141,6 @@ export function AppShell({
               key={item.href}
               href={item.href}
               onClick={onNavigate(item)}
-              // A guest never navigates there (the sign-in dialog opens), so
-              // prefetching would only fetch the login redirect.
-              prefetch={isGuest && item.guestReason ? false : undefined}
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex w-[80px] flex-col items-center gap-1 rounded-2xl py-3 text-[11px] transition-colors",
@@ -171,17 +152,14 @@ export function AppShell({
             </Link>
           );
         })}
-        {/* Desktop visitors expect a visible way in; on phones the account
-            tabs open the sign-in sheet, like the app. */}
-        {isGuest ? (
-          <Link
-            href={`/login?next=${encodeURIComponent(pathname)}`}
-            className="mt-2 w-[80px] rounded-full bg-primary px-2 py-2 text-center text-[11px] font-semibold text-text-on-primary hover:opacity-90"
-          >
-            {t("web.nav.signIn")}
-          </Link>
-        ) : null}
-        <div className="mt-auto hidden px-2 lg:block">{getAppCard}</div>
+        {/* Back to the website (a different root layout: full page load). */}
+        <a
+          href={websiteHref(locale)}
+          className="mt-auto flex w-[80px] flex-col items-center gap-1 rounded-2xl py-3 text-[11px] text-primary transition-colors hover:bg-surface-muted"
+        >
+          <GlobeIcon width={26} height={26} aria-hidden />
+          <span className="text-center leading-tight text-text-muted">{t("web.nav.website")}</span>
+        </a>
       </nav>
 
       <main className={cn("md:pb-0", !isFullScreenOnPhone && "pb-[92px]")}>{children}</main>
@@ -201,9 +179,6 @@ export function AppShell({
               key={item.href}
               href={item.href}
               onClick={onNavigate(item)}
-              // A guest never navigates there (the sign-in dialog opens), so
-              // prefetching would only fetch the login redirect.
-              prefetch={isGuest && item.guestReason ? false : undefined}
               aria-label={item.label}
               aria-current={active ? "page" : undefined}
               className={cn(

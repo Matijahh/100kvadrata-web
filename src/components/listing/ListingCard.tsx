@@ -2,8 +2,8 @@
 
 import EyeIcon from "@assets/icons/show-icon.svg";
 import PinIcon from "@assets/icons/pin-icon.svg";
-import PlayFilledIcon from "@assets/icons/play-icon-filled.svg";
 import { ListingBadge } from "@/components/listing/ListingSummary";
+import { VideoPoster } from "@/components/media/VideoPoster";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { formatListingMetric, getListingAddressLabel, isListingExpired } from "@/lib/listingFormat";
@@ -17,8 +17,9 @@ import { useTranslation } from "react-i18next";
  * Desktop users compare listings side by side, so the card carries price,
  * place and size, where the app's square tiles only show the photo.
  *
- * Video-only listings get a dark tile with a play mark rather than a frame:
- * drawing a frame means downloading the video, the egress the app avoids too.
+ * Video-only listings show the video's first frame under a play mark,
+ * captured once per browser and cached (lib/videoPoster), like the app's
+ * profile tiles.
  */
 export function ListingCard({
   listing,
@@ -35,7 +36,7 @@ export function ListingCard({
 }) {
   const { t } = useTranslation();
   const photo = listing.media.find((item) => item.kind === "photo");
-  const hasVideo = listing.media.some((item) => item.kind === "video") || !!listing.video_url;
+  const videoUrl = listing.media.find((item) => item.kind === "video")?.public_url ?? listing.video_url ?? null;
   const price = getListingPriceLabel(listing, t);
   const address = getListingAddressLabel(listing);
   const facts = [
@@ -65,10 +66,8 @@ export function ListingCard({
               expired && "grayscale",
             )}
           />
-        ) : hasVideo ? (
-          <div className="flex h-full items-center justify-center bg-[#1F1F1F] text-white">
-            <PlayFilledIcon width={30} height={30} aria-hidden />
-          </div>
+        ) : videoUrl ? (
+          <VideoPoster videoUrl={videoUrl} dimmed={expired} />
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-text-muted">
             {t("common.noMedia")}

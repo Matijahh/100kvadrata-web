@@ -1,9 +1,12 @@
 import { SITE_ORIGIN } from "@/content/common";
 import type { MetadataRoute } from "next";
 
-// Account-only and setup screens have nothing for a crawler (they redirect
-// guests to sign-in anyway); everything public stays crawlable.
-const PRIVATE_PATHS = [
+// The web app needs an account for every page, so crawlers would only ever
+// be redirected to login: keep them on the website.
+const APP_PATHS = [
+  "/feed",
+  "/listing/",
+  "/user/",
   "/profile",
   "/edit-profile",
   "/new-listing",
@@ -14,9 +17,11 @@ const PRIVATE_PATHS = [
   "/onboarding",
   "/choose-username",
   "/update-password",
+  "/login",
+  "/register",
   "/verify-email",
+  "/forgot-password",
   "/auth/",
-  "/get-app",
 ];
 
 export default function robots(): MetadataRoute.Robots {
@@ -24,7 +29,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: PRIVATE_PATHS.flatMap((path) => [path, `/en${path}`]),
+      disallow: APP_PATHS.flatMap((path) => [path, `/en${path}`]),
     },
     sitemap: `${SITE_ORIGIN}/sitemap.xml`,
     host: SITE_ORIGIN,

@@ -4,12 +4,12 @@ import AnchorRightIcon from "@assets/icons/anchor-right-icon.svg";
 import HouseIcon from "@assets/icons/house-icon.svg";
 import SearchIcon from "@assets/icons/search-icon-bold.svg";
 import { OfferListingDialog } from "@/components/buyers/OfferListingDialog";
-import Button, { buttonClasses } from "@/components/genericComponents/Button";
+import Button from "@/components/genericComponents/Button";
 import { EmptyState, Spinner } from "@/components/genericComponents/EmptyState";
 import { ListingCard, ListingGrid } from "@/components/listing/ListingCard";
 import { PreferenceCard } from "@/components/profile/PreferenceCard";
 import { ProfileCard } from "@/components/profile/ProfileCard";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { queryKeys } from "@/lib/queryKeys";
 import { fetchUserListings } from "@/services/listings";
 import { fetchPreferenceSets } from "@/services/preferences";
@@ -101,15 +101,7 @@ export function UserProfileView({
 
       <div className="pt-6">
         {isBuyer ? (
-          !sessionUser ? (
-            // Buyers' criteria are only readable signed in (RLS), so a guest
-            // is told why instead of being shown an empty list.
-            <EmptyState icon={SearchIcon} title={t("signInPrompt.title")} message={t("signInPrompt.reason.generic")}>
-              <Link href={`/login?next=/user/${id}`} className={buttonClasses()}>
-                {t("signInPrompt.signIn")}
-              </Link>
-            </EmptyState>
-          ) : preferencesQuery.isLoading ? (
+          preferencesQuery.isLoading ? (
             <Spinner />
           ) : preferencesQuery.isError ? (
             <EmptyState title={t("preferences.loadError")} />

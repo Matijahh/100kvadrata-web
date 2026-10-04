@@ -83,7 +83,8 @@ export function SettingsDrawer({
       confirmLabel: t("profile.logout"),
       onConfirm: async () => {
         await logout();
-        router.replace("/feed");
+        // No guest mode: signed out means the login screen.
+        router.replace("/login");
       },
     });
   };
@@ -97,7 +98,7 @@ export function SettingsDrawer({
       onConfirm: async () => {
         try {
           await deleteAccount();
-          router.replace("/feed");
+          router.replace("/login");
         } catch {
           showToast({ type: "error", message: t("profile.deleteAccountFailed") });
         }

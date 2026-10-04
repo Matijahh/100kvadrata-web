@@ -13,6 +13,7 @@ import { Modal } from "@/components/ui/Modal";
 import { FEED_HOME_EVENT } from "@/constants/events";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 import { fetchBuyers } from "@/services/buyers";
 import { fetchListings } from "@/services/listings";
@@ -70,15 +71,19 @@ export function FeedView() {
   const promptSignIn = useSignInPromptStore((state) => state.promptSignIn);
   const pendingSavedSearch = useHomeFiltersStore((state) => state.pendingSavedSearch);
   const clearPendingSavedSearch = useHomeFiltersStore((state) => state.clearPendingSavedSearch);
+  // The screen decides the layout — no switch: a grid from 1024px (desktop,
+  // iPad landscape), the reel below it (tablets in portrait, phones).
+  const isDesktop = useMediaQuery("(min-width: 1024px)");
+  // From xl the filters are a collapsible panel beside the grid; below, a sheet.
   const isXl = useMediaQuery("(min-width: 1280px)");
 
   const tab = useFeedStore((state) => state.tab);
-  const layout = useFeedStore((state) => state.layout);
+  const isFilterPanelOpen = useFeedStore((state) => state.isFilterPanelOpen);
   const listingFilters = useFeedStore((state) => state.listingFilters);
   const buyerFilters = useFeedStore((state) => state.buyerFilters);
   const setTab = useFeedStore((state) => state.setTab);
-  const setLayout = useFeedStore((state) => state.setLayout);
-  const hydrateLayout = useFeedStore((state) => state.hydrateLayout);
+  const setFilterPanelOpen = useFeedStore((state) => state.setFilterPanelOpen);
+  const hydrateFilterPanel = useFeedStore((state) => state.hydrateFilterPanel);
   const setListingFilters = useFeedStore((state) => state.setListingFilters);
   const setBuyerFilters = useFeedStore((state) => state.setBuyerFilters);
   const setReelIndex = useFeedStore((state) => state.setReelIndex);
@@ -96,9 +101,18 @@ export function FeedView() {
   const [recentlySavedSignature, setRecentlySavedSignature] = useState<string | null>(null);
   const [scrollToTopSignal, setScrollToTopSignal] = useState(0);
 
+  // The panel slides open and shut when the user toggles it — never on load,
+  // when the remembered state replaces the server-rendered default. (The
+  // transition is switched on in the same render as the first toggle, which
+  // is enough for the browser to animate that change.)
+  const [animatePanel, setAnimatePanel] = useState(false);
   useEffect(() => {
-    hydrateLayout();
-  }, [hydrateLayout]);
+    hydrateFilterPanel();
+  }, [hydrateFilterPanel]);
+  const togglePanel = (open: boolean) => {
+    setAnimatePanel(true);
+    setFilterPanelOpen(open);
+  };
 
   // The drafts follow whatever gets applied — Search, Clear all, a saved
   // search opened from the profile.
@@ -267,25 +281,8 @@ export function FeedView() {
     setScrollToTopSignal((value) => value + 1);
   };
 
-  // The ✕ in the search field drops the term from the feed straight away and
-  // keeps the rest of the filters.
-  const clearSearch = () => {
-    setDraftSearch("");
-    if (isBuyersTab) {
-      if (buyerFilters.searchText) setBuyerFilters(omitSearch(buyerFilters));
-    } else if (listingFilters.searchText) {
-      setListingFilters(omitSearch(listingFilters));
-    }
-  };
-
   const changeTab = (next: FeedTab) => {
     if (next === tab) return;
-    // A seller-side tool needs an account; explain rather than show a guest
-    // an empty feed.
-    if (next === "buyers" && !sessionUser) {
-      promptSignIn("generic");
-      return;
-    }
     // As in the app: the search term belongs to the feed it was typed on,
     // and leaving the Buyers feed drops its filters.
     setFiltersOpen(false);
@@ -379,7 +376,7 @@ export function FeedView() {
         <p className="max-w-sm text-[17px] font-semibold leading-6 text-text-muted">{t("feed.emptyListings")}</p>
       </div>
     );
-  } else if (layout === "grid") {
+  } else if (isDesktop) {
     content = (
       <ListingFeedGrid
         key={listingFeedKey}
@@ -411,8 +408,18 @@ export function FeedView() {
     // Full height, under the phone's floating tab bar (the shell pads <main>
     // for it; the negative margin takes that back so the reel can run beneath).
     <div className="-mb-[92px] flex h-dvh md:mb-0">
-      <aside className="hidden w-[320px] shrink-0 flex-col border-r border-border bg-surface px-5 pb-4 pt-5 xl:flex">
-        {filtersPanel("sidebar")}
+      {/* Collapsing animates the width; the content keeps its own width so
+          it slides rather than reflows, and is inert while folded away. */}
+      <aside
+        className={cn(
+          "hidden shrink-0 overflow-hidden bg-surface xl:block",
+          animatePanel && "transition-[width] duration-300 ease-out",
+          isFilterPanelOpen ? "w-[320px] border-r border-border" : "w-0",
+        )}
+        inert={!isFilterPanelOpen}
+        aria-hidden={!isFilterPanelOpen}
+      >
+        <div className="flex h-full w-[320px] flex-col px-5 pb-4 pt-5">{filtersPanel("sidebar")}</div>
       </aside>
 
       <section className="flex min-w-0 flex-1 flex-col">
@@ -420,16 +427,9 @@ export function FeedView() {
           tab={tab}
           onTabChange={changeTab}
           showTabs={canUseBuyersTab}
-          searchText={draftSearch}
-          onSearchTextChange={setDraftSearch}
-          onSearchSubmit={applyFilters}
-          onSearchClear={clearSearch}
-          searchPlaceholder={isBuyersTab ? t("buyers.searchPlaceholder") : t("feed.searchPlaceholder")}
-          chipLabels={chipLabels}
-          onClearAll={clearAll}
-          onOpenFilters={() => setFiltersOpen(true)}
-          layout={layout}
-          onLayoutChange={setLayout}
+          activeFilterCount={chipLabels.length}
+          onToggleFilters={() => (isXl ? togglePanel(!isFilterPanelOpen) : setFiltersOpen(true))}
+          filtersExpanded={isXl ? isFilterPanelOpen : undefined}
         />
         <div className="relative min-h-0 flex-1">{content}</div>
       </section>

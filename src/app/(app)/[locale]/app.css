@@ -73,6 +73,38 @@
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-primary;
   }
+
+  /* Tailwind v4 leaves buttons on the default arrow. Everything clickable
+     shows the hand (pickers that look like inputs are buttons, so they do
+     too); fields you type into keep the text cursor; disabled controls say
+     so. Utilities such as cursor-zoom-in / cursor-grab still win. */
+  button,
+  [role="button"],
+  [role="tab"],
+  [role="radio"],
+  [role="checkbox"],
+  [role="option"],
+  [role="menuitem"],
+  a[href],
+  label[for],
+  select,
+  summary,
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="file"],
+  input[type="range"],
+  input[type="submit"],
+  input[type="button"] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"],
+  input:disabled,
+  select:disabled,
+  textarea:disabled {
+    cursor: not-allowed;
+  }
 }
 
 @keyframes toast-in {

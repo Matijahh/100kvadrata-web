@@ -3,7 +3,10 @@
 import background from "@assets/background.png";
 import Logo from "@assets/logo.svg";
 import { cn } from "@/lib/cn";
+import { websiteHref } from "@/lib/websiteHref";
+import type { AppLanguage } from "@/types/types";
 import Image from "next/image";
+import { useLocale } from "next-intl";
 import { useTranslation } from "react-i18next";
 
 // The frame every auth screen shares, after the app's: the dark-red building
@@ -11,8 +14,8 @@ import { useTranslation } from "react-i18next";
 //
 //   Phone: the photo fills the screen and the sheet slides up from the bottom
 //   with the app's 45px rounded top, exactly like the RN screens.
-//   Desktop: the photo becomes the left panel and the sheet a full-height panel
-//   on the right, keeping the rounded edge on the side that faces the photo.
+//   Desktop: two equal halves — the photo with the logo on the left, the form
+//   on a plain white panel on the right, centred in it.
 export function AuthScreen({
   title,
   children,
@@ -24,9 +27,11 @@ export function AuthScreen({
   className?: string;
 }) {
   const { t } = useTranslation();
+  // From the route, so the server-rendered link is already right.
+  const locale = useLocale() as AppLanguage;
 
   return (
-    <div className="relative flex min-h-dvh flex-col bg-[#161722] md:grid md:grid-cols-[minmax(0,1fr)_minmax(440px,560px)]">
+    <div className="relative flex min-h-dvh flex-col bg-[#161722] md:grid md:grid-cols-2">
       {/* Static on phones, so the photo (absolutely positioned) covers the
           whole screen; positioned from md up, so it covers only this panel. */}
       <section className="md:relative md:flex md:flex-col md:justify-center md:overflow-hidden">
@@ -36,11 +41,14 @@ export function AuthScreen({
           fill
           priority
           placeholder="blur"
-          sizes="(min-width: 768px) 60vw, 100vw"
+          sizes="(min-width: 768px) 50vw, 100vw"
           className="object-cover object-[center_30%]"
         />
         <header className="relative px-[25px] pt-[72px] md:px-16 md:pt-0">
-          <Logo width={77} height={44} className="md:h-[68px] md:w-[120px]" aria-hidden />
+          {/* Back to the website — where most people come from. */}
+          <a href={websiteHref(locale)} aria-label={t("web.nav.website")} className="inline-block">
+            <Logo width={77} height={44} className="md:h-[68px] md:w-[120px]" aria-hidden />
+          </a>
           <p className="mb-1.5 mt-3 font-display text-[32px] leading-tight text-white md:mt-6 md:max-w-md md:text-5xl">
             {t("auth.heroTitle")}
           </p>
@@ -52,13 +60,13 @@ export function AuthScreen({
         className={cn(
           "relative mt-[35px] flex flex-1 flex-col rounded-t-[45px] bg-surface px-[25px] pb-10 pt-[30px]",
           "animate-[sheet-up_500ms_cubic-bezier(0.33,1,0.68,1)]",
-          "md:col-start-2 md:mt-0 md:justify-center md:rounded-l-[45px] md:rounded-tr-none md:px-14 md:py-12",
+          "md:col-start-2 md:mt-0 md:items-center md:justify-center md:rounded-none md:px-14 md:py-12",
           "md:animate-[fade-in_300ms_ease-out]",
           className,
         )}
       >
         <div className="mx-auto w-full max-w-[420px]">
-          <h1 className="mb-[15px] font-display text-[27px] text-primary">{title}</h1>
+          <h1 className="mb-[15px] font-display text-[27px] text-primary md:text-center">{title}</h1>
           {children}
         </div>
       </main>

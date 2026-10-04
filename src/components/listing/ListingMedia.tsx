@@ -2,6 +2,7 @@
 
 import ChevronLeftIcon from "@assets/icons/chevron-left-icon.svg";
 import PlayFilledIcon from "@assets/icons/play-icon-filled.svg";
+import { useVideoPoster } from "@/hooks/useVideoPoster";
 import { cn } from "@/lib/cn";
 import { splitListingMedia } from "@/lib/listingFormat";
 import type { Listing } from "@/types/types";
@@ -237,6 +238,10 @@ function ListingVideo({
   const [isPaused, setPaused] = useState(false);
   const [isMuted, setMuted] = useState(true);
   const shouldAttach = isActive && (autoPlay || hasStarted);
+  // A video-only listing has no photo to stand in before playback, so it
+  // shows the video's own first frame (captured once, cached). Not while
+  // playing: the player is already fetching the file.
+  const capturedPoster = useVideoPoster(src, { enabled: !poster && !shouldAttach });
 
   // Leaving the card releases the source (and stops the download); coming
   // back starts over, like the app.
@@ -293,7 +298,13 @@ function ListingVideo({
           aria-label={t("web.listing.playVideo")}
           className="relative flex h-full w-full items-center justify-center"
         >
-          {poster ? <Image src={poster} alt="" fill sizes={sizes} className="object-contain" /> : null}
+          {poster ? (
+            <Image src={poster} alt="" fill sizes={sizes} className="object-contain" />
+          ) : capturedPoster ? (
+            // A data: URL captured in the browser — nothing for next/image to do.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={capturedPoster} alt="" className="absolute inset-0 h-full w-full object-contain" />
+          ) : null}
           <span className="relative flex h-[76px] w-[76px] items-center justify-center rounded-full bg-black/45 text-white">
             <PlayFilledIcon width={34} height={34} aria-hidden />
           </span>
@@ -307,7 +318,7 @@ function ListingVideo({
       <video
         ref={videoRef}
         src={src}
-        poster={poster ?? undefined}
+        poster={poster ?? capturedPoster ?? undefined}
         preload="none"
         playsInline
         loop

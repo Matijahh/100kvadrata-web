@@ -1,7 +1,6 @@
 "use client";
 
 import { AuthScreen, AuthSubmitButton, authLinkClass } from "@/components/auth/AuthScreen";
-import { ContinueAsGuestLink } from "@/components/auth/ContinueAsGuestLink";
 import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 import { LabeledTextField, PasswordField } from "@/components/form/LabeledTextField";
 import { useToast } from "@/components/providers/ToastProvider";
@@ -118,7 +117,6 @@ export function LoginForm() {
         </Link>
       </p>
 
-      <ContinueAsGuestLink />
     </AuthScreen>
   );
 }
