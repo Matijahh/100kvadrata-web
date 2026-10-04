@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+/* Dark mode follows the resolved theme on <html data-theme>, which is set
+   before first paint by the inline script in the layout. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@font-face {
+  font-family: "Cal Sans";
+  src: url("/fonts/CalSans.ttf") format("truetype");
+  font-weight: 400 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans";
+  src: url("/fonts/NotoSans-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans";
+  src: url("/fonts/NotoSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Noto Sans";
+  src: url("/fonts/NotoSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-display: swap;
+}
+
+/* Colour utilities map 1:1 to the app's ThemeColors tokens
+   (src/theme/palette.ts, synced from the app). The --c-* variables are written
+   for both themes by <ThemeTokens />, so `bg-surface`, `text-text-muted`,
+   `border-border` etc. mean exactly what `colors.surface` etc. mean in RN. */
+@theme inline {
+  --font-sans: "Noto Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Cal Sans", "Noto Sans", system-ui, sans-serif;
+
+  --color-primary: var(--c-primary);
+  --color-primary-soft: var(--c-primary-soft);
+  --color-surface: var(--c-surface);
+  --color-surface-muted: var(--c-surface-muted);
+  --color-surface-elevated: var(--c-surface-elevated);
+  --color-text: var(--c-text);
+  --color-text-on-primary: var(--c-text-on-primary);
+  --color-form-label: var(--c-form-label);
+  --color-text-muted: var(--c-text-muted);
+  --color-placeholder: var(--c-placeholder);
+  --color-border: var(--c-border);
+  --color-divider: var(--c-divider);
+  --color-tab-inactive: var(--c-tab-inactive);
+  --color-media-placeholder: var(--c-media-placeholder);
+  --color-media-placeholder-text: var(--c-media-placeholder-text);
+  --color-on-media: var(--c-on-media);
+  --color-on-media-muted: var(--c-on-media-muted);
+  --color-overlay: var(--c-overlay);
+  --color-shadow: var(--c-shadow);
+  --color-destructive: var(--c-destructive);
+  --color-success: var(--c-success);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-surface-muted text-text font-sans antialiased;
+  }
+
+  /* Visible focus for keyboard users only. */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes all-set-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}

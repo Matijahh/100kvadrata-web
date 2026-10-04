@@ -1,7 +1,7 @@
 import type { Locale } from "@/i18n/routing";
-import type { ChatBubble } from "@/components/PhoneChat";
-import type { ReelData } from "@/components/Reel";
-import type { StepsContent } from "@/components/Steps";
+import type { ChatBubble } from "@/components/marketing/PhoneChat";
+import type { ReelData } from "@/components/marketing/Reel";
+import type { StepsContent } from "@/components/marketing/Steps";
 
 export type LandingContent = {
   meta: {

@@ -465,5 +465,172 @@ const termsEn: LegalDoc = {
   ),
 };
 
+/* -------------------------------------------------- delete account --- */
+// Linked from the Play Store listing as the data-deletion URL — keep the
+// address stable. Ported from flatswipe/web/delete-account.html, plus the
+// web app's own way to delete.
+
+const deleteAccountSr: LegalDoc = {
+  title: "Brisanje naloga — 100m²",
+  description: "Kako da obrišeš svoj 100m² nalog i koji se podaci brišu.",
+  h1: "Brisanje naloga",
+  body: (
+    <>
+      <p>
+        Ova stranica objašnjava kako da obrišeš svoj nalog u aplikaciji{" "}
+        <strong>100m²</strong> i koji se podaci pritom brišu. Nalog možeš
+        obrisati sam, u aplikaciji ili na sajtu, bez slanja zahteva.
+      </p>
+
+      <h2>Brisanje u aplikaciji</h2>
+      <ol>
+        <li>Otvori aplikaciju 100m² i prijavi se.</li>
+        <li>
+          Idi na karticu <strong>Profil</strong>.
+        </li>
+        <li>
+          Otvori meni i izaberi <strong>Obriši nalog</strong>.
+        </li>
+        <li>Potvrdi brisanje.</li>
+      </ol>
+
+      <h2>Brisanje na sajtu</h2>
+      <ol>
+        <li>
+          Prijavi se na <a href="/login">100-kvadrata.rs</a>.
+        </li>
+        <li>
+          Otvori <strong>Profil</strong>, pa meni u gornjem desnom uglu.
+        </li>
+        <li>
+          Izaberi <strong>Obriši nalog</strong> i potvrdi.
+        </li>
+      </ol>
+
+      <p>
+        Nalog se briše odmah. Posle toga se ne možeš prijaviti istim podacima i
+        brisanje se ne može poništiti.
+      </p>
+
+      <h2>Ako više nemaš pristup nalogu</h2>
+      <p>
+        Pošalji zahtev sa e-adrese kojom si se registrovao na{" "}
+        <a href={`mailto:${OFFICE}`}>{OFFICE}</a>, sa naslovom „Brisanje naloga“.
+        Zahtev obrađujemo u roku od 30 dana.
+      </p>
+
+      <h2>Šta se briše</h2>
+      <ul>
+        <li>nalog i podaci za prijavu (e-adresa)</li>
+        <li>profil: korisničko ime, ime, opis, linkovi ka društvenim mrežama i profilna slika</li>
+        <li>svi tvoji oglasi, zajedno sa fotografijama i video snimcima</li>
+        <li>poruke koje si poslao i prilozi uz njih</li>
+        <li>komentari, lajkovi, sačuvani oglasi i sačuvane pretrage</li>
+        <li>token uređaja za push obaveštenja</li>
+      </ul>
+
+      <h2>Brisanje pojedinačnih podataka</h2>
+      <p>
+        Ne moraš da obrišeš ceo nalog. Možeš da obrišeš pojedinačan oglas,
+        zajedno sa njegovim fotografijama i snimcima, i da izmeniš ili ukloniš
+        podatke sa svog profila. Za brisanje drugih podataka bez gašenja naloga
+        piši nam na <a href={`mailto:${OFFICE}`}>{OFFICE}</a>.
+      </p>
+
+      <h2>Šta zadržavamo</h2>
+      <p>
+        Prijave koje su drugi korisnici podneli protiv tvog naloga zadržavamo
+        radi bezbednosti platforme, ali bez podataka koji te identifikuju.
+        Podatke možemo zadržati i duže ako to od nas zahteva zakon.
+      </p>
+      <p>
+        Više o obradi podataka piše u <a href="/privacy-policy">Politici privatnosti</a>.
+      </p>
+    </>
+  ),
+};
+
+const deleteAccountEn: LegalDoc = {
+  title: "Delete your account — 100m²",
+  description: "How to delete your 100m² account and what data is removed.",
+  h1: "Delete your account",
+  body: (
+    <>
+      <p>
+        This page explains how to delete your <strong>100m²</strong> account and
+        what data is removed. You can delete the account yourself, in the app or
+        on the website — no request needed.
+      </p>
+
+      <h2>Deleting in the app</h2>
+      <ol>
+        <li>Open the 100m² app and sign in.</li>
+        <li>
+          Go to the <strong>Profile</strong> tab.
+        </li>
+        <li>
+          Open the menu and choose <strong>Delete account</strong>.
+        </li>
+        <li>Confirm.</li>
+      </ol>
+
+      <h2>Deleting on the website</h2>
+      <ol>
+        <li>
+          Sign in at <a href="/en/login">100-kvadrata.rs</a>.
+        </li>
+        <li>
+          Open <strong>Profile</strong>, then the menu in the top right corner.
+        </li>
+        <li>
+          Choose <strong>Delete account</strong> and confirm.
+        </li>
+      </ol>
+
+      <p>
+        The account is deleted immediately. You will no longer be able to sign
+        in with the same credentials, and the deletion cannot be undone.
+      </p>
+
+      <h2>If you no longer have access to your account</h2>
+      <p>
+        Email <a href={`mailto:${OFFICE}`}>{OFFICE}</a> from the address you
+        registered with, using the subject “Delete account”. We process requests
+        within 30 days.
+      </p>
+
+      <h2>What is deleted</h2>
+      <ul>
+        <li>your account and sign-in details (email address)</li>
+        <li>your profile: username, name, bio, social links and profile picture</li>
+        <li>all of your listings, including their photos and videos</li>
+        <li>messages you sent and their attachments</li>
+        <li>comments, likes, saved listings and saved searches</li>
+        <li>your device push notification token</li>
+      </ul>
+
+      <h2>Deleting individual data</h2>
+      <p>
+        You do not have to delete the whole account. You can delete an
+        individual listing, together with its photos and videos, and edit or
+        remove details on your profile. To have other data deleted without
+        closing your account, email <a href={`mailto:${OFFICE}`}>{OFFICE}</a>.
+      </p>
+
+      <h2>What we keep</h2>
+      <p>
+        Reports other users filed about your account are kept for platform
+        safety, without data that identifies you. We may also retain data longer
+        where the law requires it.
+      </p>
+      <p>
+        Our <a href="/en/privacy-policy">Privacy Policy</a> explains how we
+        handle data in general.
+      </p>
+    </>
+  ),
+};
+
 export const privacy: Record<Locale, LegalDoc> = { sr: privacySr, en: privacyEn };
 export const terms: Record<Locale, LegalDoc> = { sr: termsSr, en: termsEn };
+export const deleteAccount: Record<Locale, LegalDoc> = { sr: deleteAccountSr, en: deleteAccountEn };

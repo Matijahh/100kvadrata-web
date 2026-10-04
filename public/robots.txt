@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://100-kvadrata.rs/sitemap.xml

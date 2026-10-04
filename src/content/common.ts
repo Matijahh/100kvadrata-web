@@ -1,6 +1,7 @@
 import type { Locale } from "@/i18n/routing";
 
-export const APP_STORE_URL = "https://apps.apple.com/rs/app/100m/id6794867780";
+export const APP_STORE_ID = "6794867780";
+export const APP_STORE_URL = `https://apps.apple.com/rs/app/100m/id${APP_STORE_ID}`;
 export const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.stokvadrata.app";
 export const CONTACT_EMAIL = "podrska@100-kvadrata.rs";
