@@ -2,6 +2,7 @@
 
 import NoBuyersIllustration from "@assets/illustrations/no-buyers.svg";
 import { BuyerCard } from "@/components/buyers/BuyerCard";
+import { EndOfFeed } from "@/components/feed/EndOfFeed";
 import { Spinner } from "@/components/genericComponents/EmptyState";
 import type { BuyerProfile } from "@/types/types";
 import { useEffect, useLayoutEffect, useRef } from "react";
@@ -57,14 +58,18 @@ export function BuyersFeed({
           <p className="max-w-sm text-[17px] font-semibold leading-6 text-text-muted">{t("buyers.emptyState")}</p>
         </div>
       ) : (
-        // Keyed by preference set: a buyer with three matching sets is three cards.
-        <ul className="mx-auto grid max-w-[1400px] gap-x-4 gap-y-6 sm:grid-cols-2 2xl:grid-cols-3">
-          {buyers.map((buyer) => (
-            <li key={buyer.preferenceSetId}>
-              <BuyerCard buyer={buyer} onOffer={onOffer} />
-            </li>
-          ))}
-        </ul>
+        <>
+          {/* Keyed by preference set: a buyer with three matching sets is three cards. */}
+          <ul className="mx-auto grid max-w-[1400px] gap-x-4 gap-y-6 sm:grid-cols-2 2xl:grid-cols-3">
+            {buyers.map((buyer) => (
+              <li key={buyer.preferenceSetId}>
+                <BuyerCard buyer={buyer} onOffer={onOffer} />
+              </li>
+            ))}
+          </ul>
+          {/* The app closes this feed the same way (BackToTopFooter). */}
+          <EndOfFeed onBackToTop={() => containerRef.current?.scrollTo({ top: 0, behavior: "smooth" })} />
+        </>
       )}
     </div>
   );

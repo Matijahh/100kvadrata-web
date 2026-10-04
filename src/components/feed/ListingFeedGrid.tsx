@@ -1,11 +1,10 @@
 "use client";
 
-import ArrowUpToLineIcon from "@assets/icons/arrow-up-to-line-icon.svg";
+import { EndOfFeed } from "@/components/feed/EndOfFeed";
 import { Spinner } from "@/components/genericComponents/EmptyState";
 import { ListingCard, ListingGrid } from "@/components/listing/ListingCard";
 import type { Listing } from "@/types/types";
 import { useEffect, useLayoutEffect, useRef } from "react";
-import { useTranslation } from "react-i18next";
 
 /**
  * The grid alternative to the reel — what a desktop user comparing listings
@@ -28,7 +27,6 @@ export function ListingFeedGrid({
   fetchNextPage: () => void;
   scrollToTopSignal: number;
 }) {
-  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -74,17 +72,7 @@ export function ListingFeedGrid({
       <div ref={sentinelRef} aria-hidden />
       {isFetchingNextPage ? <Spinner /> : null}
       {!hasNextPage && listings.length > 0 ? (
-        <div className="flex flex-col items-center gap-3 py-10">
-          <p className="text-sm text-text-muted">{t("web.feed.endOfFeed")}</p>
-          <button
-            type="button"
-            onClick={() => containerRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
-            className="inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2 text-sm font-semibold text-primary shadow-sm hover:opacity-90"
-          >
-            <ArrowUpToLineIcon width={16} height={16} aria-hidden />
-            {t("feed.backToTop")}
-          </button>
-        </div>
+        <EndOfFeed onBackToTop={() => containerRef.current?.scrollTo({ top: 0, behavior: "smooth" })} />
       ) : null}
     </div>
   );
