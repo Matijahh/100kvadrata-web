@@ -54,8 +54,16 @@ export function ReportProblemDialog({ open, onOpenChange }: { open: boolean; onO
   });
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange} title={t("feedback.title")} className="md:max-w-lg">
+    // 70% of the screen, on phones and desktop alike; the text box takes
+    // whatever the title, intro and Send button leave.
+    <Modal
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t("feedback.title")}
+      className="flex h-[70dvh] flex-col md:max-h-[70dvh] md:max-w-lg"
+    >
       <form
+        className="flex min-h-0 flex-1 flex-col"
         onSubmit={(event) => {
           event.preventDefault();
           if (trimmed && !isPending) send();
@@ -64,6 +72,8 @@ export function ReportProblemDialog({ open, onOpenChange }: { open: boolean; onO
         <label htmlFor={inputId} className="mt-2 block text-sm leading-5 text-text-muted">
           {t("feedback.intro")}
         </label>
+        {/* Fills the middle and scrolls inside once the text is longer, so
+            the dialog never grows and Send stays in view. */}
         <textarea
           id={inputId}
           value={message}
@@ -71,8 +81,7 @@ export function ReportProblemDialog({ open, onOpenChange }: { open: boolean; onO
           placeholder={t("feedback.placeholder")}
           maxLength={MAX_MESSAGE_LENGTH}
           disabled={isPending}
-          rows={6}
-          className="mt-4 w-full resize-y rounded-[25px] border border-transparent bg-surface-muted px-[15px] py-[15px] text-base text-text placeholder:text-placeholder focus:border-primary-soft focus:outline-none disabled:opacity-70"
+          className="mt-4 min-h-[120px] w-full flex-1 resize-none overflow-y-auto rounded-[25px] border border-transparent bg-surface-muted px-[15px] py-[15px] text-base text-text placeholder:text-placeholder focus:border-primary-soft focus:outline-none disabled:opacity-70"
         />
         <p className="mt-1 text-right text-xs text-text-muted">
           {message.length}/{MAX_MESSAGE_LENGTH}
