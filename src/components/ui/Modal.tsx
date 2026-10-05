@@ -20,6 +20,8 @@ type ModalProps = {
   description?: string;
   children: React.ReactNode;
   className?: string;
+  /** Extra classes for the X, e.g. to line it up with pinned content. */
+  closeClassName?: string;
 };
 
 export function Modal({
@@ -30,6 +32,7 @@ export function Modal({
   description,
   children,
   className,
+  closeClassName,
 }: ModalProps) {
   const { t } = useTranslation();
 
@@ -57,7 +60,10 @@ export function Modal({
           <Dialog.Close
             aria-label={t("web.common.close")}
             title={t("web.common.close")}
-            className="sticky top-0 z-10 float-right -mb-10 -mr-2 flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-full bg-surface text-text-muted transition-colors hover:bg-surface-muted hover:text-text md:-mr-3"
+            className={cn(
+              "sticky top-0 z-10 float-right -mb-10 -mr-2 flex h-10 w-10 shrink-0 items-center justify-center self-end rounded-full bg-surface text-text-muted transition-colors hover:bg-surface-muted hover:text-text md:-mr-3",
+              closeClassName,
+            )}
           >
             <CloseIcon width={22} height={22} aria-hidden />
           </Dialog.Close>

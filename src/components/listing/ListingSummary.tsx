@@ -15,6 +15,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { getListingAddressLabel } from "@/lib/listingFormat";
 import { isPremiumTier } from "@/lib/packages";
+import { useAuthStore } from "@/stores/useAuthStore";
 import type { Listing } from "@/types/types";
 import { getListingPriceLabel } from "@/utils/listingPrice";
 import type { FC, SVGProps } from "react";
@@ -52,20 +53,51 @@ export function ListingBadge({ listing, className }: { listing: Listing; classNa
 
 /** Price, badge, address, seller and the viewer's actions — the top of a listing. */
 export function ListingSummary({ listing }: { listing: Listing }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <ListingHeadline listing={listing} />
+      <ListingActions listing={listing} />
+    </div>
+  );
+}
+
+/**
+ * Price, badge, address and seller. The listing page and the feed's details
+ * sheet pin it while the details scroll, and pass `showSize` to put the
+ * surface on its right.
+ */
+export function ListingHeadline({
+  listing,
+  showSize = false,
+  className,
+}: {
+  listing: Listing;
+  showSize?: boolean;
+  className?: string;
+}) {
   const { t } = useTranslation();
-  const actions = useListingActions(listing);
+  const sessionUser = useAuthStore((state) => state.sessionUser);
   const price = getListingPriceLabel(listing, t);
   const address = getListingAddressLabel(listing);
   const username = listing.user?.username ?? t("common.userFallback");
-  const profileHref = actions.isOwnListing ? "/profile" : `/user/${listing.user_id}`;
+  const isOwnListing = !!sessionUser && sessionUser.id === listing.user_id;
+  const profileHref = isOwnListing ? "/profile" : `/user/${listing.user_id}`;
+  const size = showSize && listing.surface_m2 != null ? `${listing.surface_m2} m²` : null;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center gap-2.5">
-        {price ? (
-          <p className="font-display text-[28px] leading-tight text-text md:text-[32px]">{price}</p>
+    <div className={cn("flex flex-col gap-4", className)}>
+      <div className="flex items-start gap-3">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2.5">
+          {price ? (
+            <p className="font-display text-[28px] leading-tight text-text md:text-[32px]">{price}</p>
+          ) : null}
+          <ListingBadge listing={listing} />
+        </div>
+        {size ? (
+          <p className="shrink-0 rounded-full bg-surface-muted px-4 py-1.5 font-display text-[22px] leading-tight text-text">
+            {size}
+          </p>
         ) : null}
-        <ListingBadge listing={listing} />
       </div>
 
       {address ? (
@@ -89,48 +121,56 @@ export function ListingSummary({ listing }: { listing: Listing }) {
           ) : null}
         </span>
       </Link>
+    </div>
+  );
+}
 
-      <div className="flex flex-wrap gap-2">
+/** Like, save, message, share and report. */
+export function ListingActions({ listing, className }: { listing: Listing; className?: string }) {
+  const { t } = useTranslation();
+  const actions = useListingActions(listing);
+
+  return (
+    <div className={cn("flex flex-wrap gap-2", className)}>
+      <ActionButton
+        icon={actions.isLiked ? HeartFilledIcon : HeartIcon}
+        iconColor={actions.isLiked ? LIKED_COLOR : undefined}
+        label={String(listing.likeCount ?? 0)}
+        ariaLabel={t("web.listing.like")}
+        pressed={actions.isLiked}
+        disabled={actions.isLikePending}
+        onClick={actions.toggleLike}
+      />
+      {/* Saving your own listing is pointless (it is on your profile), so
+          the action is hidden on it — unless an old save needs undoing. */}
+      {!actions.isOwnListing || actions.isSaved ? (
         <ActionButton
-          icon={actions.isLiked ? HeartFilledIcon : HeartIcon}
-          iconColor={actions.isLiked ? LIKED_COLOR : undefined}
-          label={String(listing.likeCount ?? 0)}
-          ariaLabel={t("web.listing.like")}
-          pressed={actions.isLiked}
-          disabled={actions.isLikePending}
-          onClick={actions.toggleLike}
+          icon={actions.isSaved ? SaveFilledIcon : SaveIcon}
+          iconColor={actions.isSaved ? SAVED_COLOR : undefined}
+          label={t("web.listing.save")}
+          pressed={actions.isSaved}
+          disabled={actions.isSavePending}
+          onClick={actions.toggleSave}
         />
-        {/* Saving your own listing is pointless (it is on your profile), so
-            the action is hidden on it — unless an old save needs undoing. */}
-        {!actions.isOwnListing || actions.isSaved ? (
-          <ActionButton
-            icon={actions.isSaved ? SaveFilledIcon : SaveIcon}
-            iconColor={actions.isSaved ? SAVED_COLOR : undefined}
-            label={t("web.listing.save")}
-            pressed={actions.isSaved}
-            disabled={actions.isSavePending}
-            onClick={actions.toggleSave}
-          />
-        ) : null}
-        {!actions.isOwnListing ? (
-          <ActionButton
-            icon={ChatIcon}
-            label={t("web.listing.message")}
-            variant="primary"
-            disabled={actions.isChatPending}
-            onClick={actions.openChat}
-          />
-        ) : null}
-        <ActionButton icon={ShareIcon} label={t("web.listing.share")} onClick={actions.share} />
-        {actions.isSignedIn && !actions.isOwnListing ? (
-          <ActionButton
-            icon={FlagIcon}
-            label={t("web.listing.report")}
-            variant="quiet"
-            onClick={actions.report}
-          />
-        ) : null}
-      </div>
+      ) : null}
+      {!actions.isOwnListing ? (
+        <ActionButton
+          icon={ChatIcon}
+          label={t("web.listing.message")}
+          variant="primary"
+          disabled={actions.isChatPending}
+          onClick={actions.openChat}
+        />
+      ) : null}
+      <ActionButton icon={ShareIcon} label={t("web.listing.share")} onClick={actions.share} />
+      {actions.isSignedIn && !actions.isOwnListing ? (
+        <ActionButton
+          icon={FlagIcon}
+          label={t("web.listing.report")}
+          variant="quiet"
+          onClick={actions.report}
+        />
+      ) : null}
     </div>
   );
 }

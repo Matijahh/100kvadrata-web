@@ -6,8 +6,9 @@ import EyeIcon from "@assets/icons/show-icon.svg";
 import TrashIcon from "@assets/icons/trash-icon.svg";
 import { ListingMedia } from "@/components/listing/ListingMedia";
 import { ListingSpecs } from "@/components/listing/ListingSpecs";
-import { ListingSummary } from "@/components/listing/ListingSummary";
+import { ListingActions, ListingHeadline } from "@/components/listing/ListingSummary";
 import { useToast } from "@/components/providers/ToastProvider";
+import { useIsStuck } from "@/hooks/useIsStuck";
 import { useListingViewTracker } from "@/hooks/useListingViewTracker";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
@@ -18,14 +19,15 @@ import { useAuthStore } from "@/stores/useAuthStore";
 import type { Listing } from "@/types/types";
 import { confirmDestructiveAction } from "@/utils/confirmAction";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 /**
  * The listing page. Desktop: the media fills the left of the screen and stays
  * put while the details scroll on the right. Phone: media on top, details
  * below — the full-screen swipe card lives in the feed, and a link someone
- * opened deserves a page they can read and scroll.
+ * opened deserves a page they can read and scroll. The price, address, seller
+ * and size stay pinned above the details as they scroll.
  */
 export function ListingView({ initialListing }: { initialListing: Listing }) {
   const { t } = useTranslation();
@@ -46,6 +48,11 @@ export function ListingView({ initialListing }: { initialListing: Listing }) {
 
   const isOwnListing = !!sessionUser && sessionUser.id === listing.user_id;
   const isExpired = isListingExpired(listing);
+
+  // The headline pins 8px above the top edge (-top-2), hiding some of its top
+  // padding so it sits closer to the edge once stuck.
+  const headlineSentinelRef = useRef<HTMLDivElement>(null);
+  const isHeadlineStuck = useIsStuck(headlineSentinelRef, 8);
 
   const goBack = () => {
     if (window.history.length > 1) {
@@ -74,20 +81,34 @@ export function ListingView({ initialListing }: { initialListing: Listing }) {
         </button>
       </div>
 
-      <div className="flex flex-col gap-7 px-5 pb-10 pt-6 md:overflow-y-auto md:px-8 md:pt-10">
+      {/* The page itself scrolls, not this column: a scrolling box here would
+          stop the headline sticking to the screen. (overflow-x-clip keeps long
+          words in without making it one.) */}
+      <div className="flex flex-col overflow-x-clip px-5 pb-10 md:px-8 md:pt-4">
         {isExpired && !isOwnListing ? (
-          <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-text-muted">
+          <p className="mt-4 rounded-2xl bg-surface-muted px-4 py-3 text-sm text-text-muted md:mt-0">
             {t("web.listing.expiredNotice")}
           </p>
         ) : null}
 
-        <ListingSummary listing={listing} />
+        <div ref={headlineSentinelRef} aria-hidden />
+        <ListingHeadline
+          listing={listing}
+          showSize
+          className={cn(
+            "sticky -top-2 z-20 -mx-5 bg-surface px-5 pb-4 pt-6 transition-shadow duration-200 md:-mx-8 md:px-8",
+            isHeadlineStuck && "shadow-[0_6px_16px_rgba(0,0,0,0.08)]",
+          )}
+        />
+        <ListingActions listing={listing} />
 
-        {isOwnListing ? <OwnerTools listing={listing} /> : null}
+        <div className="mt-7 flex flex-col gap-7">
+          {isOwnListing ? <OwnerTools listing={listing} /> : null}
 
-        <OpenInAppButton listingId={listing.id} />
+          <OpenInAppButton listingId={listing.id} />
 
-        <ListingSpecs listing={listing} />
+          <ListingSpecs listing={listing} />
+        </div>
       </div>
     </div>
   );

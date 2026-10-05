@@ -9,11 +9,11 @@ import SaveFilledIcon from "@assets/icons/save-icon-filled.svg";
 import SaveIcon from "@assets/icons/save-icon.svg";
 import ShareIcon from "@assets/icons/share-icon.svg";
 import Avatar from "@/components/genericComponents/Avatar";
-import { buttonClasses } from "@/components/genericComponents/Button";
 import { ListingMedia } from "@/components/listing/ListingMedia";
 import { ListingSpecs } from "@/components/listing/ListingSpecs";
-import { ListingBadge, ListingSummary } from "@/components/listing/ListingSummary";
+import { ListingActions, ListingBadge, ListingHeadline } from "@/components/listing/ListingSummary";
 import { Modal } from "@/components/ui/Modal";
+import { useIsStuck } from "@/hooks/useIsStuck";
 import { useListingActions } from "@/hooks/useListingActions";
 import { useListingViewTracker } from "@/hooks/useListingViewTracker";
 import { Link } from "@/i18n/navigation";
@@ -21,7 +21,7 @@ import { cn } from "@/lib/cn";
 import { formatListingMetric, getListingAddressLabel } from "@/lib/listingFormat";
 import type { Listing } from "@/types/types";
 import { getListingPriceLabel } from "@/utils/listingPrice";
-import { useState, type FC, type SVGProps } from "react";
+import { useRef, useState, type FC, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
 const SAVED_COLOR = "#F4C542";
@@ -79,26 +79,51 @@ export function ReelCard({
         ) : null}
       </div>
 
-      <Modal open={isDetailsOpen} onOpenChange={setDetailsOpen} title={t("web.feed.details")} hideTitle>
-        {/* No visible title, so the content starts below the popup's X. */}
-        <div className="pt-10">
-          <ListingDetails listing={listing} />
-        </div>
+      {/* The X lines up with the price and size, pinned or not: 12px lower in
+          the flow (its bottom margin grows to match, so it still takes no
+          room), and on tablets 12px lower when pinned too. */}
+      <Modal
+        open={isDetailsOpen}
+        onOpenChange={setDetailsOpen}
+        title={t("web.feed.details")}
+        hideTitle
+        closeClassName="mt-3 -mb-[52px] md:top-3"
+      >
+        <ListingDetails listing={listing} />
       </Modal>
     </div>
   );
 }
 
+/**
+ * The details sheet: everything the listing page has. Price, size, address and
+ * seller stay pinned at the top while the rest scrolls, beside the sheet's X
+ * (hence the wide right padding).
+ *
+ * A sticky element inside a scrolling box pins below that box's top padding,
+ * so the negative `top` pulls it up to the sheet's edge and nothing scrolls
+ * past above it. On tablets the dialog's 32px padding is taken back with a
+ * negative margin, the room going into the headline's own top padding.
+ */
 function ListingDetails({ listing }: { listing: Listing }) {
-  const { t } = useTranslation();
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const isStuck = useIsStuck(sentinelRef);
 
   return (
-    <div className="flex flex-col gap-6">
-      <ListingSummary listing={listing} />
-      <ListingSpecs listing={listing} />
-      <Link href={`/listing/${listing.id}`} className={buttonClasses({ variant: "secondary", fullWidth: true })}>
-        {t("web.feed.openListing")}
-      </Link>
+    <div className="flex flex-col">
+      <div ref={sentinelRef} aria-hidden />
+      <ListingHeadline
+        listing={listing}
+        showSize
+        className={cn(
+          "sticky -top-3 z-[5] -mx-6 bg-surface pb-4 pl-6 pr-16 pt-3 transition-shadow duration-200 md:-top-8 md:-mx-8 md:-mt-8 md:pl-8 md:pr-[4.5rem] md:pt-11",
+          isStuck && "shadow-[0_6px_16px_rgba(0,0,0,0.08)]",
+        )}
+      />
+      <ListingActions listing={listing} />
+      <div className="mt-6">
+        <ListingSpecs listing={listing} />
+      </div>
     </div>
   );
 }

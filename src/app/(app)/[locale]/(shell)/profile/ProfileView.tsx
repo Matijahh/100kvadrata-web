@@ -23,6 +23,7 @@ import { SavedSearchItem } from "@/components/profile/SavedSearchItem";
 import { SettingsDrawer } from "@/components/profile/SettingsDrawer";
 import { useToast } from "@/components/providers/ToastProvider";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useIsStuck } from "@/hooks/useIsStuck";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
@@ -174,14 +175,7 @@ export function ProfileView() {
   const preferenceSets = preferenceSetsQuery.data ?? [];
 
   const stuckSentinelRef = useRef<HTMLDivElement>(null);
-  const [isBarStuck, setBarStuck] = useState(false);
-  useEffect(() => {
-    const sentinel = stuckSentinelRef.current;
-    if (!sentinel) return;
-    const observer = new IntersectionObserver(([entry]) => setBarStuck(!entry.isIntersecting));
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, []);
+  const isBarStuck = useIsStuck(stuckSentinelRef);
 
   return (
     <div className="mx-auto w-full max-w-page px-4 pb-10 pt-1 md:px-8 md:pt-2">
