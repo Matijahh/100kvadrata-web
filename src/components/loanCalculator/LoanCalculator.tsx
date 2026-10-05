@@ -31,7 +31,7 @@ export function LoanCalculator() {
   const termError = errorFor("years") ?? errorFor("months");
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 pb-16 pt-6 md:px-8 md:pt-10">
+    <div className="mx-auto w-full max-w-page px-4 pb-16 pt-6 md:px-8 md:pt-10">
       <h1 className="mb-6 font-display text-3xl text-text">{t("loanCalculator.title")}</h1>
       <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <section className="rounded-[32px] bg-surface p-6">

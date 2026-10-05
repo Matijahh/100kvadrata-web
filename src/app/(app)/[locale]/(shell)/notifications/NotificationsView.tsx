@@ -95,7 +95,7 @@ export function NotificationsView() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 pb-16 pt-4 md:px-8 md:pt-8">
+    <div className="mx-auto w-full max-w-page px-4 pb-16 pt-4 md:px-8 md:pt-8">
       <div className="mb-4 flex items-center gap-3">
         <button
           type="button"
@@ -126,7 +126,7 @@ export function NotificationsView() {
           <EmptyState title={t("notifications.loadError")} />
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center gap-4 px-6 py-14 text-center">
-            <NoNotificationsIllustration width={200} height={200} aria-hidden />
+            <NoNotificationsIllustration className="h-auto w-[clamp(200px,22vw,320px)]" aria-hidden />
             <p className="text-[15px] font-semibold text-text-muted">{t("notifications.emptyState")}</p>
           </div>
         ) : (

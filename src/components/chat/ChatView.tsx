@@ -270,7 +270,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
         ) : messages.length === 0 && !pendingSend ? (
           <p className="px-6 py-20 text-center text-sm text-text-muted">{t("chat.emptyState")}</p>
         ) : (
-          <ol className="mx-auto flex max-w-3xl flex-col gap-2 p-4">
+          <ol className="mx-auto flex max-w-page flex-col gap-2 p-4 md:px-6">
             {messages.map((message) => (
               <MessageBubble
                 key={message.id}
@@ -328,7 +328,8 @@ export function ChatView({ conversationId }: { conversationId: string }) {
 
 function bubbleClasses(isOwn: boolean) {
   return cn(
-    "flex max-w-[75%] flex-col gap-1.5 rounded-[18px] px-3.5 py-2.5",
+    // 75% like the app, but never wider than a comfortable line (~70 characters).
+    "flex max-w-[min(75%,40rem)] flex-col gap-1.5 rounded-[18px] px-3.5 py-2.5",
     isOwn ? "rounded-br-[4px] bg-primary text-text-on-primary" : "rounded-bl-[4px] bg-surface-elevated text-text",
   );
 }

@@ -107,10 +107,14 @@ export function ListingCard({
   );
 }
 
-/** Responsive grid for ListingCards. */
+/**
+ * Responsive grid for ListingCards: two columns on phones, then as many
+ * ≥260px columns as the container fits — so it follows the page width and
+ * the feed's filter panel opening or closing, not just the screen width.
+ */
 export function ListingGrid({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 xl:grid-cols-4", className)}>
+    <div className={cn("grid grid-cols-2 gap-3 md:grid-cols-[repeat(auto-fill,minmax(260px,1fr))] md:gap-4", className)}>
       {children}
     </div>
   );

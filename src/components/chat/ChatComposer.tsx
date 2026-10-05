@@ -141,7 +141,7 @@ export function ChatComposer({
       )}
     >
       {hasPreview ? (
-        <div className="mx-auto flex max-w-3xl flex-col gap-2 px-4 pt-3">
+        <div className="mx-auto flex max-w-page flex-col gap-2 px-4 pt-3 md:px-6">
           {listing ? (
             <div className="flex max-w-full items-center gap-2 self-start rounded-full bg-surface-muted py-1.5 pl-3 pr-1.5">
               <HouseIcon width={13} height={13} className="shrink-0 text-primary" aria-hidden />
@@ -191,7 +191,7 @@ export function ChatComposer({
           event.preventDefault();
           submit();
         }}
-        className="mx-auto flex max-w-3xl items-end gap-2 px-3 pt-2.5 md:px-4"
+        className="mx-auto flex max-w-page items-end gap-2 px-3 pt-2.5 md:px-6"
       >
         <button
           type="button"

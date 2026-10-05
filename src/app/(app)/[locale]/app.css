@@ -60,6 +60,13 @@
   --color-success: var(--c-success);
 }
 
+/* One cap for every page in the app: fluid up to 1600px, then centred, so
+   very wide monitors get a balanced page instead of 2,500px-long rows. Text
+   blocks keep their own readable widths inside it. */
+@theme {
+  --container-page: 100rem;
+}
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;

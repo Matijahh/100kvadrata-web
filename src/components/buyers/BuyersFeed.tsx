@@ -54,13 +54,13 @@ export function BuyersFeed({
         <p className="px-6 py-24 text-center font-semibold text-text">{t("buyers.fetchError")}</p>
       ) : buyers.length === 0 ? (
         <div className="flex flex-col items-center gap-5 px-6 py-16 text-center">
-          <NoBuyersIllustration width={280} height={187} aria-hidden />
+          <NoBuyersIllustration className="h-auto w-[clamp(280px,32vw,480px)]" aria-hidden />
           <p className="max-w-sm text-[17px] font-semibold leading-6 text-text-muted">{t("buyers.emptyState")}</p>
         </div>
       ) : (
         <>
           {/* Keyed by preference set: a buyer with three matching sets is three cards. */}
-          <ul className="mx-auto grid max-w-[1400px] gap-x-4 gap-y-6 sm:grid-cols-2 2xl:grid-cols-3">
+          <ul className="mx-auto grid max-w-page gap-x-4 gap-y-6 sm:grid-cols-[repeat(auto-fill,minmax(340px,1fr))]">
             {buyers.map((buyer) => (
               <li key={buyer.preferenceSetId}>
                 <BuyerCard buyer={buyer} onOffer={onOffer} />

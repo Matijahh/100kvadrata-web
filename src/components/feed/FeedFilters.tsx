@@ -43,7 +43,8 @@ export function FeedFilters(props: FeedFiltersProps) {
       }}
       className={cn("flex flex-col", variant === "sidebar" && "h-full")}
     >
-      <div className="flex items-center justify-between gap-3 pb-3">
+      {/* In the sheet this row shares the line with the popup's X, so it stops short of it. */}
+      <div className={cn("flex items-center justify-between gap-3 pb-3", variant === "sheet" && "pr-10")}>
         {/* In the sheet the dialog's own title already names it. */}
         {variant === "sidebar" ? (
           <h2 className="font-display text-xl text-text">{t("web.feed.filters")}</h2>

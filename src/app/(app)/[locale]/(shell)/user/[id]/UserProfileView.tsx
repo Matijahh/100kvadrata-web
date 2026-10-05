@@ -79,7 +79,7 @@ export function UserProfileView({
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-4 md:px-8 md:pt-8">
+    <div className="mx-auto w-full max-w-page px-4 pb-10 pt-4 md:px-8 md:pt-8">
       <button
         type="button"
         onClick={goBack}

@@ -372,7 +372,8 @@ export function FeedView() {
   } else if (listings.length === 0) {
     content = (
       <div className="flex flex-col items-center gap-5 px-6 py-16 text-center">
-        <NoListingsIllustration width={240} height={240} aria-hidden />
+        {/* Today's 240px on phones, growing with the screen, capped on wide monitors. */}
+        <NoListingsIllustration className="h-auto w-[clamp(240px,26vw,380px)]" aria-hidden />
         <p className="max-w-sm text-[17px] font-semibold leading-6 text-text-muted">{t("feed.emptyListings")}</p>
       </div>
     );

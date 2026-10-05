@@ -122,7 +122,7 @@ export function PreferenceEditor({ id }: { id: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto w-full max-w-3xl px-4 pb-16 pt-4 md:px-8 md:pt-8">
+    <form onSubmit={handleSubmit} className="mx-auto w-full max-w-page px-4 pb-16 pt-4 md:px-8 md:pt-8">
       <div className="mb-2 flex items-center gap-3">
         <button
           type="button"

@@ -35,7 +35,7 @@ import { MAX_PREFERENCE_SETS, type SavedSearch } from "@/types/types";
 import { confirmDestructiveAction } from "@/utils/confirmAction";
 import { getListingFilterChipLabels } from "@/utils/listingFilters";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState, type FC, type SVGProps } from "react";
+import { useEffect, useRef, useState, type FC, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
 type Section = "yourListings" | "preferences" | "savedListings" | "savedSearches";
@@ -173,9 +173,29 @@ export function ProfileView() {
 
   const preferenceSets = preferenceSetsQuery.data ?? [];
 
+  const stuckSentinelRef = useRef<HTMLDivElement>(null);
+  const [isBarStuck, setBarStuck] = useState(false);
+  useEffect(() => {
+    const sentinel = stuckSentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(([entry]) => setBarStuck(!entry.isIntersecting));
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-4 md:px-8 md:pt-8">
-      <div className="mb-3 flex justify-end gap-1">
+    <div className="mx-auto w-full max-w-page px-4 pb-10 pt-1 md:px-8 md:pt-2">
+      {/* Marks where the action bar sits in the page: once it scrolls out of
+          view, the bar is pinned and gets its backdrop. */}
+      <div ref={stuckSentinelRef} aria-hidden />
+      {/* Report / notifications / menu stay reachable while scrolling. The
+          negative margins stretch its backdrop across the page's padding. */}
+      <div
+        className={cn(
+          "sticky top-0 z-30 -mx-4 mb-3 flex justify-end gap-1 px-4 py-1 transition-[background-color,box-shadow] duration-200 md:-mx-8 md:px-8",
+          isBarStuck && "bg-surface-muted/85 shadow-[0_6px_16px_rgba(0,0,0,0.06)] backdrop-blur-md",
+        )}
+      >
         <button
           type="button"
           onClick={() => setFeedbackOpen(true)}
@@ -216,7 +236,11 @@ export function ProfileView() {
         }
       />
 
-      <div role="tablist" className="mt-6 flex gap-1 overflow-x-auto border-b border-border">
+      {/* Three tabs share the row — no scrolling strip (which also scrolled
+          vertically: each tab's underline sits 1px over the border). Below
+          desktop they are icons only, like the app; the label stays the tab's
+          accessible name and its tooltip. */}
+      <div role="tablist" className="mt-6 flex border-b border-border">
         {tabs.map((tab) => {
           const isActive = tab.value === section;
           const Icon = isActive ? tab.activeIcon : tab.icon;
@@ -226,14 +250,17 @@ export function ProfileView() {
               type="button"
               role="tab"
               aria-selected={isActive}
+              aria-label={tab.label}
+              title={tab.label}
               onClick={() => setSection(tab.value)}
               className={cn(
-                "-mb-px flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition-colors",
+                "-mb-px flex min-w-0 flex-1 items-center justify-center gap-2 border-b-2 px-2 py-3.5 text-sm font-semibold transition-colors",
+                "lg:flex-none lg:px-4 lg:py-3",
                 isActive ? "border-primary text-primary" : "border-transparent text-text-muted hover:text-text",
               )}
             >
-              <Icon width={18} height={18} aria-hidden />
-              {tab.label}
+              <Icon width={22} height={22} className="lg:h-[18px] lg:w-[18px]" aria-hidden />
+              <span className="hidden lg:inline">{tab.label}</span>
             </button>
           );
         })}
@@ -277,7 +304,7 @@ export function ProfileView() {
               </Link>
             </EmptyState>
           ) : (
-            <div className="grid gap-3 md:grid-cols-2">
+            <div className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
               {preferenceSets.map((preferenceSet, index) => (
                 <PreferenceCard
                   key={preferenceSet.id}
@@ -369,6 +396,8 @@ function SavedSearchGroups({
         {showHeadings ? (
           <h3 className="mb-1 px-2 text-[13px] font-semibold uppercase tracking-wide text-text-muted">{heading}</h3>
         ) : null}
+        {/* One full-width row per saved search: the chips have room to read on one line. */}
+        <div>
         {items.map((savedSearch) => (
           <SavedSearchItem
             key={savedSearch.id}
@@ -377,11 +406,12 @@ function SavedSearchGroups({
             onDelete={() => onDelete(savedSearch)}
           />
         ))}
+        </div>
       </div>
     );
 
   return (
-    <div className="max-w-3xl">
+    <div>
       {group(listings, t("profile.savedSearchesListingsGroup"))}
       {group(buyers, t("profile.savedSearchesBuyersGroup"))}
     </div>

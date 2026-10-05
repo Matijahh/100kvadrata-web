@@ -38,7 +38,8 @@ export function ConversationList({ activeConversationId }: { activeConversationI
   if (conversations.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 px-6 py-16 text-center">
-        <NoMessagesIllustration width={200} height={200} aria-hidden />
+        {/* Full screen on phones; a 340px column on desktop — never wider than it. */}
+        <NoMessagesIllustration className="h-auto w-[min(100%,200px)] md:w-[min(100%,260px)]" aria-hidden />
         <p className="max-w-xs text-[15px] font-semibold text-text-muted">{t("inbox.emptyState")}</p>
       </div>
     );

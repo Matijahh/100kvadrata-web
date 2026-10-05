@@ -56,7 +56,7 @@ export function ListingView({ initialListing }: { initialListing: Listing }) {
   };
 
   return (
-    <div className="bg-surface md:grid md:min-h-dvh md:grid-cols-[minmax(0,1fr)_minmax(380px,460px)] xl:grid-cols-[minmax(0,1fr)_520px]">
+    <div className="bg-surface md:mx-auto md:grid md:min-h-dvh md:max-w-page md:grid-cols-[minmax(0,1fr)_minmax(380px,460px)] xl:grid-cols-[minmax(0,1fr)_520px]">
       <div className="relative md:sticky md:top-0 md:h-dvh">
         <ListingMedia
           listing={listing}

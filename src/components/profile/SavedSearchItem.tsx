@@ -36,20 +36,21 @@ export function SavedSearchItem({
   const Icon = isBuyers ? UserIcon : BuildingIcon;
   const kindLabel = t(isBuyers ? "profile.savedSearchBuyersKind" : "profile.savedSearchListingsKind");
 
+  // The rows sit straight on the grey page, so chips and hovers are white to show up.
   return (
     <div className="flex items-center gap-2 border-b border-divider py-2">
       <button
         type="button"
         onClick={onOpen}
         aria-label={`${kindLabel}: ${chips.join(", ")}`}
-        className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-2 text-left hover:bg-surface-muted"
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 py-2 text-left hover:bg-surface"
       >
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-muted text-primary">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface text-primary">
           <Icon width={15} height={15} aria-hidden />
         </span>
         <span className="flex min-w-0 flex-1 flex-wrap gap-1.5">
           {(chips.length > 0 ? chips : [t("profile.savedSearchUnnamed")]).map((chip) => (
-            <span key={chip} className="rounded-full bg-surface-muted px-3 py-1 text-[13px] text-text">
+            <span key={chip} className="rounded-full bg-surface px-3 py-1 text-[13px] text-text">
               {chip}
             </span>
           ))}
@@ -60,7 +61,7 @@ export function SavedSearchItem({
         type="button"
         onClick={onDelete}
         aria-label={t("profile.savedSearchDeleteConfirm")}
-        className="rounded-full p-2 text-placeholder hover:bg-surface-muted hover:text-destructive"
+        className="rounded-full p-2 text-placeholder hover:bg-surface hover:text-destructive"
       >
         <TrashIcon width={18} height={18} aria-hidden />
       </button>

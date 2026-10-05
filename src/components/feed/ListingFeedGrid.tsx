@@ -63,7 +63,7 @@ export function ListingFeedGrid({
       onScroll={(event) => onScrollTopChange(event.currentTarget.scrollTop)}
       className="h-full overflow-y-auto overscroll-y-contain px-4 pb-[calc(96px+env(safe-area-inset-bottom))] pt-4 md:px-6 md:pb-10"
     >
-      <ListingGrid className="mx-auto max-w-[1400px]">
+      <ListingGrid className="mx-auto max-w-page">
         {listings.map((listing) => (
           <ListingCard key={listing.id} listing={listing} />
         ))}

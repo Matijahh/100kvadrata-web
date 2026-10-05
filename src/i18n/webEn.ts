@@ -3,6 +3,16 @@
 // components use `t("web.…")`. Not synced — owned by this repo. Keep the keys
 // in step with webSr.ts.
 export const webEn = {
+  common: {
+    close: "Close",
+  },
+  editProfile: {
+    photoHint: "Drop a photo here, or click to choose one.",
+    about: "About you",
+    contact: "Contact",
+    agencyAndLinks: "Agency and links",
+    links: "Links",
+  },
   nav: {
     main: "Main navigation",
     loanCalculator: "Loan calculator",

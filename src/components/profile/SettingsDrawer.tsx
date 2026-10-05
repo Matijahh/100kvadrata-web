@@ -147,11 +147,22 @@ export function SettingsDrawer({
             </a>
           </nav>
 
-          <div className="mt-auto flex flex-col gap-1 border-t border-divider pt-4">
-            <button type="button" onClick={handleLogout} className="py-2.5 text-left text-base font-semibold text-text hover:text-primary">
+          {/* Logout is the drawer's one real button; deleting the account stays a
+              quiet link under it, so the two are never mistaken for each other. */}
+          <div className="mt-auto flex flex-col gap-2 border-t border-divider pt-5">
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex min-h-12 w-full items-center justify-center gap-2.5 rounded-full bg-primary/10 px-5 text-base font-semibold text-primary transition-colors hover:bg-primary/15 active:bg-primary/20"
+            >
+              <LogoutIcon width={20} height={20} aria-hidden />
               {t("profile.logout")}
             </button>
-            <button type="button" onClick={handleDeleteAccount} className="py-2.5 text-left text-sm text-destructive hover:underline">
+            <button
+              type="button"
+              onClick={handleDeleteAccount}
+              className="self-center px-3 py-2 text-sm text-destructive hover:underline"
+            >
               {t("profile.deleteAccount")}
             </button>
           </div>
@@ -193,5 +204,16 @@ function OptionGroup<T extends string>({
         ))}
       </div>
     </fieldset>
+  );
+}
+
+/** A door on the left, an arrow leaving it to the right (the usual "log out"), in the app's line style. */
+function LogoutIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="M10 4H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3" />
+      <path d="M14 7.5 18.5 12 14 16.5" />
+      <path d="M18.5 12H9" />
+    </svg>
   );
 }

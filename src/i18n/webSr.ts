@@ -2,6 +2,16 @@ import type { WebDictionary } from "./webEn";
 
 // Serbian (Latin) web-only copy. See webEn.ts.
 export const webSr: WebDictionary = {
+  common: {
+    close: "Zatvori",
+  },
+  editProfile: {
+    photoHint: "Prevuci fotografiju ovde ili klikni da je izabereš.",
+    about: "O tebi",
+    contact: "Kontakt",
+    agencyAndLinks: "Agencija i linkovi",
+    links: "Linkovi",
+  },
   nav: {
     main: "Glavna navigacija",
     loanCalculator: "Kreditni kalkulator",

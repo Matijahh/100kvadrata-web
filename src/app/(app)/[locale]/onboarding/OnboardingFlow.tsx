@@ -149,7 +149,7 @@ export function OnboardingFlow() {
           <OnboardingIllustration
             spot="welcome"
             height={240}
-            className="mb-3 [&_svg]:h-[clamp(110px,calc(100dvh-555px),240px)] [&_svg]:w-auto"
+            className="mb-3 [&_svg]:h-[clamp(110px,calc(100dvh-555px),240px)] [&_svg]:w-auto md:[&_svg]:h-[clamp(110px,calc(100dvh-555px),320px)]"
           />
           <h1 className="text-center font-display text-[26px] leading-8 text-text">
             {t("onboarding.welcomeTitle")}
@@ -191,7 +191,7 @@ export function OnboardingFlow() {
         </header>
 
         <main className="mx-auto w-full max-w-3xl flex-1 px-6 pb-6">
-          <OnboardingIllustration spot="details" height={110} className="mb-3" />
+          <OnboardingIllustration spot="details" height={110} className="mb-3 md:[&_svg]:h-[150px] md:[&_svg]:w-auto" />
           <h1 className="text-center font-display text-[26px] leading-8 text-text">
             {t("onboarding.detailsTitle")}
           </h1>

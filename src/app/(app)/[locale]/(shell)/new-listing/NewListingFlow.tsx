@@ -441,7 +441,7 @@ export function NewListingFlow() {
         : null;
 
   return (
-    <div className="mx-auto w-full max-w-4xl px-4 pb-28 pt-6 md:px-8 md:pb-16 md:pt-10">
+    <div className="mx-auto w-full max-w-page px-4 pb-28 pt-6 md:px-8 md:pb-16 md:pt-10">
       <div className="mb-6 flex items-center gap-4">
         <h1 className="flex-1 font-display text-3xl text-text">
           {isEditing ? t("web.newListing.editTitle") : t("newListing.title")}
@@ -482,7 +482,7 @@ export function NewListingFlow() {
       </div>
 
       <div className="fixed inset-x-0 bottom-[76px] z-30 border-t border-border bg-surface/95 px-4 py-3 backdrop-blur md:static md:mt-6 md:border-0 md:bg-transparent md:p-0">
-        <div className="mx-auto flex max-w-4xl items-center gap-3">
+        <div className="mx-auto flex max-w-page items-center gap-3">
           {step === 2 ? (
             <button
               type="button"

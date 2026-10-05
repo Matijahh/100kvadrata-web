@@ -80,7 +80,10 @@ export function ReelCard({
       </div>
 
       <Modal open={isDetailsOpen} onOpenChange={setDetailsOpen} title={t("web.feed.details")} hideTitle>
-        <ListingDetails listing={listing} />
+        {/* No visible title, so the content starts below the popup's X. */}
+        <div className="pt-10">
+          <ListingDetails listing={listing} />
+        </div>
       </Modal>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import CloseIcon from "@assets/icons/close-icon.svg";
 import { cn } from "@/lib/cn";
 import { useConfirmStore } from "@/utils/confirmAction";
 import { AlertDialog } from "radix-ui";
@@ -24,7 +25,15 @@ export function ConfirmDialogHost() {
             "data-[state=open]:animate-[fade-in_150ms_ease-out]",
           )}
         >
-          <AlertDialog.Title className="font-display text-xl">
+          {/* Cancel, as an X in the corner — the same way out every popup has. */}
+          <AlertDialog.Cancel
+            aria-label={t("web.common.close")}
+            title={t("web.common.close")}
+            className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-muted hover:text-text"
+          >
+            <CloseIcon width={22} height={22} aria-hidden />
+          </AlertDialog.Cancel>
+          <AlertDialog.Title className="pr-10 font-display text-xl">
             {request?.title}
           </AlertDialog.Title>
           {request?.message ? (

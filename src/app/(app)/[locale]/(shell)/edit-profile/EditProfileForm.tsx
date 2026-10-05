@@ -13,6 +13,7 @@ import { AccountTypePicker } from "@/components/onboarding/AccountTypePicker";
 import { useToast } from "@/components/providers/ToastProvider";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRouter } from "@/i18n/navigation";
+import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 import { DEFAULT_COUNTRY_CODE, searchCities } from "@/services/locations";
 import { updateProfile, uploadAvatar } from "@/services/profile";
@@ -26,6 +27,9 @@ import { useTranslation } from "react-i18next";
  * Web port of flatswipe/src/app/(protected)/(tabs)/editProfile.tsx and
  * EditProfileFields: same fields, same validation, same writes (updateProfile,
  * uploadAvatar — the photo is resized in the browser first, like on the phone).
+ *
+ * Below lg it is the app's single card. From lg the same card spans the page,
+ * split into sections, with the photo and profile type side by side.
  */
 export function EditProfileForm() {
   const { currentUser, isLoadingProfile } = useCurrentUser();
@@ -60,6 +64,7 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
   // A picked file is previewed from a blob: URL and only uploaded on save.
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
+  const [isDraggingPhoto, setDraggingPhoto] = useState(false);
 
   useEffect(() => () => {
     if (avatarPreview) URL.revokeObjectURL(avatarPreview);
@@ -124,12 +129,30 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
   };
 
   const handleFile = (file: File | undefined) => {
-    if (!file) return;
+    if (!file || !file.type.startsWith("image/")) return;
     setAvatarPreview(URL.createObjectURL(file));
   };
 
+  // Ctrl/⌘+S saves, the way it does in any desktop editor.
+  const saveRef = useRef(handleSave);
+  saveRef.current = handleSave;
+  const isSavingRef = useRef(isSaving);
+  isSavingRef.current = isSaving;
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
+        event.preventDefault();
+        if (!isSavingRef.current) void saveRef.current();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const saveLabel = isSaving ? t("profile.savingProfile") : t("profile.saveProfile");
+
   return (
-    <form onSubmit={handleSave} className="mx-auto w-full max-w-3xl px-4 pb-16 pt-4 md:px-8 md:pt-8">
+    <form onSubmit={handleSave} className="mx-auto w-full max-w-page px-4 pb-16 pt-4 md:px-8 md:pt-8">
       <div className="mb-6 flex items-center gap-3">
         <button
           type="button"
@@ -140,46 +163,64 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
           <AnchorRightIcon width={16} height={16} className="rotate-180" aria-hidden />
         </button>
         <h1 className="flex-1 font-display text-2xl text-text">{t("profile.editProfile")}</h1>
-        <Button
-          type="submit"
-          title={isSaving ? t("profile.savingProfile") : t("profile.saveProfile")}
-          disabled={isSaving}
-          className="hidden min-w-0 md:inline-flex"
-        />
+        <Button type="submit" title={saveLabel} disabled={isSaving} className="hidden min-w-0 md:inline-flex" />
       </div>
 
-      <div className="rounded-[32px] bg-surface p-5 md:p-8">
-        <div className="mb-8 flex flex-col items-center gap-2">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="group relative h-[120px] w-[120px] overflow-hidden rounded-full border-4 border-primary"
-            aria-label={t("profile.changePhoto")}
-          >
-            <Avatar userId={currentUser.id} avatarUrl={avatarPreview ?? currentUser.avatarUrl} />
-            <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white transition-colors group-hover:bg-black/50">
-              <CameraIcon width={30} height={30} aria-hidden />
+      <div className="rounded-[32px] bg-surface p-5 md:p-8 lg:px-10 lg:py-9">
+        {/* Who you are at a glance: the photo, and the type that shapes the rest of the form. */}
+        <div className="lg:grid lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start lg:gap-10">
+          <div className="mb-8 flex flex-col items-center gap-2 lg:mb-0 lg:w-[140px]">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(event) => {
+                event.preventDefault();
+                setDraggingPhoto(true);
+              }}
+              onDragLeave={() => setDraggingPhoto(false)}
+              onDrop={(event) => {
+                event.preventDefault();
+                setDraggingPhoto(false);
+                handleFile(event.dataTransfer.files?.[0]);
+              }}
+              className={cn(
+                "group relative h-[120px] w-[120px] overflow-hidden rounded-full border-4 border-primary",
+                isDraggingPhoto && "ring-4 ring-primary-soft ring-offset-2",
+              )}
+              aria-label={t("profile.changePhoto")}
+            >
+              <Avatar userId={currentUser.id} avatarUrl={avatarPreview ?? currentUser.avatarUrl} />
+              <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white transition-colors group-hover:bg-black/50">
+                <CameraIcon width={30} height={30} aria-hidden />
+              </span>
+            </button>
+            <span className="text-sm font-semibold text-primary">{t("profile.changePhoto")}</span>
+            <span className="hidden text-center text-xs leading-4 text-text-muted lg:block">
+              {t("web.editProfile.photoHint")}
             </span>
-          </button>
-          <span className="text-sm font-semibold text-primary">{t("profile.changePhoto")}</span>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(event) => handleFile(event.target.files?.[0])}
-          />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(event) => handleFile(event.target.files?.[0])}
+            />
+          </div>
+
+          {/* First, because it decides what the rest of the app looks like —
+              and whether the agency field below is there at all. */}
+          <div>
+            <p className="mb-2 text-sm font-light text-form-label">{t("profile.accountTypeLabel")}</p>
+            <AccountTypePicker value={accountType} onChange={setAccountType} compact />
+            <p className="mb-6 mt-2 px-1 text-xs font-light leading-[17px] text-text-muted lg:mb-0">
+              {t(`profile.accountTypeHint.${accountType}`)}
+            </p>
+          </div>
         </div>
 
-        {/* First, because it decides what the rest of the app looks like —
-            and whether the agency field below is there at all. */}
-        <p className="mb-2 text-sm font-light text-form-label">{t("profile.accountTypeLabel")}</p>
-        <AccountTypePicker value={accountType} onChange={setAccountType} compact />
-        <p className="mb-6 mt-2 px-1 text-xs font-light leading-[17px] text-text-muted">
-          {t(`profile.accountTypeHint.${accountType}`)}
-        </p>
-
-        <div className="grid gap-x-4 md:grid-cols-2">
+        <SectionHeading title={t("web.editProfile.about")} />
+        {/* Email, username and full name share one row on desktop. */}
+        <div className="grid gap-x-4 md:grid-cols-2 lg:grid-cols-3">
           <LabeledTextField label={t("profile.emailLabel")} value={currentUser.email ?? ""} disabled readOnly />
           <LabeledTextField
             label={t("profile.usernameLabel")}
@@ -190,7 +231,7 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
             disabled={isSaving}
             placeholder={t("profile.usernamePlaceholder")}
           />
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 lg:col-span-1">
             <LabeledTextField
               label={t("profile.fullNameLabel")}
               value={fullName}
@@ -217,7 +258,8 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
           />
         </div>
 
-        <p className="mb-4 px-1 text-xs font-light leading-[17px] text-text-muted">
+        <SectionHeading title={t("web.editProfile.contact")} />
+        <p className="mb-4 px-1 text-xs font-light leading-[17px] text-text-muted lg:-mt-2 lg:mb-5 lg:px-0 lg:text-sm lg:leading-5">
           {t("profile.contactVisibilityHint")}
         </p>
 
@@ -269,6 +311,12 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
             getItemLabel={(suggestion) => suggestion.city}
             editable={!isSaving}
           />
+        </div>
+
+        <SectionHeading
+          title={accountType === "seller" ? t("web.editProfile.agencyAndLinks") : t("web.editProfile.links")}
+        />
+        <div className="grid gap-x-4 md:grid-cols-2">
           {/* Only meaningful for someone offering a place. Hiding it does not
               clear the value — switching back keeps it. */}
           {accountType === "seller" ? (
@@ -309,14 +357,24 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
           />
         </div>
 
+        {/* Phones: full width at the end. Desktop: at the end of a long form too,
+            so nobody scrolls back up to save. Tablets keep only the header button. */}
         <Button
           type="submit"
-          title={isSaving ? t("profile.savingProfile") : t("profile.saveProfile")}
+          title={saveLabel}
           disabled={isSaving}
           fullWidth
-          className="mt-4 md:hidden"
+          className="mt-4 md:hidden lg:mt-6 lg:ml-auto lg:flex lg:w-auto"
+          aria-keyshortcuts="Control+S Meta+S"
         />
       </div>
     </form>
+  );
+}
+
+/** A section of the form — desktop only; phones keep the uninterrupted card. */
+function SectionHeading({ title }: { title: string }) {
+  return (
+    <h2 className="mb-4 mt-9 hidden border-t border-border pt-8 font-display text-lg text-text lg:block">{title}</h2>
   );
 }
