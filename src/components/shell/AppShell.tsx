@@ -192,7 +192,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         })}
       </nav>
 
-      <GetTheAppPrompt />
+      <GetTheAppPrompt aboveTabBar={!isFullScreenOnPhone} />
     </div>
   );
 }

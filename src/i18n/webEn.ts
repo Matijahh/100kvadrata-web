@@ -66,8 +66,8 @@ export const webEn = {
     title: "100m² feels best in the app",
     message:
       "Swiping, instant notifications and video are smoother in the app. It's free.",
-    open: "Get the app",
-    continueOnWeb: "Continue on web",
+    appStore: "Download on the App Store",
+    googlePlay: "Get it on Google Play",
   },
   feed: {
     tabsLabel: "What to browse",

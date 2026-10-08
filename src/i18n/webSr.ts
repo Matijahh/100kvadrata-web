@@ -65,8 +65,8 @@ export const webSr: WebDictionary = {
     title: "100m² je najbolji u aplikaciji",
     message:
       "Svajpovanje, obaveštenja i video rade glatkije u aplikaciji. Besplatna je.",
-    open: "Preuzmi aplikaciju",
-    continueOnWeb: "Nastavi na webu",
+    appStore: "Preuzmi na App Store-u",
+    googlePlay: "Preuzmi na Google Play-u",
   },
   feed: {
     tabsLabel: "Šta pregledaš",

@@ -14,7 +14,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Suspense fallback={<div className="min-h-dvh bg-[#161722]" />}>{children}</Suspense>
-      <GetTheAppPrompt />
+      <GetTheAppPrompt onAuthScreen />
     </>
   );
 }

@@ -1,17 +1,17 @@
 import { test as base, type Page } from "@playwright/test";
 
 /**
- * Playwright's `test`, with the phone "get the app" sheet already dismissed —
- * otherwise it covers every page on the phone project. (The prompt itself is
+ * Playwright's `test`, with the "get the app" card already closed —
+ * otherwise it sits over the bottom of every page. (The prompt itself is
  * left to a test of its own.)
  */
 export const test = base.extend({
   page: async ({ page }, use) => {
     await page.addInitScript(() => {
       try {
-        window.localStorage.setItem("100m2.appPromptDismissedAt", String(Date.now()));
+        window.localStorage.setItem("100m2.appPromptDismissed", "1");
       } catch {
-        // Storage blocked: the prompt would show, and the test says so.
+        // Storage blocked: the card never shows anyway.
       }
     });
     await use(page);

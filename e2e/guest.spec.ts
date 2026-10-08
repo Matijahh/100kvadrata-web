@@ -46,19 +46,26 @@ test.describe("signed out", () => {
     await expect(page).toHaveURL(/\/en$/);
   });
 
-  test("phones are offered the app on the login screen, once", async ({ browser }, testInfo) => {
-    test.skip(testInfo.project.name !== "phone", "The prompt is for phones only.");
+  test("the app card stays until it is closed, then stays closed", async ({ browser }, testInfo) => {
     // A fresh context, without the helper's dismissal.
-    const context = await browser.newContext({ ...devices["Pixel 7"], baseURL: testInfo.project.use.baseURL });
+    const context = await browser.newContext({
+      ...(testInfo.project.name === "phone" ? devices["Pixel 7"] : {}),
+      baseURL: testInfo.project.use.baseURL,
+    });
     const page = await context.newPage();
     await page.goto("/en/login", { waitUntil: "domcontentloaded" });
-    const prompt = page.getByRole("dialog");
-    await expect(prompt).toContainText("100m² feels best in the app");
-    await prompt.getByRole("button", { name: "Continue on web" }).click();
-    await expect(prompt).toBeHidden();
+    const card = page.getByRole("complementary", { name: "100m² feels best in the app" });
+    await expect(card).toBeVisible();
+    await expect(card.getByRole("link", { name: "Download on the App Store" })).toBeVisible();
+    await expect(card.getByRole("link", { name: "Get it on Google Play" })).toBeVisible();
+    // Still there on the next page.
+    await page.goto("/en/register", { waitUntil: "domcontentloaded" });
+    await expect(card).toBeVisible();
+    await card.getByRole("button", { name: "Close" }).click();
+    await expect(card).toBeHidden();
     await page.reload({ waitUntil: "domcontentloaded" });
     await expect(page.getByLabel("Email:")).toBeVisible();
-    await expect(page.getByRole("dialog")).toBeHidden();
+    await expect(card).toBeHidden();
     await context.close();
   });
 });
