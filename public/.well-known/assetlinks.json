@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.stokvadrata.app",
       "sha256_cert_fingerprints": [
-        "B1:E5:21:36:41:03:FD:70:DA:8B:84:C0:2D:EE:07:32:DF:0D:74:ED:76:D3:E5:00:0F:33:DF:F7:19:C4:89:2B"
+        "B1:E5:21:36:41:03:FD:70:DA:8B:84:C0:2D:EE:07:32:DF:0D:74:ED:76:D3:E5:00:0F:33:DF:F7:19:C4:89:2B",
+        "83:42:86:94:16:58:27:F2:82:B9:36:A4:A3:49:FA:51:2A:60:77:64:93:78:EE:14:07:2E:6D:C0:D1:1F:30:91"
       ]
     }
   }
