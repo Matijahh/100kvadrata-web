@@ -55,14 +55,16 @@ Apple Developer → Certificates, Identifiers & Profiles:
   - Return URLs: `https://lvovjzynfeacjdgfyefl.supabase.co/auth/v1/callback`
 - [ ] **Keys → +**: a key with **Sign In with Apple** enabled (or reuse an existing
       one). Download the `.p8` file and note the **Key ID** and your **Team ID**.
-- [ ] Generate the **client secret** (a JWT signed with the `.p8`). Supabase's Apple
-      provider page links to a generator. Inputs: Team ID, Key ID, Services ID, `.p8`.
+- [ ] Generate the **client secret** (a JWT signed with the `.p8`):
+      `node scripts/apple-client-secret.mjs <path-to-AuthKey_XXXXXXXXXX.p8>` copies it
+      to the clipboard and prints the expiry date.
 
 Supabase → Authentication → Providers → Apple:
 
-- [ ] **Client IDs**: add `com.stokvadrata.web` next to the existing
-      `com.stokvadrata.app`, comma-separated. **Do not remove the bundle ID**: the
-      iOS app's native sign-in validates against it.
+- [ ] **Client IDs**: `com.stokvadrata.web,com.stokvadrata.app`, in that order.
+      Supabase sends the **first** one to Apple for the web flow, and Apple only
+      accepts the Services ID there. **Do not remove the bundle ID**: the iOS app's
+      native sign-in validates against it.
 - [ ] **Secret Key (for OAuth)**: paste the generated JWT.
 - [ ] ⚠️ **Apple caps this secret at 6 months.** Put a calendar reminder about a week
       before it expires and regenerate it. When it lapses, Apple sign-in on the web
