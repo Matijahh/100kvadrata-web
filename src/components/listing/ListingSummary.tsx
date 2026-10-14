@@ -125,8 +125,19 @@ export function ListingHeadline({
   );
 }
 
-/** Like, save, message, share and report. */
-export function ListingActions({ listing, className }: { listing: Listing; className?: string }) {
+/**
+ * Like, save, message, share and report. `isLikeCountLoading` swaps the like
+ * count for a small spinner while the real count is still on its way.
+ */
+export function ListingActions({
+  listing,
+  isLikeCountLoading = false,
+  className,
+}: {
+  listing: Listing;
+  isLikeCountLoading?: boolean;
+  className?: string;
+}) {
   const { t } = useTranslation();
   const actions = useListingActions(listing);
 
@@ -136,6 +147,7 @@ export function ListingActions({ listing, className }: { listing: Listing; class
         icon={actions.isLiked ? HeartFilledIcon : HeartIcon}
         iconColor={actions.isLiked ? LIKED_COLOR : undefined}
         label={String(listing.likeCount ?? 0)}
+        isLabelLoading={isLikeCountLoading}
         ariaLabel={t("web.listing.like")}
         pressed={actions.isLiked}
         disabled={actions.isLikePending}
@@ -179,6 +191,7 @@ function ActionButton({
   icon: Icon,
   iconColor,
   label,
+  isLabelLoading = false,
   ariaLabel,
   pressed,
   disabled,
@@ -188,6 +201,7 @@ function ActionButton({
   icon: FC<SVGProps<SVGSVGElement>>;
   iconColor?: string;
   label: string;
+  isLabelLoading?: boolean;
   ariaLabel?: string;
   pressed?: boolean;
   disabled?: boolean;
@@ -199,7 +213,8 @@ function ActionButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      aria-label={ariaLabel ? `${ariaLabel} (${label})` : undefined}
+      aria-label={ariaLabel ? (isLabelLoading ? ariaLabel : `${ariaLabel} (${label})`) : undefined}
+      aria-busy={isLabelLoading || undefined}
       aria-pressed={pressed}
       className={cn(
         "inline-flex h-11 items-center gap-2 rounded-full px-4 text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-60",
@@ -215,7 +230,14 @@ function ActionButton({
         className={cn(variant === "default" && !iconColor && "text-primary")}
         style={iconColor ? { color: iconColor } : undefined}
       />
-      {label}
+      {isLabelLoading ? (
+        <span
+          aria-hidden
+          className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary border-t-transparent"
+        />
+      ) : (
+        label
+      )}
     </button>
   );
 }

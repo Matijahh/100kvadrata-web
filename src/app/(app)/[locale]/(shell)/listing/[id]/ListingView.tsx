@@ -36,13 +36,25 @@ export function ListingView({ initialListing }: { initialListing: Listing }) {
   const listingId = initialListing.id;
 
   // Server-rendered data seeds the cache; optimistic like counts and edits
-  // made elsewhere update it from here on.
-  const { data: listing = initialListing } = useQuery({
+  // made elsewhere update it from here on. The server fetches anonymously and
+  // RLS hides likes from anon, so its likeCount is always 0 — marking it stale
+  // straight away makes the browser refetch with the visitor's session.
+  const {
+    data: listing = initialListing,
+    dataUpdatedAt,
+    isError,
+  } = useQuery({
     queryKey: queryKeys.listing(listingId.toString()),
     queryFn: () => fetchListingById(listingId),
     initialData: initialListing,
+    initialDataUpdatedAt: 0,
     staleTime: 60_000,
   });
+  // Still on the server copy (updatedAt 0) and its count of 0: a spinner until
+  // the browser's fetch lands. Not keyed on isFetching, which is false in the
+  // server HTML and would flash the 0 before hydration. A failed fetch falls
+  // back to the number.
+  const isLikeCountLoading = dataUpdatedAt === 0 && !isError;
 
   useListingViewTracker(listing, true);
 
@@ -100,7 +112,7 @@ export function ListingView({ initialListing }: { initialListing: Listing }) {
             isHeadlineStuck && "shadow-[0_6px_16px_rgba(0,0,0,0.08)]",
           )}
         />
-        <ListingActions listing={listing} />
+        <ListingActions listing={listing} isLikeCountLoading={isLikeCountLoading} />
 
         <div className="mt-7 flex flex-col gap-7">
           {isOwnListing ? <OwnerTools listing={listing} /> : null}
