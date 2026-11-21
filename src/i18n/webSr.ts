@@ -10,11 +10,9 @@ export const webSr: WebDictionary = {
     about: "O tebi",
     contact: "Kontakt",
     agencyAndLinks: "Agencija i linkovi",
-    links: "Linkovi",
   },
   nav: {
     main: "Glavna navigacija",
-    loanCalculator: "Kreditni kalkulator",
     website: "Sajt",
   },
   auth: {

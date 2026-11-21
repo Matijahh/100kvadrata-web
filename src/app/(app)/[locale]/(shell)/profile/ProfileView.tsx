@@ -36,16 +36,23 @@ import { MAX_PREFERENCE_SETS, type SavedSearch } from "@/types/types";
 import { confirmDestructiveAction } from "@/utils/confirmAction";
 import { getListingFilterChipLabels } from "@/utils/listingFilters";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type FC, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
-type Section = "yourListings" | "preferences" | "savedListings" | "savedSearches";
+const SECTIONS = ["yourListings", "preferences", "savedListings", "savedSearches"] as const;
+type Section = (typeof SECTIONS)[number];
+
+const isSection = (value: string | null): value is Section =>
+  value != null && (SECTIONS as readonly string[]).includes(value);
 
 /**
  * Your profile — web port of flatswipe/src/app/(protected)/(tabs)/profile.tsx.
- * A seller's first tab is their listings (with view counts), a buyer's their
- * "what you're looking for" sets; saved listings and saved searches are for
- * everyone. Settings live in the drawer behind the menu button, like the app.
+ * Every account both posts and looks, so there are four tabs: your listings
+ * (with view counts), your "what you're looking for" sets, saved listings and
+ * saved searches. Settings live in the drawer behind the menu button, like the
+ * app. `?section=` opens a given tab (the /looking-for page links to the sets
+ * once all of them are in use).
  */
 export function ProfileView() {
   const { t } = useTranslation();
@@ -56,32 +63,25 @@ export function ProfileView() {
   const setPendingSavedSearch = useHomeFiltersStore((state) => state.setPendingSavedSearch);
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isFeedbackOpen, setFeedbackOpen] = useState(false);
-  const [section, setSection] = useState<Section>("yourListings");
+  const requestedSection = useSearchParams().get("section");
+  const [section, setSection] = useState<Section>(() =>
+    isSection(requestedSection) ? requestedSection : "yourListings",
+  );
   const userId = sessionUser?.id ?? "";
-  const isBuyer = currentUser?.accountType === "buyer";
 
-  // The type decides which first tab exists; correct a stale selection rather
-  // than leave it pointing at a tab that is no longer there.
   useEffect(() => {
-    if (!currentUser) return;
-    setSection((current) =>
-      isBuyer && current === "yourListings"
-        ? "preferences"
-        : !isBuyer && current === "preferences"
-          ? "yourListings"
-          : current,
-    );
-  }, [currentUser, isBuyer]);
+    if (isSection(requestedSection)) setSection(requestedSection);
+  }, [requestedSection]);
 
   const userListingsQuery = useQuery({
     queryKey: queryKeys.userListings(userId),
     queryFn: () => fetchUserListings(userId),
-    enabled: !!sessionUser && !isBuyer && section === "yourListings",
+    enabled: !!sessionUser && section === "yourListings",
   });
   const viewCountsQuery = useQuery({
     queryKey: queryKeys.listingViewCounts(userId),
     queryFn: fetchOwnListingViewCounts,
-    enabled: !!sessionUser && !isBuyer,
+    enabled: !!sessionUser && section === "yourListings",
   });
   const savedListingsQuery = useQuery({
     queryKey: queryKeys.savedListings(userId),
@@ -96,7 +96,7 @@ export function ProfileView() {
   const preferenceSetsQuery = useQuery({
     queryKey: queryKeys.preferenceSets(userId),
     queryFn: () => fetchPreferenceSets(userId),
-    enabled: !!sessionUser && isBuyer,
+    enabled: !!sessionUser && section === "preferences",
   });
   const notificationsQuery = useQuery({
     queryKey: queryKeys.notifications(userId),
@@ -165,9 +165,8 @@ export function ProfileView() {
   };
 
   const tabs: { value: Section; label: string; icon: FC<SVGProps<SVGSVGElement>>; activeIcon: FC<SVGProps<SVGSVGElement>> }[] = [
-    isBuyer
-      ? { value: "preferences", label: t("preferences.tab"), icon: SearchIcon, activeIcon: SearchFilledIcon }
-      : { value: "yourListings", label: t("profile.yourListingsTab"), icon: HouseIcon, activeIcon: HouseFilledIcon },
+    { value: "yourListings", label: t("profile.yourListingsTab"), icon: HouseIcon, activeIcon: HouseFilledIcon },
+    { value: "preferences", label: t("preferences.tab"), icon: SearchIcon, activeIcon: SearchFilledIcon },
     { value: "savedListings", label: t("profile.savedListingsTab"), icon: SaveIcon, activeIcon: SaveFilledIcon },
     { value: "savedSearches", label: t("profile.savedSearchesTab"), icon: FilterIcon, activeIcon: FilterFilledIcon },
   ];
@@ -230,7 +229,7 @@ export function ProfileView() {
         }
       />
 
-      {/* Three tabs share the row — no scrolling strip (which also scrolled
+      {/* The tabs share the row — no scrolling strip (which also scrolled
           vertically: each tab's underline sits 1px over the border). Below
           desktop they are icons only, like the app; the label stays the tab's
           accessible name and its tooltip. */}
@@ -269,7 +268,7 @@ export function ProfileView() {
           ) : (userListingsQuery.data ?? []).length === 0 ? (
             <EmptyState icon={HouseIcon} title={t("profile.yourListingsEmpty")}>
               <Link href="/new-listing" className={buttonClasses()}>
-                {t("onboarding.readyPrimaryCta")}
+                {t("profile.postListingCta")}
               </Link>
             </EmptyState>
           ) : (

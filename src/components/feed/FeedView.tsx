@@ -66,7 +66,7 @@ export function FeedView() {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
-  const { sessionUser, currentUser, isLoadingProfile } = useCurrentUser();
+  const { sessionUser } = useCurrentUser();
   const isAuthReady = useAuthStore((state) => state.isReady);
   const promptSignIn = useSignInPromptStore((state) => state.promptSignIn);
   const pendingSavedSearch = useHomeFiltersStore((state) => state.pendingSavedSearch);
@@ -144,10 +144,12 @@ export function FeedView() {
     clearPendingSavedSearch();
   }, [pendingSavedSearch, clearPendingSavedSearch, setTab, setBuyerFilters, setListingFilters]);
 
-  // The Buyers tab is a seller-side tool, gated on the account type alone
-  // (with or without a live listing), exactly like the app.
-  const canUseBuyersTab = !!sessionUser && currentUser?.accountType === "seller";
-  const isBuyersGateSettled = isAuthReady && !isLoadingProfile;
+  // Every signed-in account can browse who is looking and offer them a
+  // listing, exactly like the app — there is no seller type to gate on. Until
+  // the session has been restored it is unknown rather than missing, and
+  // bouncing a remembered Buyers tab to Listings then would be wrong.
+  const canUseBuyersTab = !!sessionUser;
+  const isBuyersGateSettled = isAuthReady;
 
   useEffect(() => {
     if (isBuyersTab && !canUseBuyersTab && isBuyersGateSettled) setTab("listings");

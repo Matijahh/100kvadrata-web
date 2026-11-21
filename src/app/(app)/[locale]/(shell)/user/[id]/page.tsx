@@ -8,8 +8,9 @@ import { cache } from "react";
 import { UserProfileView } from "./UserProfileView";
 
 // Someone else's profile. Rendered on the server so an agency's page — its
-// listings, contact links — can be shared and found in search. Buyers are
-// private people, so their profiles are kept out of search results.
+// listings, contact links — arrives complete when shared. Like every app page
+// it needs an account, and robots.txt keeps crawlers out of the app, so there
+// is no per-profile robots rule.
 
 type PageProps = { params: Promise<{ locale: string; id: string }> };
 
@@ -44,7 +45,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title: name,
     description,
-    robots: profile.accountType === "buyer" ? { index: false, follow: false } : undefined,
     openGraph: {
       title: name,
       description,
@@ -62,13 +62,10 @@ export default async function UserProfilePage({ params }: PageProps) {
     notFound();
   }
 
-  // Sellers' listings are public, so they render with the page. Buyers'
-  // preference sets are readable by signed-in users only, so those load in
-  // the browser with the visitor's session.
-  let listings: Listing[] | null = null;
-  if (profile.accountType !== "buyer") {
-    listings = await fetchUserListings(id).catch(() => null);
-  }
+  // Listings are public, so they render with the page. "What you're looking
+  // for" sets are readable by signed-in users only, so those load in the
+  // browser with the visitor's session.
+  const listings: Listing[] | null = await fetchUserListings(id).catch(() => null);
 
   return <UserProfileView initialProfile={profile} initialListings={listings} />;
 }

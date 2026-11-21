@@ -8,6 +8,7 @@ export type SignInPromptReason =
   | "save"
   | "message"
   | "newListing"
+  | "lookingFor"
   | "inbox"
   | "profile"
   | "savedSearch"

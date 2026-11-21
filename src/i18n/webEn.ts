@@ -11,11 +11,9 @@ export const webEn = {
     about: "About you",
     contact: "Contact",
     agencyAndLinks: "Agency and links",
-    links: "Links",
   },
   nav: {
     main: "Main navigation",
-    loanCalculator: "Loan calculator",
     website: "Website",
   },
   auth: {

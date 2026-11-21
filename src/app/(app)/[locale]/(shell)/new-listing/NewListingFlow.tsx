@@ -3,7 +3,6 @@
 import AnchorRightIcon from "@assets/icons/anchor-right-icon.svg";
 import Button from "@/components/genericComponents/Button";
 import { Spinner } from "@/components/genericComponents/EmptyState";
-import { LoanCalculator } from "@/components/loanCalculator/LoanCalculator";
 import { ListingDetailsForm } from "@/components/newListing/ListingDetailsForm";
 import { ListingMediaStep } from "@/components/newListing/ListingMediaStep";
 import { useToast } from "@/components/providers/ToastProvider";
@@ -165,7 +164,7 @@ export function NewListingFlow() {
   const searchParams = useSearchParams();
   const editListingId = searchParams.get("editListingId");
   const isEditing = !!editListingId;
-  const { currentUser, sessionUser, isLoadingProfile } = useCurrentUser();
+  const { sessionUser } = useCurrentUser();
   const [step, setStep] = useState<1 | 2>(1);
   const [draft, setDraft] = useState<NewListingDraft>(initialDraft);
   const [progress, setProgress] = useState<Progress>(null);
@@ -420,13 +419,6 @@ export function NewListingFlow() {
     }
     publishMutation.mutate();
   };
-
-  // Editing works whatever the account type (a seller turned buyer still owns
-  // their listings); only the create screen is swapped for buyers.
-  if (!isEditing) {
-    if (isLoadingProfile) return <Spinner className="py-24" />;
-    if (currentUser?.accountType === "buyer") return <LoanCalculator />;
-  }
 
   if (isEditing && editListingQuery.isLoading) return <Spinner className="py-24" />;
   if (isEditing && (editListingQuery.isError || !editedListing)) {

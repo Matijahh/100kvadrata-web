@@ -99,6 +99,7 @@ export const sr = {
   tabs: {
     home: "Početna",
     newListing: "Novi oglas",
+    lookingFor: "Šta tražiš",
     messages: "Poruke",
     profile: "Profil",
   },
@@ -197,6 +198,12 @@ export const sr = {
     blockConfirm: "Blokiraj",
     blockFailed: "Nismo uspeli da blokiramo korisnika. Pokušaj ponovo.",
   },
+  appUpdate: {
+    title: "Dostupna je nova verzija",
+    message: "Ažuriraj 100m² da dobiješ najnovije funkcije i ispravke.",
+    update: "AŽURIRAJ",
+    later: "Kasnije",
+  },
   signInPrompt: {
     title: "Napravi besplatan nalog",
     createAccount: "NAPRAVI NALOG",
@@ -207,6 +214,7 @@ export const sr = {
       save: "Prijavi se da sačuvaš oglase i vratiš im se kasnije.",
       message: "Prijavi se da pošalješ poruku vlasniku nekretnine.",
       newListing: "Prijavi se da postaviš svoj oglas.",
+      lookingFor: "Prijavi se da napišeš vlasnicima i agentima šta tražiš.",
       inbox: "Prijavi se da vidiš razgovore sa kupcima i prodavcima.",
       profile: "Prijavi se da podesiš svoj profil i podešavanja.",
       savedSearch: "Prijavi se da sačuvaš pretragu i dobijaš nove rezultate.",
@@ -223,13 +231,6 @@ export const sr = {
     title: "Profil",
     editProfile: "Izmeni profil",
     changePhoto: "Promeni fotografiju",
-    accountTypeLabel: "Tip profila",
-    accountTypeHint: {
-      buyer:
-        "Upisuješ šta tražiš, a prodavci i agenti ti se javljaju za nekretnine koje odgovaraju.",
-      seller:
-        "Na tvom profilu stoje tvoji oglasi. Nećeš se pojavljivati na listi kupaca.",
-    },
     saveProfile: "Sačuvaj profil",
     savingProfile: "Čuvanje...",
     logout: "Odjava",
@@ -298,10 +299,15 @@ export const sr = {
     listingsLoadError: "Nismo uspeli da učitamo oglase.",
     savedSearchesLoadError: "Nismo uspeli da učitamo sačuvane pretrage.",
     yourListingsEmpty: "Tvoji oglasi će se prikazivati ovde.",
-    userListingsEmpty: "Ovaj korisnik još nema oglase.",
-    userPreferencesEmpty: "Ovaj korisnik još nije upisao šta traži.",
+    postListingCta: "POSTAVI OGLAS",
+    userListingsTab: "Oglasi",
+    userPreferencesTab: "Šta traži",
+    userProfileEmpty:
+      "Ovaj korisnik još nema oglase i nije upisao šta traži.",
     savedListingsEmpty: "Sačuvani oglasi će se prikazivati ovde.",
+    savedListingsEmptyCta: "Pregledaj oglase",
     savedSearchesEmpty: "Sačuvane pretrage će se prikazivati ovde.",
+    savedSearchesEmptyCta: "Pretraži oglase",
     savedSearchesListingsGroup: "Nekretnine",
     savedSearchesBuyersGroup: "Kupci",
     savedSearchListingsKind: "Sačuvana pretraga nekretnina",
@@ -582,37 +588,21 @@ export const sr = {
   },
   onboarding: {
     welcomeTitle: "Drago nam je što si tu",
-    welcomeSubtitle:
-      "Reci nam kako planiraš da koristiš aplikaciju pa ćemo je podesiti po tvojoj meri.",
-    accountType: {
-      buyer: {
+    choiceTitle: "Nudiš ili tražiš nekretninu?",
+    choiceSubtitle: "Izaberi odakle želiš da počneš.",
+    choices: {
+      offer: {
+        title: "Nudim nekretninu",
+        description:
+          "Objavi stan, kuću ili drugu nekretninu za izdavanje ili prodaju.",
+      },
+      lookFor: {
         title: "Tražim nekretninu",
         description:
-          "Pregledaj oglase za iznajmljivanje ili kupovinu. Vlasnici i agenti mogu da ti se jave sa ponudama koje ti odgovaraju.",
-      },
-      seller: {
-        title: "Imam nekretninu za ponudu",
-        description:
-          "Postavljaj oglase za stanove, kuće ili garaže - za izdavanje ili prodaju. Nećeš biti na listi kupaca.",
+          "Napiši šta tražiš, a vlasnici i agenti će ti slati ponude.",
       },
     },
-    changeLater: "Ovo možeš promeniti bilo kada u „Uredi profil“.",
-    continue: "NASTAVI",
-    saving: "Čuvanje...",
-    saveError: "Nismo uspeli da sačuvamo. Pokušaj ponovo.",
-    detailsTitle: "Šta tražiš?",
-    detailsSubtitle:
-      "Ovo je ono što prodavci i agenti vide kad traže kupce i zbog čega ti se javljaju. Sva polja su opciona — ali bez ijednog se nećeš pojaviti na njihovoj listi.",
-    detailsCta: "ZAVRŠI",
-    detailsSkip: "Preskoči za sada",
-    readyTitle: "Sve je spremno",
-    readyBodyBuyer:
-      "Prodavci i agenti sada mogu da te pronađu na listi kupaca i da ti pošalju ponude koje odgovaraju onome što tražiš. Šta tražiš možeš da promeniš bilo kada na svom profilu.",
-    readyBuyerCta: "POGLEDAJ OGLASE",
-    readyBodySeller:
-      "Nećeš se pojavljivati na listi kupaca, pa ti niko neće nuditi nekretnine koje ne tražiš. Hoćeš li da postaviš svoj prvi oglas?",
-    readyPrimaryCta: "POSTAVI OGLAS",
-    readySecondaryCta: "Vodi me na feed",
+    choiceNote: "Uvek možeš i jedno i drugo — ovo samo bira odakle počinješ.",
   },
   preferences: {
     tab: "Šta tražiš",
@@ -630,6 +620,12 @@ export const sr = {
     saveError: "Nismo uspeli da sačuvamo. Pokušaj ponovo.",
     loadError: "Nismo uspeli da učitamo šta tražiš.",
     limitReached: "Možeš imati najviše 5. Obriši jedan da bi dodao novi.",
+    emptySaveError:
+      "Popuni bar jedno polje da bi te vlasnici i agenti pronašli.",
+    tabLimitTitle: "Svih {{max}} je već iskorišćeno",
+    tabLimitBody:
+      "Možeš imati najviše {{max}} odjednom. Izmeni ili obriši neki na svom profilu, pa dodaj novi.",
+    tabLimitCta: "IDI NA PROFIL",
     add: "Dodaj šta tražiš",
     addHint: "Prodavci i agenti ti se javljaju za ono što odgovara.",
     capReached:
@@ -745,39 +741,6 @@ export const sr = {
       premium: "Premium",
       exclusive: "Exclusive",
       exclusive_plus: "Exclusive Plus",
-    },
-  },
-  loanCalculator: {
-    title: "Kalkulator kredita",
-    sectionTitle: "Tvoj kredit",
-    intro:
-      "Izračunaj koliko bi te stambeni kredit koštao mesečno. Unesi iznos, rok otplate i kamatnu stopu.",
-    amountLabel: "Iznos kredita",
-    amountPlaceholder: "Unesi iznos u €...",
-    termLabel: "Rok otplate",
-    years: "Godine",
-    months: "Meseci",
-    rateLabel: "Kamatna stopa",
-    ratePlaceholder: "Unesi godišnju stopu, npr. 4,5...",
-    monthlyPayment: "Mesečna rata",
-    totalPaid: "Ukupno plaćeno",
-    totalInterest: "Ukupna kamata",
-    paymentsCount: "Broj rata",
-    emptyState:
-      "Popuni iznos, rok i kamatnu stopu da vidiš svoju mesečnu ratu.",
-    disclaimer:
-      "Samo procena, na osnovu fiksne kamatne stope. Ponuda tvoje banke može da se razlikuje.",
-    errors: {
-      amountInvalid: "Unesi ispravan iznos.",
-      amountPositive: "Iznos mora biti veći od 0.",
-      amountTooLarge: "Taj iznos je previše veliki.",
-      termPositive: "Rok mora biti duži od 0 meseci.",
-      termTooLong: "Taj rok je predug.",
-      monthsRange: "Unesi između 0 i 11 meseci, a ostatak upiši u godine.",
-      monthsInvalid: "Unesi ceo broj.",
-      rateInvalid: "Unesi ispravnu kamatnu stopu.",
-      rateNegative: "Kamatna stopa ne može biti negativna.",
-      rateTooLarge: "Ta kamatna stopa je previsoka.",
     },
   },
   feedback: {

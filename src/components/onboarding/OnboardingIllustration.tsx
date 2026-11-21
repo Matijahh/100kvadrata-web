@@ -1,5 +1,3 @@
-import GoalDark from "@assets/illustrations/goal-dark.svg";
-import GoalLight from "@assets/illustrations/goal.svg";
 import WelcomeDark from "@assets/illustrations/welcome-dark.svg";
 import WelcomeLight from "@assets/illustrations/welcome.svg";
 import WhatYouLookingDark from "@assets/illustrations/what-you-looking-dark.svg";
@@ -11,7 +9,11 @@ import type { FC, SVGProps } from "react";
 // the brand palette, so each comes in a light and a dark version; both are
 // rendered and CSS shows the one for the active theme (no hydration mismatch).
 
-export type OnboardingIllustrationSpot = "welcome" | "details" | "readySeller" | "readyBuyer";
+export type OnboardingIllustrationSpot =
+  // The "offer or look for?" screen right after registration.
+  | "welcome"
+  // /looking-for once all of the sets are in use.
+  | "lookingForLimit";
 
 type Svg = FC<SVGProps<SVGSVGElement>>;
 
@@ -28,13 +30,9 @@ const WHAT_YOU_LOOKING: ThemedArt = {
   dark: WhatYouLookingDark,
   aspectRatio: 750 / 500,
 };
-const GOAL: ThemedArt = { light: GoalLight, dark: GoalDark, aspectRatio: 1 };
-
 const ILLUSTRATIONS: Record<OnboardingIllustrationSpot, ThemedArt | null> = {
   welcome: WELCOME,
-  details: WHAT_YOU_LOOKING,
-  readySeller: GOAL,
-  readyBuyer: GOAL,
+  lookingForLimit: WHAT_YOU_LOOKING,
 };
 
 export const hasOnboardingIllustration = (spot: OnboardingIllustrationSpot) =>

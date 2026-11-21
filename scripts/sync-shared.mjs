@@ -48,7 +48,6 @@ const SHARED = new Set([
   "src/utils/generatedAvatar.ts",
   "src/utils/listingFilters.ts",
   "src/utils/listingPrice.ts",
-  "src/utils/loanCalculator.ts",
   "src/utils/locationText.ts",
   "src/utils/mapLinks.ts",
   "src/utils/numericInput.ts",
@@ -88,6 +87,9 @@ const ADAPTERS = new Set([
 
 // Mobile-only modules with no web counterpart (or one that lives elsewhere).
 const APP_ONLY = new Set([
+  // Store deep links (itms-apps:// / market://) for the update popup; the
+  // website keeps its own store URLs in src/content/common.ts.
+  "src/constants/appStore.ts",
   "src/constants/layout.ts",
   "src/hooks/useFeedItemHeight.ts",
   "src/hooks/useVideoThumbnail.ts",

@@ -31,13 +31,11 @@ export const fetchBuyers = async (
     .from("user_preferences")
     .select("*, profile:profiles!inner(*)")
     .neq("user_id", currentUserId)
-    // Only buyers. Sellers keep their preference sets when they switch type — the
-    // rows are hidden, not deleted — so row existence is not the signal.
-    .eq("profile.account_type", "buyer")
-    // ...and only sets that actually state something. An empty one tells a
-    // seller nothing. `has_preferences` is a generated column (FIX-15), so a
-    // buyer who fills anything in reappears here on their next save without
-    // any further action.
+    // Every account can keep sets — there is no buyer type to filter on — so
+    // the only gate is whether a set actually states something. An empty one
+    // tells a seller nothing. `has_preferences` is a generated column (FIX-15),
+    // so a set that gets anything filled in appears here on its next save
+    // without any further action.
     .eq("has_preferences", true);
 
   if (filters?.category) {

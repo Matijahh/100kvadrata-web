@@ -33,9 +33,6 @@ export type Profile = {
   // pins it against writes from the app, so nobody can award it to themselves.
   // Every listing this profile publishes shows the Exclusive badge.
   isExclusive?: boolean;
-  // Buyer or seller — the single answer that decides which half of the app a
-  // person gets. See ACCOUNT_TYPE_VALUES.
-  accountType?: AccountType | null;
 };
 
 export type CurrentUser = SessionUser & Profile;
@@ -400,19 +397,6 @@ export type NewListingDraft = {
   video: SelectedVideoAsset | null;
 };
 
-// Which half of the app a person gets, captured during onboarding and
-// changeable at any time in Edit profile. Lives on `profiles`, not on a
-// preference set — a person is one or the other however many preference sets they
-// keep.
-//
-// There used to be a third value, "both". Every screen that branched on it had
-// to decide what it meant and every one of them answered "seller", so it was a
-// value that cost a decision everywhere and bought nothing. Switching type
-// destroys nothing: a seller's preference sets and a buyer's listings both stay in
-// the database, just out of sight until they switch back.
-export const ACCOUNT_TYPE_VALUES = ["buyer", "seller"] as const;
-export type AccountType = (typeof ACCOUNT_TYPE_VALUES)[number];
-
 // What a buyer is looking for. Mirrors `ListingFilters` field for field, minus
 // `searchText` — a free-text term is something you type for one search, not
 // something you keep. Keep the two in step: the point is that stating a
@@ -447,7 +431,8 @@ export type PreferenceCriteria = {
 
 /**
  * One saved preference set: a full set of criteria plus where it sits among the
- * cards on the profile. A buyer keeps up to MAX_PREFERENCE_SETS of them.
+ * cards on the profile. Every account can keep up to MAX_PREFERENCE_SETS of
+ * them, alongside any listings it posts — there is no buyer or seller type.
  */
 export type PreferenceSet = PreferenceCriteria & {
   id: string;

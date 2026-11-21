@@ -1,11 +1,6 @@
 // AUTO-SYNCED from flatswipe — edit there, then run `npm run sync-shared`.
 import { supabase } from "@/lib/supabase";
-import {
-  AccountType,
-  AppLanguage,
-  AppThemePreference,
-  Profile,
-} from "@/types/types";
+import { AppLanguage, AppThemePreference, Profile } from "@/types/types";
 import { normalizeExternalUrl } from "@/utils/externalLinks";
 import {
   IMAGE_PRESETS,
@@ -30,7 +25,6 @@ type ProfileRow = {
   preferred_language: AppLanguage | null;
   preferred_theme: AppThemePreference | null;
   is_exclusive: boolean | null;
-  account_type: AccountType | null;
 };
 
 export type UpdateProfileInput = {
@@ -45,7 +39,6 @@ export type UpdateProfileInput = {
   agencyName: string;
   websiteUrl: string;
   avatarUrl?: string | null;
-  accountType: AccountType;
 };
 
 export type UpdateProfilePreferencesInput = {
@@ -81,10 +74,6 @@ export const mapProfileRowToUser = (
   // Read-only here. `updateProfile` never sends it, and the database pins it
   // against app writes regardless — it is granted in the SQL editor.
   isExclusive: profile.is_exclusive ?? false,
-  // Null only for a row read from a database where the account-type migration
-  // has not run. Callers treat that as "not answered yet" rather than
-  // defaulting, so nobody is silently shown the wrong half of the app.
-  accountType: profile.account_type ?? null,
 });
 
 export const fetchProfile = async (userId: string) => {
@@ -148,10 +137,6 @@ export const updateProfile = async (
       agency_name: input.agencyName || null,
       website_url: normalizeExternalUrl(input.websiteUrl) || null,
       avatar_url: input.avatarUrl ?? null,
-      // Saved with the rest of the form rather than applied on tap: switching
-      // type reshapes the whole app, so it should take the same deliberate
-      // save as changing a username, and be abandonable by backing out.
-      account_type: input.accountType,
       updated_at: new Date().toISOString(),
     })
     .eq("id", userId)
@@ -167,21 +152,6 @@ export const updateProfile = async (
   updated.phone = phone;
 
   return updated;
-};
-
-/**
- * The type on its own, for onboarding — which asks the question before the
- * user has a profile form in front of them to save it with.
- */
-export const updateAccountType = async (
-  userId: string,
-  accountType: AccountType,
-): Promise<void> => {
-  await supabase
-    .from("profiles")
-    .update({ account_type: accountType, updated_at: new Date().toISOString() })
-    .eq("id", userId)
-    .throwOnError();
 };
 
 export const updateProfilePreferences = async (

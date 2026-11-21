@@ -62,3 +62,12 @@ export const savePushToken = async (userId: string, token: string): Promise<void
     )
     .throwOnError();
 };
+
+/** Called on logout so the device stops receiving the signed-out account's pushes. */
+export const clearPushToken = async (userId: string): Promise<void> => {
+  await supabase
+    .from("profile_private")
+    .update({ push_token: null, updated_at: new Date().toISOString() })
+    .eq("id", userId)
+    .throwOnError();
+};

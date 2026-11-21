@@ -9,7 +9,6 @@ import { LabeledTextField } from "@/components/form/LabeledTextField";
 import Avatar from "@/components/genericComponents/Avatar";
 import Button from "@/components/genericComponents/Button";
 import { Spinner } from "@/components/genericComponents/EmptyState";
-import { AccountTypePicker } from "@/components/onboarding/AccountTypePicker";
 import { useToast } from "@/components/providers/ToastProvider";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRouter } from "@/i18n/navigation";
@@ -17,7 +16,7 @@ import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 import { DEFAULT_COUNTRY_CODE, searchCities } from "@/services/locations";
 import { updateProfile, uploadAvatar } from "@/services/profile";
-import type { AccountType, CurrentUser } from "@/types/types";
+import type { CurrentUser } from "@/types/types";
 import { isValidPhone, sanitizePhoneInput } from "@/utils/phone";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState } from "react";
@@ -29,7 +28,7 @@ import { useTranslation } from "react-i18next";
  * uploadAvatar — the photo is resized in the browser first, like on the phone).
  *
  * Below lg it is the app's single card. From lg the same card spans the page,
- * split into sections, with the photo and profile type side by side.
+ * split into sections under the photo.
  */
 export function EditProfileForm() {
   const { currentUser, isLoadingProfile } = useCurrentUser();
@@ -60,7 +59,6 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
   const [websiteUrl, setWebsiteUrl] = useState(currentUser.websiteUrl ?? "");
   const [instagramUrl, setInstagramUrl] = useState(currentUser.instagramUrl ?? "");
   const [youtubeUrl, setYoutubeUrl] = useState(currentUser.youtubeUrl ?? "");
-  const [accountType, setAccountType] = useState<AccountType>(currentUser.accountType ?? "buyer");
   // A picked file is previewed from a blob: URL and only uploaded on save.
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -93,11 +91,11 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
         instagramUrl: instagramUrl.trim(),
         youtubeUrl: youtubeUrl.trim(),
         avatarUrl: nextAvatarUrl,
-        accountType,
       });
     },
     onSuccess: async (updated) => {
       await queryClient.invalidateQueries({ queryKey: queryKeys.profile(updated.id) });
+      // Buyer cards show the name, photo and bio, which may just have changed.
       queryClient.invalidateQueries({ queryKey: ["buyers"] });
       goBack();
     },
@@ -167,55 +165,42 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
       </div>
 
       <div className="rounded-[32px] bg-surface p-5 md:p-8 lg:px-10 lg:py-9">
-        {/* Who you are at a glance: the photo, and the type that shapes the rest of the form. */}
-        <div className="lg:grid lg:grid-cols-[auto_minmax(0,1fr)] lg:items-start lg:gap-10">
-          <div className="mb-8 flex flex-col items-center gap-2 lg:mb-0 lg:w-[140px]">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={(event) => {
-                event.preventDefault();
-                setDraggingPhoto(true);
-              }}
-              onDragLeave={() => setDraggingPhoto(false)}
-              onDrop={(event) => {
-                event.preventDefault();
-                setDraggingPhoto(false);
-                handleFile(event.dataTransfer.files?.[0]);
-              }}
-              className={cn(
-                "group relative h-[120px] w-[120px] overflow-hidden rounded-full border-4 border-primary",
-                isDraggingPhoto && "ring-4 ring-primary-soft ring-offset-2",
-              )}
-              aria-label={t("profile.changePhoto")}
-            >
-              <Avatar userId={currentUser.id} avatarUrl={avatarPreview ?? currentUser.avatarUrl} />
-              <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white transition-colors group-hover:bg-black/50">
-                <CameraIcon width={30} height={30} aria-hidden />
-              </span>
-            </button>
-            <span className="text-sm font-semibold text-primary">{t("profile.changePhoto")}</span>
-            <span className="hidden text-center text-xs leading-4 text-text-muted lg:block">
-              {t("web.editProfile.photoHint")}
+        <div className="mb-8 flex flex-col items-center gap-2 lg:mb-0">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDraggingPhoto(true);
+            }}
+            onDragLeave={() => setDraggingPhoto(false)}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDraggingPhoto(false);
+              handleFile(event.dataTransfer.files?.[0]);
+            }}
+            className={cn(
+              "group relative h-[120px] w-[120px] overflow-hidden rounded-full border-4 border-primary",
+              isDraggingPhoto && "ring-4 ring-primary-soft ring-offset-2",
+            )}
+            aria-label={t("profile.changePhoto")}
+          >
+            <Avatar userId={currentUser.id} avatarUrl={avatarPreview ?? currentUser.avatarUrl} />
+            <span className="absolute inset-0 flex items-center justify-center bg-black/35 text-white transition-colors group-hover:bg-black/50">
+              <CameraIcon width={30} height={30} aria-hidden />
             </span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(event) => handleFile(event.target.files?.[0])}
-            />
-          </div>
-
-          {/* First, because it decides what the rest of the app looks like —
-              and whether the agency field below is there at all. */}
-          <div>
-            <p className="mb-2 text-sm font-light text-form-label">{t("profile.accountTypeLabel")}</p>
-            <AccountTypePicker value={accountType} onChange={setAccountType} compact />
-            <p className="mb-6 mt-2 px-1 text-xs font-light leading-[17px] text-text-muted lg:mb-0">
-              {t(`profile.accountTypeHint.${accountType}`)}
-            </p>
-          </div>
+          </button>
+          <span className="text-sm font-semibold text-primary">{t("profile.changePhoto")}</span>
+          <span className="hidden max-w-[220px] text-center text-xs leading-4 text-text-muted lg:block">
+            {t("web.editProfile.photoHint")}
+          </span>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => handleFile(event.target.files?.[0])}
+          />
         </div>
 
         <SectionHeading title={t("web.editProfile.about")} />
@@ -313,21 +298,17 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
           />
         </div>
 
-        <SectionHeading
-          title={accountType === "seller" ? t("web.editProfile.agencyAndLinks") : t("web.editProfile.links")}
-        />
+        <SectionHeading title={t("web.editProfile.agencyAndLinks")} />
         <div className="grid gap-x-4 md:grid-cols-2">
-          {/* Only meaningful for someone offering a place. Hiding it does not
-              clear the value — switching back keeps it. */}
-          {accountType === "seller" ? (
-            <LabeledTextField
-              label={t("profile.agencyNameLabel")}
-              value={agencyName}
-              onChangeText={setAgencyName}
-              disabled={isSaving}
-              placeholder={t("profile.agencyNamePlaceholder")}
-            />
-          ) : null}
+          {/* For everyone: any account can post listings, so any account may
+              be an agency. Optional, like the rest. */}
+          <LabeledTextField
+            label={t("profile.agencyNameLabel")}
+            value={agencyName}
+            onChangeText={setAgencyName}
+            disabled={isSaving}
+            placeholder={t("profile.agencyNamePlaceholder")}
+          />
           <LabeledTextField
             label={t("profile.websiteLabel")}
             value={websiteUrl}

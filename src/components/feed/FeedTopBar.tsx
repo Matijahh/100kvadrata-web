@@ -11,8 +11,8 @@ import { useTranslation } from "react-i18next";
 
 /**
  * Above the feed: the filters toggle (expands or collapses the panel on wide
- * screens, opens a sheet on smaller ones) and Properties / Buyers (sellers
- * only, like the app), centred. What is filtered is shown in the panel or
+ * screens, opens a sheet on smaller ones) and Properties / Buyers (every
+ * signed-in account, like the app), centred. What is filtered is shown in the panel or
  * sheet itself; here only a count (wide screens) or a filled button (below lg).
  * No free-text search field — the app has none either (its bar only opens
  * the filters).

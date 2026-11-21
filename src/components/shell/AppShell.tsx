@@ -2,8 +2,8 @@
 
 import BuildingIcon from "@assets/icons/building-icon.svg";
 import GlobeIcon from "@assets/icons/globe-icon.svg";
+import HouseSearchIcon from "@assets/icons/house-search-icon.svg";
 import MessagesIcon from "@assets/icons/messages-icon.svg";
-import PercentCircleIcon from "@assets/icons/percent-circle-icon.svg";
 import PlusCircleIcon from "@assets/icons/plus-circle-icon.svg";
 import Logo from "@assets/logo.svg";
 import Avatar from "@/components/genericComponents/Avatar";
@@ -23,11 +23,11 @@ import { useLocale } from "next-intl";
 import { useTranslation } from "react-i18next";
 
 // Web counterpart of the app's tab bar (src/app/(protected)/(tabs)/_layout.tsx):
-// the same four destinations, as a left rail on desktop and a floating bottom
+// the same five destinations, as a left rail on desktop and a floating bottom
 // bar on phones. Only signed-in users get here (no guest mode on the web).
 
 type NavItem = {
-  href: "/feed" | "/new-listing" | "/inbox" | "/profile";
+  href: "/feed" | "/new-listing" | "/looking-for" | "/inbox" | "/profile";
   label: string;
   icon?: FC<SVGProps<SVGSVGElement>>;
   badge?: number;
@@ -42,9 +42,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   // From the route, so the server-rendered link is already right.
   const locale = useLocale() as AppLanguage;
   const { currentUser } = useCurrentUser();
-  // The second tab is the loan calculator for buyers and the listing form for
-  // sellers, so its icon and label follow the account type.
-  const isBuyer = currentUser?.accountType === "buyer";
 
   const conversationsQuery = useQuery({
     queryKey: queryKeys.conversations(sessionUser?.id ?? ""),
@@ -59,11 +56,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const items: NavItem[] = [
     { href: "/feed", label: t("tabs.home"), icon: BuildingIcon },
-    {
-      href: "/new-listing",
-      label: isBuyer ? t("web.nav.loanCalculator") : t("tabs.newListing"),
-      icon: isBuyer ? PercentCircleIcon : PlusCircleIcon,
-    },
+    { href: "/new-listing", label: t("tabs.newListing"), icon: PlusCircleIcon },
+    { href: "/looking-for", label: t("tabs.lookingFor"), icon: HouseSearchIcon },
     {
       href: "/inbox",
       label: t("tabs.messages"),

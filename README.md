@@ -62,15 +62,16 @@ them is a full page load):
 | `(marketing)` | `/privacy-policy`, `/terms-of-service`, `/delete-account` | Legal (`/delete-account` is the Play Store data-deletion URL) |
 | — | `/sitemap.xml`, `/robots.txt` | Generated (`src/app/sitemap.ts`, `robots.ts`): the website only; robots keeps crawlers out of the app |
 | `(app)` | `/listing/:id` | Listing page, server-rendered with OG image + JSON-LD (phones with the app open it there via app links) |
-| `(app)` | `/user/:id` | Someone else's profile (sellers: listings; buyers: what they look for) |
-| `(app)` | `/profile`, `/edit-profile` | Own profile (tabs, settings drawer) and editing |
-| `(app)` | `/new-listing` (`?editListingId=`) | Create / edit a listing; buyers get the loan calculator |
-| `(app)` | `/feed` | Home: grid from 1024px, reel below (no switch); filters (no free-text search, like the app) as a collapsible panel from xl, a sheet below; saved searches; Buyers tab for sellers |
-| `(app)` | `/preferences/:id` (`new`) | A buyer's "what you're looking for" set |
+| `(app)` | `/user/:id` | Someone else's profile: a tab for their listings and/or what they're looking for, whichever they have |
+| `(app)` | `/profile` (`?section=`), `/edit-profile` | Own profile (tabs, settings drawer) and editing |
+| `(app)` | `/new-listing` (`?editListingId=`) | Create / edit a listing |
+| `(app)` | `/looking-for` | New "what you're looking for" set (up to 5; says so once they are all used) |
+| `(app)` | `/feed` | Home: grid from 1024px, reel below (no switch); filters (no free-text search, like the app) as a collapsible panel from xl, a sheet below; saved searches; Buyers tab for every account |
+| `(app)` | `/preferences/:id` (`new`) | Edit one "what you're looking for" set (opened from its card on the profile) |
 | `(app)` | `/inbox`, `/chat/:id` | Messages: two panes on desktop (shared `(messages)` layout), two screens on phones; chat polls every 5 s |
 | `(app)` | `/notifications` | Likes, saves, messages, offers; read / read all |
 | `(app)` | `/login`, `/register`, `/verify-email`, `/forgot-password` | Auth (OTP codes, same as the app) |
-| `(app)` | `/update-password`, `/choose-username`, `/onboarding` | Signed-in setup steps |
+| `(app)` | `/update-password`, `/choose-username`, `/onboarding` | Signed-in setup steps (`/onboarding`: offer a property or look for one — opens `/new-listing` or `/looking-for`, saves nothing) |
 | `(app)` | `/auth/callback` | Google / Apple OAuth return (see `docs/WEB_AUTH_SETUP.md`) |
 
 **No guest mode:** every `(app)` page needs an account except the sign-in screens

@@ -95,6 +95,7 @@ export const en = {
   tabs: {
     home: "Home",
     newListing: "New Listing",
+    lookingFor: "What you're looking for",
     messages: "Messages",
     profile: "Profile",
   },
@@ -190,6 +191,12 @@ export const en = {
     blockConfirm: "Block",
     blockFailed: "We could not block this user. Please try again.",
   },
+  appUpdate: {
+    title: "New version available",
+    message: "Update 100m² to get the latest features and fixes.",
+    update: "UPDATE",
+    later: "Later",
+  },
   signInPrompt: {
     title: "Create a free account",
     createAccount: "CREATE ACCOUNT",
@@ -200,6 +207,8 @@ export const en = {
       save: "Sign in to save listings and come back to them later.",
       message: "Sign in to message the owner about this property.",
       newListing: "Sign in to post your own property listing.",
+      lookingFor:
+        "Sign in to tell owners and agents what you're looking for.",
       inbox: "Sign in to see your conversations with buyers and sellers.",
       profile: "Sign in to set up your profile and preferences.",
       savedSearch: "Sign in to save this search and get new matches.",
@@ -215,13 +224,6 @@ export const en = {
     title: "Profile",
     editProfile: "Edit profile",
     changePhoto: "Change photo",
-    accountTypeLabel: "Profile type",
-    accountTypeHint: {
-      buyer:
-        "You write down what you are after, and sellers and agents get in touch about places that match.",
-      seller:
-        "Your profile shows your listings. You won't appear in the buyers list.",
-    },
     saveProfile: "Save profile",
     savingProfile: "Saving...",
     logout: "Logout",
@@ -288,10 +290,15 @@ export const en = {
     listingsLoadError: "We couldn't load listings.",
     savedSearchesLoadError: "We couldn't load saved searches.",
     yourListingsEmpty: "Your listings will show up here.",
-    userListingsEmpty: "This user has no listings yet.",
-    userPreferencesEmpty: "This user has not said what they are looking for yet.",
+    postListingCta: "POST A LISTING",
+    userListingsTab: "Listings",
+    userPreferencesTab: "What they're looking for",
+    userProfileEmpty:
+      "This user has no listings yet and hasn't said what they're looking for.",
     savedListingsEmpty: "Saved listings will show up here.",
+    savedListingsEmptyCta: "Browse listings",
     savedSearchesEmpty: "Saved searches will show up here.",
+    savedSearchesEmptyCta: "Search listings",
     savedSearchesListingsGroup: "Properties",
     savedSearchesBuyersGroup: "Buyers",
     savedSearchListingsKind: "Saved property search",
@@ -569,37 +576,21 @@ export const en = {
   },
   onboarding: {
     welcomeTitle: "Welcome to 100m²",
-    welcomeSubtitle:
-      "Tell us how you'll be using the app and we'll set it up around that.",
-    accountType: {
-      buyer: {
-        title: "I'm looking for a place",
+    choiceTitle: "Offering a property or looking for one?",
+    choiceSubtitle: "Pick where you'd like to start.",
+    choices: {
+      offer: {
+        title: "I have a property to offer",
         description:
-          "Browse listings to rent or buy. Owners and agents can reach out with places that match what you're after.",
+          "Post an apartment, house or other property for rent or sale.",
       },
-      seller: {
-        title: "I have a place to offer",
+      lookFor: {
+        title: "I'm looking for a property",
         description:
-          "Post apartments, houses or garages for rent or sale. You won't be listed as a buyer.",
+          "Say what you're looking for and owners and agents will send you offers.",
       },
     },
-    changeLater: "You can change this any time under Edit profile.",
-    continue: "CONTINUE",
-    saving: "Saving...",
-    saveError: "We couldn't save that. Please try again.",
-    detailsTitle: "What are you after?",
-    detailsSubtitle:
-      "This is what sellers and agents see when they look for buyers, and what they get in touch about. Every field is optional — but without any of them you won't show up in their list.",
-    detailsCta: "FINISH",
-    detailsSkip: "Skip for now",
-    readyTitle: "You're all set",
-    readyBodyBuyer:
-      "Sellers and agents can now find you in the buyers list and send you offers that match what you're looking for. You can change what you're looking for any time on your profile.",
-    readyBuyerCta: "SEE LISTINGS",
-    readyBodySeller:
-      "You won't appear in the buyers list, so nobody will pitch you a place you didn't ask for. Ready to post your first listing?",
-    readyPrimaryCta: "POST A LISTING",
-    readySecondaryCta: "Take me to the feed",
+    choiceNote: "You can always do both — this only decides where you start.",
   },
   preferences: {
     tab: "What you're looking for",
@@ -617,6 +608,12 @@ export const en = {
     saveError: "We couldn't save that. Please try again.",
     loadError: "We couldn't load what you're looking for.",
     limitReached: "You can keep up to 5. Delete one to add another.",
+    emptySaveError:
+      "Fill in at least one thing so owners and agents can find you.",
+    tabLimitTitle: "All {{max}} are already in use",
+    tabLimitBody:
+      "You can keep up to {{max}} at a time. Change or delete one on your profile, then add something new.",
+    tabLimitCta: "GO TO PROFILE",
     add: "Add what you're looking for",
     addHint: "Sellers and agents get in touch about places that match.",
     capReached:
@@ -728,39 +725,6 @@ export const en = {
       premium: "Premium",
       exclusive: "Exclusive",
       exclusive_plus: "Exclusive Plus",
-    },
-  },
-  loanCalculator: {
-    title: "Loan calculator",
-    sectionTitle: "Your loan",
-    intro:
-      "Estimate what a home loan would cost you each month. Enter the amount, how long you want to repay it over, and the interest rate.",
-    amountLabel: "Loan amount",
-    amountPlaceholder: "Enter amount in €...",
-    termLabel: "Loan term",
-    years: "Years",
-    months: "Months",
-    rateLabel: "Interest rate",
-    ratePlaceholder: "Enter annual rate, e.g. 4.5...",
-    monthlyPayment: "Monthly payment",
-    totalPaid: "Total paid",
-    totalInterest: "Total interest",
-    paymentsCount: "Number of payments",
-    emptyState:
-      "Fill in the amount, term and interest rate to see your monthly payment.",
-    disclaimer:
-      "An estimate only, based on a fixed interest rate. Your bank's offer may differ.",
-    errors: {
-      amountInvalid: "Enter a valid amount.",
-      amountPositive: "The amount must be greater than 0.",
-      amountTooLarge: "That amount is too large.",
-      termPositive: "The term must be longer than 0 months.",
-      termTooLong: "That term is too long.",
-      monthsRange: "Enter between 0 and 11 months, and use years for the rest.",
-      monthsInvalid: "Enter a whole number.",
-      rateInvalid: "Enter a valid interest rate.",
-      rateNegative: "The interest rate cannot be negative.",
-      rateTooLarge: "That interest rate is too high.",
     },
   },
   feedback: {
