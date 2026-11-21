@@ -5,6 +5,9 @@ import MailOpenIcon from "@assets/icons/mail-open-icon.svg";
 import NoNotificationsIllustration from "@assets/illustrations/no-notifications.svg";
 import Avatar from "@/components/genericComponents/Avatar";
 import { EmptyState, Spinner } from "@/components/genericComponents/EmptyState";
+import { Modal } from "@/components/ui/Modal";
+import Logo from "@assets/logo.svg";
+import { useState } from "react";
 import { useToast } from "@/components/providers/ToastProvider";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
@@ -29,6 +32,7 @@ export function NotificationsView() {
   const queryClient = useQueryClient();
   const sessionUser = useAuthStore((state) => state.sessionUser);
   const userId = sessionUser?.id ?? "";
+  const [openAdminNotification, setOpenAdminNotification] = useState<Notification | null>(null);
 
   const notificationsQuery = useQuery({
     queryKey: queryKeys.notifications(userId),
@@ -61,6 +65,12 @@ export function NotificationsView() {
 
   const handleOpen = async (notification: Notification) => {
     if (!notification.isRead) markReadMutation.mutate(notification.id);
+
+    // An admin broadcast opens its full message.
+    if (notification.type === "admin") {
+      setOpenAdminNotification(notification);
+      return;
+    }
 
     if (notification.type === "message" && notification.actorId && sessionUser) {
       try {
@@ -142,9 +152,16 @@ export function NotificationsView() {
                   )}
                 >
                   <span className="relative shrink-0">
-                    <span className="block h-[50px] w-[50px] overflow-hidden rounded-full bg-surface-muted">
-                      <Avatar userId={notification.actor?.id} avatarUrl={notification.actor?.avatarUrl} />
-                    </span>
+                    {notification.type === "admin" ? (
+                      // Black like the app icon: the logo's lettering is white.
+                      <span className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#161722]">
+                        <Logo width={34} height={20} aria-hidden />
+                      </span>
+                    ) : (
+                      <span className="block h-[50px] w-[50px] overflow-hidden rounded-full bg-surface-muted">
+                        <Avatar userId={notification.actor?.id} avatarUrl={notification.actor?.avatarUrl} />
+                      </span>
+                    )}
                     {!notification.isRead ? (
                       <span
                         className="absolute right-0 top-0 h-3 w-3 rounded-full border-2 border-surface bg-primary"
@@ -155,9 +172,11 @@ export function NotificationsView() {
                   <span className="min-w-0 flex-1">
                     <span className="line-clamp-2 text-[15px] text-text">
                       <span className="font-semibold">
-                        {notification.actor?.username ?? t("notifications.unknownActor")}
+                        {notification.type === "admin"
+                          ? t("admin.senderName")
+                          : (notification.actor?.username ?? t("notifications.unknownActor"))}
                       </span>{" "}
-                      {actionText(notification.type)}
+                      {notification.type === "admin" ? notification.title : actionText(notification.type)}
                     </span>
                     <span className="mt-0.5 block text-xs text-text-muted">
                       {formatRelativeTime(notification.createdAt)}
@@ -169,6 +188,24 @@ export function NotificationsView() {
           </ul>
         )}
       </div>
+
+      <Modal
+        open={openAdminNotification !== null}
+        onOpenChange={(open) => {
+          if (!open) setOpenAdminNotification(null);
+        }}
+        title={openAdminNotification?.title ?? t("admin.senderName")}
+      >
+        <div className="flex flex-col gap-3">
+          <span className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#161722]">
+              <Logo width={30} height={18} aria-hidden />
+            </span>
+            <span className="font-semibold text-text">{t("admin.senderName")}</span>
+          </span>
+          <p className="whitespace-pre-line text-[15px] leading-[22px] text-text">{openAdminNotification?.body}</p>
+        </div>
+      </Modal>
     </div>
   );
 }

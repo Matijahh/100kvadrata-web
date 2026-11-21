@@ -1,9 +1,10 @@
 "use client";
 
 import { EndOfFeed } from "@/components/feed/EndOfFeed";
+import { MarketingGridCard } from "@/components/feed/MarketingPostCards";
 import { Spinner } from "@/components/genericComponents/EmptyState";
 import { ListingCard, ListingGrid } from "@/components/listing/ListingCard";
-import type { Listing } from "@/types/types";
+import type { FeedEntry } from "@/utils/marketingFeed";
 import { useEffect, useLayoutEffect, useRef } from "react";
 
 /**
@@ -11,7 +12,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
  * side by side wants. Loads more as the end comes into view.
  */
 export function ListingFeedGrid({
-  listings,
+  entries,
   initialScrollTop,
   onScrollTopChange,
   hasNextPage,
@@ -19,7 +20,8 @@ export function ListingFeedGrid({
   fetchNextPage,
   scrollToTopSignal,
 }: {
-  listings: Listing[];
+  /** Listings, with any marketing posts already mixed in (FEAT-42). */
+  entries: FeedEntry[];
   initialScrollTop: number;
   onScrollTopChange: (top: number) => void;
   hasNextPage: boolean;
@@ -55,7 +57,7 @@ export function ListingFeedGrid({
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage, listings.length]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage, entries.length]);
 
   return (
     <div
@@ -64,14 +66,18 @@ export function ListingFeedGrid({
       className="h-full overflow-y-auto overscroll-y-contain px-4 pb-[calc(96px+env(safe-area-inset-bottom))] pt-4 md:px-6 md:pb-10"
     >
       <ListingGrid className="mx-auto max-w-page">
-        {listings.map((listing) => (
-          <ListingCard key={listing.id} listing={listing} />
-        ))}
+        {entries.map((entry) =>
+          entry.kind === "post" ? (
+            <MarketingGridCard key={entry.key} post={entry.post} />
+          ) : (
+            <ListingCard key={entry.key} listing={entry.listing} />
+          ),
+        )}
       </ListingGrid>
 
       <div ref={sentinelRef} aria-hidden />
       {isFetchingNextPage ? <Spinner /> : null}
-      {!hasNextPage && listings.length > 0 ? (
+      {!hasNextPage && entries.length > 0 ? (
         <EndOfFeed onBackToTop={() => containerRef.current?.scrollTo({ top: 0, behavior: "smooth" })} />
       ) : null}
     </div>

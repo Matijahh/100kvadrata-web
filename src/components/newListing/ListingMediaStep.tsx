@@ -43,7 +43,9 @@ export function ListingMediaStep({
   draft,
   onChange,
 }: {
-  draft: NewListingDraft;
+  // Only the media half of the draft: the admin New post page (FEAT-42) uses
+  // this step too, with no listing around it.
+  draft: Pick<NewListingDraft, "mediaMode" | "photos" | "video">;
   onChange: (next: Pick<NewListingDraft, "mediaMode" | "photos" | "video">) => void;
 }) {
   const { t } = useTranslation();

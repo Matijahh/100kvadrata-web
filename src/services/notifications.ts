@@ -11,9 +11,30 @@ const mapNotificationRow = (row: any): Notification => ({
   actorId: row.actor_id,
   actor: row.actor ? mapProfileRowToUser(row.actor) : null,
   listingId: row.listing_id,
+  title: row.title ?? null,
+  body: row.body ?? null,
   isRead: row.is_read,
   createdAt: row.created_at,
 });
+
+/**
+ * Admin broadcast: one in-app notification to every account, no push. The
+ * database function rejects anyone who isn't an admin (NOT_ADMIN), so hiding
+ * the screen is not the only guard. Returns how many users it reached.
+ */
+export const sendAdminNotification = async (
+  title: string,
+  body: string,
+): Promise<number> => {
+  const { data } = await supabase
+    .rpc("send_admin_notification", { p_title: title, p_body: body })
+    .throwOnError();
+
+  return (data as number | null) ?? 0;
+};
+
+export const ADMIN_NOTIFICATION_TITLE_MAX = 100;
+export const ADMIN_NOTIFICATION_BODY_MAX = 1000;
 
 export const fetchNotifications = async (userId: string): Promise<Notification[]> => {
   const { data } = await supabase

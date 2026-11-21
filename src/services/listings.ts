@@ -626,8 +626,9 @@ const getVideoContentType = (fileExtension: string) => {
 };
 
 // True when any listing filter or search term is set. Used to decide whether
-// premium priority ordering applies (it does not on the default feed).
-const hasActiveListingFilters = (filters?: ListingFilters): boolean => {
+// premium priority ordering applies (it does not on the default feed), and
+// whether marketing posts are mixed in (they are only on the default feed).
+export const hasActiveListingFilters = (filters?: ListingFilters): boolean => {
   if (!filters) {
     return false;
   }

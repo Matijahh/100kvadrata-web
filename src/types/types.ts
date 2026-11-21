@@ -33,6 +33,10 @@ export type Profile = {
   // pins it against writes from the app, so nobody can award it to themselves.
   // Every listing this profile publishes shows the Exclusive badge.
   isExclusive?: boolean;
+  // Also set in the database only (20261122_admin_accounts.sql) and pinned
+  // against app writes. Admins send broadcast notifications, publish marketing
+  // posts and can message anyone; the server checks the flag for all three.
+  isAdmin?: boolean;
 };
 
 export type CurrentUser = SessionUser & Profile;
@@ -486,7 +490,9 @@ export type BuyerFilters = {
   searchText?: string;
 };
 
-export type NotificationType = "like" | "save" | "message" | "offer";
+// 'admin' is a broadcast from an admin account: in-app only, never pushed,
+// carries its own title and body and opens nothing when tapped.
+export type NotificationType = "like" | "save" | "message" | "offer" | "admin";
 
 export type Notification = {
   id: string;
@@ -495,8 +501,37 @@ export type Notification = {
   actorId: string | null;
   actor: Profile | null;
   listingId: number | null;
+  /** Only set on 'admin' notifications. */
+  title: string | null;
+  body: string | null;
   isRead: boolean;
   createdAt: string;
+};
+
+export type MarketingPostMediaKind = "photo" | "video";
+
+export type MarketingPostMedia = {
+  id: string;
+  post_id: number;
+  kind: MarketingPostMediaKind;
+  storage_path: string;
+  public_url: string;
+  sort_order: number;
+};
+
+/**
+ * An admin's marketing post. Shown between listings in the unfiltered feed
+ * with a Sponsored tag; it has no price, location or details.
+ */
+export type MarketingPost = {
+  id: number;
+  user_id: string;
+  description: string;
+  media_mode: "photos" | "video";
+  is_active: boolean;
+  created_at: string;
+  media: MarketingPostMedia[];
+  user?: Profile;
 };
 
 

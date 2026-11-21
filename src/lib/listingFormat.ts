@@ -1,4 +1,4 @@
-import type { Listing } from "@/types/types";
+import type { Listing, ListingMedia } from "@/types/types";
 
 // Small display helpers the app keeps private inside its listing card
 // (flatswipe/src/components/listingListItem.tsx). Same rules, so a listing
@@ -23,8 +23,19 @@ export const getListingAddressLabel = (listing: Listing) => {
   return streetPart || city || null;
 };
 
+/**
+ * What the media helpers read. A Listing is one; so is an admin marketing post
+ * (FEAT-42), which is why this is not simply `Listing`.
+ */
+export type MediaSource = {
+  media: Pick<ListingMedia, "id" | "kind" | "public_url">[];
+  media_mode?: string | null;
+  video_url?: string | null;
+  description?: string | null;
+};
+
 /** The listing's photos in display order, and its video if it has one. */
-export const splitListingMedia = (listing: Listing) => {
+export const splitListingMedia = (listing: MediaSource) => {
   const photos = listing.media.filter((item) => item.kind === "photo");
   const videoUrl =
     listing.media.find((item) => item.kind === "video")?.public_url ?? listing.video_url ?? null;

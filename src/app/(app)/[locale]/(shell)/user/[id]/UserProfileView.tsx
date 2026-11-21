@@ -18,6 +18,8 @@ import { fetchUserListings } from "@/services/listings";
 import { fetchPreferenceSets } from "@/services/preferences";
 import { fetchProfile } from "@/services/profile";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useDirectMessage } from "@/hooks/useDirectMessage";
+import ChatIcon from "@assets/icons/chat-icon.svg";
 import type { Listing, Profile } from "@/types/types";
 import { hasStatedCriteria } from "@/utils/preferenceSets";
 import { useQuery } from "@tanstack/react-query";
@@ -42,7 +44,8 @@ export function UserProfileView({
 }) {
   const { t } = useTranslation();
   const router = useRouter();
-  const { sessionUser } = useCurrentUser();
+  const { sessionUser, currentUser } = useCurrentUser();
+  const { openDirectMessage, pendingUserId } = useDirectMessage();
   const [isOfferOpen, setOfferOpen] = useState(false);
   // What the visitor clicked, if anything; until then the first tab with
   // something in it is shown.
@@ -98,6 +101,9 @@ export function UserProfileView({
   // As from the Buyers feed: anyone signed in can send a listing to someone
   // who has said what they are looking for. Never on your own profile.
   const canOffer = !!sessionUser && sessionUser.id !== id && preferenceSets.length > 0;
+  // Admins message anyone directly instead (FEAT-42): nothing to offer, and
+  // no need for the person to have said what they are looking for.
+  const canAdminMessage = currentUser?.isAdmin === true && !!sessionUser && sessionUser.id !== id;
 
   const tabs: { value: Section; label: string; icon: FC<SVGProps<SVGSVGElement>>; activeIcon: FC<SVGProps<SVGSVGElement>> }[] =
     sections.map((section) =>
@@ -124,7 +130,19 @@ export function UserProfileView({
 
       <ProfileCard
         user={profile}
-        action={canOffer ? <Button title={t("buyers.offerProperty")} onClick={() => setOfferOpen(true)} className="min-w-0" /> : undefined}
+        action={
+          canAdminMessage ? (
+            <Button
+              title={t("admin.message")}
+              iconSvg={ChatIcon}
+              onClick={() => void openDirectMessage(id)}
+              disabled={pendingUserId === id}
+              className="min-w-0"
+            />
+          ) : canOffer ? (
+            <Button title={t("buyers.offerProperty")} onClick={() => setOfferOpen(true)} className="min-w-0" />
+          ) : undefined
+        }
       />
       <OfferListingDialog
         buyer={isOfferOpen && canOffer ? profile : null}
@@ -144,6 +162,8 @@ export function UserProfileView({
         <>
           {/* The same tab row as your own profile: icons only below desktop,
               the label staying the accessible name and tooltip. */}
+          {/* A lone tab has nothing to switch to, so the row only shows with two. */}
+          {tabs.length > 1 ? (
           <div role="tablist" className="mt-6 flex border-b border-border">
             {tabs.map((tab) => {
               const isActive = tab.value === activeSection;
@@ -169,8 +189,9 @@ export function UserProfileView({
               );
             })}
           </div>
+          ) : null}
 
-          <div role="tabpanel" className="pt-5">
+          <div role="tabpanel" className={tabs.length > 1 ? "pt-5" : "pt-6"}>
             {activeSection === "preferences" ? (
               <div className="grid gap-3 md:grid-cols-2">
                 {preferenceSets.map((preferenceSet, index) => (

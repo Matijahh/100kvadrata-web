@@ -6,6 +6,9 @@ import Button from "@/components/genericComponents/Button";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { useAuthStore } from "@/stores/useAuthStore";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useDirectMessage } from "@/hooks/useDirectMessage";
+import ChatIcon from "@assets/icons/chat-icon.svg";
 import type { BuyerProfile, PreferenceCriteria } from "@/types/types";
 import {
   formatAmount,
@@ -29,6 +32,9 @@ type TranslateFn = (key: string, options?: Record<string, unknown>) => string;
 export function BuyerCard({ buyer, onOffer }: { buyer: BuyerProfile; onOffer: (buyer: BuyerProfile) => void }) {
   const { t } = useTranslation();
   const sessionUser = useAuthStore((state) => state.sessionUser);
+  const { currentUser } = useCurrentUser();
+  const isAdmin = currentUser?.isAdmin === true;
+  const { openDirectMessage, pendingUserId } = useDirectMessage();
   const profileHref = sessionUser?.id === buyer.id ? "/profile" : `/user/${buyer.id}`;
   const locationLabel = useMemo(() => buildLocationLabel(buyer.preferences), [buyer.preferences]);
   const pills = useMemo(() => buildPreferencePills(buyer.preferences, t), [buyer.preferences, t]);
@@ -97,7 +103,18 @@ export function BuyerCard({ buyer, onOffer }: { buyer: BuyerProfile; onOffer: (b
         ) : null}
 
         <div className="mt-auto w-full pt-5">
-          <Button title={t("buyers.offerApartment")} onClick={() => onOffer(buyer)} fullWidth />
+          {isAdmin ? (
+            // Admins message the buyer directly instead of offering a listing (FEAT-42).
+            <Button
+              title={t("admin.message")}
+              iconSvg={ChatIcon}
+              onClick={() => void openDirectMessage(buyer.id)}
+              disabled={pendingUserId === buyer.id || sessionUser?.id === buyer.id}
+              fullWidth
+            />
+          ) : (
+            <Button title={t("buyers.offerApartment")} onClick={() => onOffer(buyer)} fullWidth />
+          )}
         </div>
       </div>
     </article>

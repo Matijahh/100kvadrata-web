@@ -4,8 +4,7 @@ import ChevronLeftIcon from "@assets/icons/chevron-left-icon.svg";
 import PlayFilledIcon from "@assets/icons/play-icon-filled.svg";
 import { useVideoPoster } from "@/hooks/useVideoPoster";
 import { cn } from "@/lib/cn";
-import { splitListingMedia } from "@/lib/listingFormat";
-import type { Listing } from "@/types/types";
+import { splitListingMedia, type MediaSource } from "@/lib/listingFormat";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -38,7 +37,8 @@ export function ListingMedia({
   minimalVideo = false,
   className,
 }: {
-  listing: Listing;
+  /** A listing, or anything with the same media fields (a marketing post). */
+  listing: MediaSource;
   /** Whether this listing is the one on screen (detail page: always). */
   isActive: boolean;
   /** Reel mode: start muted as soon as the card is active. */

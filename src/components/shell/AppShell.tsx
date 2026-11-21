@@ -27,7 +27,7 @@ import { useTranslation } from "react-i18next";
 // bar on phones. Only signed-in users get here (no guest mode on the web).
 
 type NavItem = {
-  href: "/feed" | "/new-listing" | "/looking-for" | "/inbox" | "/profile";
+  href: "/feed" | "/new-listing" | "/new-post" | "/looking-for" | "/inbox" | "/profile";
   label: string;
   icon?: FC<SVGProps<SVGSVGElement>>;
   badge?: number;
@@ -54,10 +54,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const totalUnread =
     conversationsQuery.data?.reduce((sum, c) => sum + c.unreadCount, 0) ?? 0;
 
+  // Admins don't post listings or "What you're looking for" sets, so those
+  // two give way to a single New post (FEAT-42).
+  const isAdmin = currentUser?.isAdmin === true;
   const items: NavItem[] = [
     { href: "/feed", label: t("tabs.home"), icon: BuildingIcon },
-    { href: "/new-listing", label: t("tabs.newListing"), icon: PlusCircleIcon },
-    { href: "/looking-for", label: t("tabs.lookingFor"), icon: HouseSearchIcon },
+    ...(isAdmin
+      ? [{ href: "/new-post" as const, label: t("tabs.newPost"), icon: PlusCircleIcon }]
+      : [
+          { href: "/new-listing" as const, label: t("tabs.newListing"), icon: PlusCircleIcon },
+          { href: "/looking-for" as const, label: t("tabs.lookingFor"), icon: HouseSearchIcon },
+        ]),
     {
       href: "/inbox",
       label: t("tabs.messages"),

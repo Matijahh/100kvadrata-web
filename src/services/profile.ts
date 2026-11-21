@@ -25,6 +25,7 @@ type ProfileRow = {
   preferred_language: AppLanguage | null;
   preferred_theme: AppThemePreference | null;
   is_exclusive: boolean | null;
+  is_admin?: boolean | null;
 };
 
 export type UpdateProfileInput = {
@@ -74,6 +75,8 @@ export const mapProfileRowToUser = (
   // Read-only here. `updateProfile` never sends it, and the database pins it
   // against app writes regardless — it is granted in the SQL editor.
   isExclusive: profile.is_exclusive ?? false,
+  // Same as isExclusive: read-only, granted in the SQL editor.
+  isAdmin: profile.is_admin ?? false,
 });
 
 export const fetchProfile = async (userId: string) => {

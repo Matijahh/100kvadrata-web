@@ -16,6 +16,10 @@ export const queryKeys = {
   conversation: (conversationId: string) => ["conversation", conversationId] as const,
   messages: (conversationId: string) => ["messages", conversationId] as const,
   notifications: (userId: string) => ["notifications", userId] as const,
+  // Both start with "marketingPosts" so one invalidation refreshes the feed
+  // and the admin's own list.
+  feedMarketingPosts: ["marketingPosts", "feed"] as const,
+  ownMarketingPosts: (userId: string) => ["marketingPosts", "own", userId] as const,
   preferenceSets: (userId: string) => ["preferenceSets", userId] as const,
   preferenceSet: (userId: string, preferenceSetId: string) =>
     ["preferenceSets", userId, preferenceSetId] as const,

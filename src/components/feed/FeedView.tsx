@@ -16,7 +16,9 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 import { fetchBuyers } from "@/services/buyers";
-import { fetchListings } from "@/services/listings";
+import { fetchListings, hasActiveListingFilters } from "@/services/listings";
+import { fetchFeedMarketingPosts } from "@/services/marketingPosts";
+import { mixMarketingPosts } from "@/utils/marketingFeed";
 import { fetchBlockedUserIds } from "@/services/reports";
 import { createSavedSearch, fetchSavedSearches } from "@/services/savedSearches";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -177,6 +179,21 @@ export function FeedView() {
   const listings = useMemo(
     () => (feedQuery.data?.pages.flat() ?? []).filter((listing) => !blockedUserIds.has(listing.user_id)),
     [feedQuery.data, blockedUserIds],
+  );
+
+  // Admin marketing posts (FEAT-42), one after every few listings, only on the
+  // plain feed: a filtered or searched feed is a search result, and posts are
+  // never part of one.
+  const showMarketingPosts = !isBuyersTab && !hasActiveListingFilters(listingFilters);
+  const marketingPostsQuery = useQuery({
+    queryKey: queryKeys.feedMarketingPosts,
+    queryFn: fetchFeedMarketingPosts,
+    enabled: showMarketingPosts,
+    staleTime: 5 * 60 * 1000,
+  });
+  const feedEntries = useMemo(
+    () => mixMarketingPosts(listings, showMarketingPosts ? (marketingPostsQuery.data ?? []) : []),
+    [listings, showMarketingPosts, marketingPostsQuery.data],
   );
 
   const buyersQuery = useQuery({
@@ -383,7 +400,7 @@ export function FeedView() {
     content = (
       <ListingFeedGrid
         key={listingFeedKey}
-        listings={listings}
+        entries={feedEntries}
         initialScrollTop={useFeedStore.getState().gridScrollTop}
         onScrollTopChange={setGridScrollTop}
         hasNextPage={feedQuery.hasNextPage}
@@ -396,8 +413,8 @@ export function FeedView() {
     content = (
       <ListingReel
         key={listingFeedKey}
-        listings={listings}
-        initialIndex={Math.min(useFeedStore.getState().reelIndex, listings.length - 1)}
+        entries={feedEntries}
+        initialIndex={Math.min(useFeedStore.getState().reelIndex, feedEntries.length - 1)}
         onIndexChange={setReelIndex}
         hasNextPage={feedQuery.hasNextPage}
         isFetchingNextPage={feedQuery.isFetchingNextPage}

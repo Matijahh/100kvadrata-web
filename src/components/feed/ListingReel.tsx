@@ -3,10 +3,11 @@
 import ChevronDownIcon from "@assets/icons/chevron-down-icon.svg";
 import ChevronUpIcon from "@assets/icons/chevron-up-icon.svg";
 import { EndOfFeed } from "@/components/feed/EndOfFeed";
+import { MarketingReelCard } from "@/components/feed/MarketingPostCards";
 import { ReelCard } from "@/components/feed/ReelCard";
 import { Spinner } from "@/components/genericComponents/EmptyState";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import type { Listing } from "@/types/types";
+import type { FeedEntry } from "@/utils/marketingFeed";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -28,7 +29,7 @@ const isTypingTarget = (target: EventTarget | null) =>
  * video — see ListingMedia.
  */
 export function ListingReel({
-  listings,
+  entries,
   initialIndex,
   onIndexChange,
   hasNextPage,
@@ -36,7 +37,8 @@ export function ListingReel({
   fetchNextPage,
   scrollToTopSignal,
 }: {
-  listings: Listing[];
+  /** Listings, with any marketing posts already mixed in (FEAT-42). */
+  entries: FeedEntry[];
   initialIndex: number;
   onIndexChange: (index: number) => void;
   hasNextPage: boolean;
@@ -87,14 +89,14 @@ export function ListingReel({
 
     container.querySelectorAll("[data-reel-index]").forEach((item) => observer.observe(item));
     return () => observer.disconnect();
-  }, [listings.length]);
+  }, [entries.length]);
 
   useEffect(() => {
     onIndexChange(activeIndex);
-    if (activeIndex >= listings.length - PREFETCH_DISTANCE && hasNextPage && !isFetchingNextPage) {
+    if (activeIndex >= entries.length - PREFETCH_DISTANCE && hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
     }
-  }, [activeIndex, listings.length, hasNextPage, isFetchingNextPage, fetchNextPage, onIndexChange]);
+  }, [activeIndex, entries.length, hasNextPage, isFetchingNextPage, fetchNextPage, onIndexChange]);
 
   // Arrow keys page through the reel from anywhere on the page, not only
   // when the scroller has focus — except while typing or in a dialog.
@@ -105,7 +107,7 @@ export function ListingReel({
 
       if (event.key === "ArrowDown" || event.key === "PageDown" || event.key === "j") {
         event.preventDefault();
-        scrollToIndex(Math.min(activeIndex + 1, listings.length - 1));
+        scrollToIndex(Math.min(activeIndex + 1, entries.length - 1));
       } else if (event.key === "ArrowUp" || event.key === "PageUp" || event.key === "k") {
         event.preventDefault();
         scrollToIndex(Math.max(activeIndex - 1, 0));
@@ -114,9 +116,9 @@ export function ListingReel({
 
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [activeIndex, listings.length, scrollToIndex]);
+  }, [activeIndex, entries.length, scrollToIndex]);
 
-  const isAtEnd = !hasNextPage && listings.length > 0;
+  const isAtEnd = !hasNextPage && entries.length > 0;
 
   return (
     <div className="relative h-full">
@@ -125,19 +127,27 @@ export function ListingReel({
         tabIndex={-1}
         className="h-full snap-y snap-mandatory overflow-y-auto overscroll-y-contain outline-none [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
-        {listings.map((listing, index) => (
+        {entries.map((entry, index) => (
           <section
-            key={listing.id}
+            key={entry.key}
             data-reel-index={index}
             aria-roledescription="slide"
             aria-label={`${index + 1}`}
             className="h-full snap-start snap-always"
           >
-            <ReelCard
-              listing={listing}
-              isActive={index === activeIndex}
-              isNear={Math.abs(index - activeIndex) <= NEAR_DISTANCE}
-            />
+            {entry.kind === "post" ? (
+              <MarketingReelCard
+                post={entry.post}
+                isActive={index === activeIndex}
+                isNear={Math.abs(index - activeIndex) <= NEAR_DISTANCE}
+              />
+            ) : (
+              <ReelCard
+                listing={entry.listing}
+                isActive={index === activeIndex}
+                isNear={Math.abs(index - activeIndex) <= NEAR_DISTANCE}
+              />
+            )}
           </section>
         ))}
 
@@ -151,7 +161,7 @@ export function ListingReel({
       </div>
 
       {/* Mouse users get buttons; the keys work everywhere. */}
-      {isPointerDevice && listings.length > 1 ? (
+      {isPointerDevice && entries.length > 1 ? (
         <div className="absolute right-4 top-1/2 flex -translate-y-1/2 flex-col gap-3">
           <ReelStepButton
             label={t("web.feed.previous")}
@@ -162,7 +172,7 @@ export function ListingReel({
           </ReelStepButton>
           <ReelStepButton
             label={t("web.feed.next")}
-            disabled={activeIndex >= listings.length - 1}
+            disabled={activeIndex >= entries.length - 1}
             onClick={() => scrollToIndex(activeIndex + 1)}
           >
             <ChevronDownIcon width={22} height={22} aria-hidden />

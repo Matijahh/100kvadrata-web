@@ -5,6 +5,8 @@ import ReportProblemIcon from "@assets/icons/report-problem-icon.svg";
 import { ReportProblemDialog } from "@/components/feedback/ReportProblemDialog";
 import FilterFilledIcon from "@assets/icons/filter-icon-filled.svg";
 import FilterIcon from "@assets/icons/filter-icon.svg";
+import ImageIcon from "@assets/icons/image-icon.svg";
+import { AdminPostsSection } from "@/components/profile/AdminPostsSection";
 import HouseFilledIcon from "@assets/icons/house-icon-filled.svg";
 import HouseIcon from "@assets/icons/house-icon.svg";
 import MenuIcon from "@assets/icons/menu-icon.svg";
@@ -40,7 +42,8 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type FC, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
-const SECTIONS = ["yourListings", "preferences", "savedListings", "savedSearches"] as const;
+// "adminPosts" is admins only (FEAT-42), in place of the first two.
+const SECTIONS = ["yourListings", "preferences", "savedListings", "savedSearches", "adminPosts"] as const;
 type Section = (typeof SECTIONS)[number];
 
 const isSection = (value: string | null): value is Section =>
@@ -72,6 +75,15 @@ export function ProfileView() {
   useEffect(() => {
     if (isSection(requestedSection)) setSection(requestedSection);
   }, [requestedSection]);
+
+  // Admins publish marketing posts instead of listings and "What you're
+  // looking for" sets. The profile arrives after the first render, so the
+  // section is corrected once it does.
+  const isAdmin = currentUser?.isAdmin === true;
+  useEffect(() => {
+    if (isAdmin && (section === "yourListings" || section === "preferences")) setSection("adminPosts");
+    else if (!isAdmin && !isLoadingProfile && section === "adminPosts") setSection("yourListings");
+  }, [isAdmin, isLoadingProfile, section]);
 
   const userListingsQuery = useQuery({
     queryKey: queryKeys.userListings(userId),
@@ -164,12 +176,16 @@ export function ProfileView() {
     });
   };
 
-  const tabs: { value: Section; label: string; icon: FC<SVGProps<SVGSVGElement>>; activeIcon: FC<SVGProps<SVGSVGElement>> }[] = [
+  const allTabs: { value: Section; label: string; icon: FC<SVGProps<SVGSVGElement>>; activeIcon: FC<SVGProps<SVGSVGElement>> }[] = [
+    { value: "adminPosts", label: t("admin.postsTab"), icon: ImageIcon, activeIcon: ImageIcon },
     { value: "yourListings", label: t("profile.yourListingsTab"), icon: HouseIcon, activeIcon: HouseFilledIcon },
     { value: "preferences", label: t("preferences.tab"), icon: SearchIcon, activeIcon: SearchFilledIcon },
     { value: "savedListings", label: t("profile.savedListingsTab"), icon: SaveIcon, activeIcon: SaveFilledIcon },
     { value: "savedSearches", label: t("profile.savedSearchesTab"), icon: FilterIcon, activeIcon: FilterFilledIcon },
   ];
+  const tabs = allTabs.filter((tab) =>
+    isAdmin ? tab.value !== "yourListings" && tab.value !== "preferences" : tab.value !== "adminPosts",
+  );
 
   const preferenceSets = preferenceSetsQuery.data ?? [];
 
@@ -252,7 +268,12 @@ export function ProfileView() {
                 isActive ? "border-primary text-primary" : "border-transparent text-text-muted hover:text-text",
               )}
             >
-              <Icon width={22} height={22} className="lg:h-[18px] lg:w-[18px]" aria-hidden />
+              {/* The image icon's box has more padding, so it is drawn a size up. */}
+              {tab.value === "adminPosts" ? (
+                <Icon width={26} height={26} className="lg:h-[22px] lg:w-[22px]" aria-hidden />
+              ) : (
+                <Icon width={22} height={22} className="lg:h-[18px] lg:w-[18px]" aria-hidden />
+              )}
               <span className="hidden lg:inline">{tab.label}</span>
             </button>
           );
@@ -260,6 +281,8 @@ export function ProfileView() {
       </div>
 
       <div role="tabpanel" className="pt-5">
+        {section === "adminPosts" && isAdmin ? <AdminPostsSection userId={userId} /> : null}
+
         {section === "yourListings" ? (
           userListingsQuery.isLoading ? (
             <Spinner />
