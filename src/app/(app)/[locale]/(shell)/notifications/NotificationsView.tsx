@@ -72,6 +72,29 @@ export function NotificationsView() {
       return;
     }
 
+    // A new report (admins only) opens the queue it landed in.
+    if (notification.type === "listing_reported") {
+      router.push("/profile?section=flagged");
+      return;
+    }
+
+    // A removal notice (FEAT-43) opens the explanation in the reader's
+    // language: the row only carries the listing's address (title) and the
+    // reason code (body). There is no listing left to open.
+    if (notification.type === "listing_removed") {
+      setOpenAdminNotification({
+        ...notification,
+        title: t("moderation.notificationTitle"),
+        body: t("moderation.notificationBody", {
+          listing: notification.title ? ` "${notification.title}"` : "",
+          reason: t(
+            notification.body === "spam" ? "moderation.reasonSpamLower" : "moderation.reasonInappropriateLower",
+          ),
+        }),
+      });
+      return;
+    }
+
     if (notification.type === "message" && notification.actorId && sessionUser) {
       try {
         const conversation = await findOrCreateConversation(sessionUser.id, notification.actorId);
@@ -85,14 +108,20 @@ export function NotificationsView() {
     if (notification.listingId != null) router.push(`/listing/${notification.listingId}`);
   };
 
-  const actionText = (type: Notification["type"]) => {
+  const actionText = (type: Notification["type"], reason?: string | null) => {
     switch (type) {
+      case "listing_reported":
+        return t("moderation.reportedText", {
+          reason: t(reason === "spam" ? "moderation.reasonSpamLower" : "moderation.reasonInappropriateLower"),
+        });
       case "like":
         return t("notifications.likeText");
       case "message":
         return t("notifications.messageText");
       case "offer":
         return t("notifications.offerText");
+      case "listing_removed":
+        return t("moderation.notificationText");
       case "save":
       default:
         return t("notifications.saveText");
@@ -152,7 +181,9 @@ export function NotificationsView() {
                   )}
                 >
                   <span className="relative shrink-0">
-                    {notification.type === "admin" ? (
+                    {notification.type === "admin" ||
+                    notification.type === "listing_removed" ||
+                    notification.type === "listing_reported" ? (
                       // Black like the app icon: the logo's lettering is white.
                       <span className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#161722]">
                         <Logo width={34} height={20} aria-hidden />
@@ -172,11 +203,15 @@ export function NotificationsView() {
                   <span className="min-w-0 flex-1">
                     <span className="line-clamp-2 text-[15px] text-text">
                       <span className="font-semibold">
-                        {notification.type === "admin"
+                        {notification.type === "listing_reported"
+                          ? t("moderation.reportedSender")
+                          : notification.type === "admin" || notification.type === "listing_removed"
                           ? t("admin.senderName")
                           : (notification.actor?.username ?? t("notifications.unknownActor"))}
                       </span>{" "}
-                      {notification.type === "admin" ? notification.title : actionText(notification.type)}
+                      {notification.type === "admin"
+                        ? notification.title
+                        : actionText(notification.type, notification.body)}
                     </span>
                     <span className="mt-0.5 block text-xs text-text-muted">
                       {formatRelativeTime(notification.createdAt)}

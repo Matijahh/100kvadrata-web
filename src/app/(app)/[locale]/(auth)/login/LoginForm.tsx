@@ -63,6 +63,12 @@ export function LoginForm() {
         return;
       }
 
+      // Banned after 3 removed listings (FEAT-43), or by hand.
+      if ((error as { code?: string })?.code === "user_banned") {
+        showToast({ type: "error", message: t("auth.accountBanned") });
+        return;
+      }
+
       showToast({ type: "error", message: t("auth.loginFailed") });
     } finally {
       setLoading(false);

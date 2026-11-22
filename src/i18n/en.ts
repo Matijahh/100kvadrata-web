@@ -28,6 +28,8 @@ export const en = {
     continueAsGuest: "Continue without an account",
     fillAllFields: "Please fill all the fields.",
     loginFailed: "Login failed. Please try again.",
+    accountBanned:
+      "This account has been blocked for repeatedly breaking our rules.",
     usernameNotFound: "No account found with this username.",
     registerWelcome: "Your new home is waiting.",
     usernameLabel: "Username:",
@@ -216,10 +218,6 @@ export const en = {
       report: "Sign in to report or block content.",
       generic: "Sign in to use this feature. Browsing stays free — no account needed.",
     },
-  },
-  moderation: {
-    blockedContent:
-      "This text contains language we don't allow. 100m² has zero tolerance for offensive or abusive content — please edit it and try again.",
   },
   profile: {
     title: "Profile",
@@ -781,5 +779,44 @@ export const en = {
     deletePostTitle: "Delete this post?",
     deletePostMessage: "It will be removed from the feed and can't be restored.",
     postUpdateError: "We couldn't update the post. Please try again.",
+  },
+  moderation: {
+    blockedContent:
+      "This text contains language we don't allow. 100m² has zero tolerance for offensive or abusive content — please edit it and try again.",
+    flaggedTab: "Flagged",
+    flaggedEmpty: "No reported listings right now.",
+    flaggedLoadError: "We couldn't load reported listings.",
+    reportCount_one: "{{count}} report",
+    reportCount_other: "{{count}} reports",
+    reportSummary: "Spam: {{spam}} · Inappropriate: {{inappropriate}}",
+    removeListing: "Remove listing",
+    removeTitle: "Remove this listing?",
+    removeReasonPrompt:
+      "It will be deleted and its owner told why. Pick the reason they'll see.",
+    reasonSpam: "Spam or scam",
+    reasonInappropriate: "Inappropriate content",
+    removeConfirmTitle: "Remove for {{reason}}?",
+    removeConfirmMessage:
+      "The listing is deleted for good and the owner is notified. An owner with 3 removed listings is blocked automatically.",
+    removeConfirm: "Remove",
+    removed: "Listing removed. The owner has been notified.",
+    removedAndBanned:
+      "Listing removed. This was the owner's 3rd removal, so their account is now blocked.",
+    removeError: "We couldn't remove the listing. Please try again.",
+    dismissReports: "Dismiss reports",
+    dismissTitle: "Dismiss the reports?",
+    dismissMessage:
+      "The listing stays up and leaves this list. Nobody is notified.",
+    dismissConfirm: "Dismiss",
+    dismissed: "Reports dismissed.",
+    dismissError: "We couldn't dismiss the reports. Please try again.",
+    notificationText: "removed your listing for breaking our rules",
+    notificationTitle: "Your listing was removed",
+    notificationBody:
+      "Your listing{{listing}} was removed for breaking our rules: {{reason}}.\n\nAccounts with 3 removed listings are blocked.",
+    reasonSpamLower: "spam or scam",
+    reasonInappropriateLower: "inappropriate content",
+    reportedSender: "New report:",
+    reportedText: "a listing was reported for {{reason}}",
   },
 } as const;

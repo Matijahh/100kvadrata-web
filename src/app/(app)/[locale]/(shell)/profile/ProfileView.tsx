@@ -5,8 +5,10 @@ import ReportProblemIcon from "@assets/icons/report-problem-icon.svg";
 import { ReportProblemDialog } from "@/components/feedback/ReportProblemDialog";
 import FilterFilledIcon from "@assets/icons/filter-icon-filled.svg";
 import FilterIcon from "@assets/icons/filter-icon.svg";
+import FlagIcon from "@assets/icons/flag-icon.svg";
 import ImageIcon from "@assets/icons/image-icon.svg";
 import { AdminPostsSection } from "@/components/profile/AdminPostsSection";
+import { FlaggedListingsSection } from "@/components/profile/FlaggedListingsSection";
 import HouseFilledIcon from "@assets/icons/house-icon-filled.svg";
 import HouseIcon from "@assets/icons/house-icon.svg";
 import MenuIcon from "@assets/icons/menu-icon.svg";
@@ -42,8 +44,17 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type FC, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
-// "adminPosts" is admins only (FEAT-42), in place of the first two.
-const SECTIONS = ["yourListings", "preferences", "savedListings", "savedSearches", "adminPosts"] as const;
+// "adminPosts" (FEAT-42) and "flagged" (FEAT-43) are admins only, in place of
+// the other four: admins don't post, look or keep anything themselves.
+const SECTIONS = [
+  "yourListings",
+  "preferences",
+  "savedListings",
+  "savedSearches",
+  "adminPosts",
+  "flagged",
+] as const;
+const ADMIN_SECTIONS: readonly Section[] = ["adminPosts", "flagged"];
 type Section = (typeof SECTIONS)[number];
 
 const isSection = (value: string | null): value is Section =>
@@ -76,13 +87,15 @@ export function ProfileView() {
     if (isSection(requestedSection)) setSection(requestedSection);
   }, [requestedSection]);
 
-  // Admins publish marketing posts instead of listings and "What you're
-  // looking for" sets. The profile arrives after the first render, so the
-  // section is corrected once it does.
+  // Admins publish marketing posts and review reported listings instead of
+  // having listings, "What you're looking for" sets and saved tabs. The
+  // profile arrives after the first render, so the section is corrected once
+  // it does.
   const isAdmin = currentUser?.isAdmin === true;
   useEffect(() => {
-    if (isAdmin && (section === "yourListings" || section === "preferences")) setSection("adminPosts");
-    else if (!isAdmin && !isLoadingProfile && section === "adminPosts") setSection("yourListings");
+    const isAdminSection = ADMIN_SECTIONS.includes(section);
+    if (isAdmin && !isAdminSection) setSection("adminPosts");
+    else if (!isAdmin && !isLoadingProfile && isAdminSection) setSection("yourListings");
   }, [isAdmin, isLoadingProfile, section]);
 
   const userListingsQuery = useQuery({
@@ -182,10 +195,9 @@ export function ProfileView() {
     { value: "preferences", label: t("preferences.tab"), icon: SearchIcon, activeIcon: SearchFilledIcon },
     { value: "savedListings", label: t("profile.savedListingsTab"), icon: SaveIcon, activeIcon: SaveFilledIcon },
     { value: "savedSearches", label: t("profile.savedSearchesTab"), icon: FilterIcon, activeIcon: FilterFilledIcon },
+    { value: "flagged", label: t("moderation.flaggedTab"), icon: FlagIcon, activeIcon: FlagIcon },
   ];
-  const tabs = allTabs.filter((tab) =>
-    isAdmin ? tab.value !== "yourListings" && tab.value !== "preferences" : tab.value !== "adminPosts",
-  );
+  const tabs = allTabs.filter((tab) => ADMIN_SECTIONS.includes(tab.value) === isAdmin);
 
   const preferenceSets = preferenceSetsQuery.data ?? [];
 
@@ -282,6 +294,8 @@ export function ProfileView() {
 
       <div role="tabpanel" className="pt-5">
         {section === "adminPosts" && isAdmin ? <AdminPostsSection userId={userId} /> : null}
+
+        {section === "flagged" && isAdmin ? <FlaggedListingsSection /> : null}
 
         {section === "yourListings" ? (
           userListingsQuery.isLoading ? (

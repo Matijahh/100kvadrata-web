@@ -29,6 +29,8 @@ export const sr = {
     continueAsGuest: "Nastavi bez naloga",
     fillAllFields: "Molimo popuni sva polja.",
     loginFailed: "Prijava nije uspela. Pokušaj ponovo.",
+    accountBanned:
+      "Ovaj nalog je blokiran zbog ponovljenog kršenja pravila.",
     usernameNotFound: "Ne postoji nalog sa ovim korisničkim imenom.",
     registerWelcome: "Tvoj novi dom čeka.",
     usernameLabel: "Korisničko ime:",
@@ -223,10 +225,6 @@ export const sr = {
       generic:
         "Prijavi se da koristiš ovu opciju. Pregled oglasa je besplatan — nalog nije potreban.",
     },
-  },
-  moderation: {
-    blockedContent:
-      "Ovaj tekst sadrži reči koje nisu dozvoljene. 100m² ima nultu toleranciju prema uvredljivom i nasilnom sadržaju — izmeni tekst i pokušaj ponovo.",
   },
   profile: {
     title: "Profil",
@@ -797,5 +795,45 @@ export const sr = {
     deletePostTitle: "Obrisati ovu objavu?",
     deletePostMessage: "Biće uklonjena iz feeda i ne može se vratiti.",
     postUpdateError: "Nismo uspeli da izmenimo objavu. Pokušaj ponovo.",
+  },
+  moderation: {
+    blockedContent:
+      "Ovaj tekst sadrži reči koje nisu dozvoljene. 100m² ima nultu toleranciju prema uvredljivom i nasilnom sadržaju — izmeni tekst i pokušaj ponovo.",
+    flaggedTab: "Prijavljeno",
+    flaggedEmpty: "Trenutno nema prijavljenih oglasa.",
+    flaggedLoadError: "Nismo uspeli da učitamo prijavljene oglase.",
+    reportCount_one: "{{count}} prijava",
+    reportCount_few: "{{count}} prijave",
+    reportCount_other: "{{count}} prijava",
+    reportSummary: "Spam: {{spam}} · Neprimereno: {{inappropriate}}",
+    removeListing: "Ukloni oglas",
+    removeTitle: "Ukloniti ovaj oglas?",
+    removeReasonPrompt:
+      "Oglas će biti obrisan, a vlasnik obavešten zašto. Izaberi razlog koji će videti.",
+    reasonSpam: "Spam ili prevara",
+    reasonInappropriate: "Neprimeren sadržaj",
+    removeConfirmTitle: "Ukloniti zbog: {{reason}}?",
+    removeConfirmMessage:
+      "Oglas se trajno briše i vlasnik dobija obaveštenje. Vlasnik sa 3 uklonjena oglasa se automatski blokira.",
+    removeConfirm: "Ukloni",
+    removed: "Oglas je uklonjen. Vlasnik je obavešten.",
+    removedAndBanned:
+      "Oglas je uklonjen. Ovo je treće uklanjanje za ovog vlasnika, pa je njegov nalog sada blokiran.",
+    removeError: "Nismo uspeli da uklonimo oglas. Pokušaj ponovo.",
+    dismissReports: "Odbaci prijave",
+    dismissTitle: "Odbaciti prijave?",
+    dismissMessage:
+      "Oglas ostaje objavljen i nestaje sa ove liste. Niko ne dobija obaveštenje.",
+    dismissConfirm: "Odbaci",
+    dismissed: "Prijave su odbačene.",
+    dismissError: "Nismo uspeli da odbacimo prijave. Pokušaj ponovo.",
+    notificationText: "je uklonio tvoj oglas zbog kršenja pravila",
+    notificationTitle: "Tvoj oglas je uklonjen",
+    notificationBody:
+      "Tvoj oglas{{listing}} je uklonjen zbog kršenja pravila: {{reason}}.\n\nNalozi sa 3 uklonjena oglasa se blokiraju.",
+    reasonSpamLower: "spam ili prevara",
+    reasonInappropriateLower: "neprimeren sadržaj",
+    reportedSender: "Nova prijava:",
+    reportedText: "oglas je prijavljen zbog: {{reason}}",
   },
 } as const;

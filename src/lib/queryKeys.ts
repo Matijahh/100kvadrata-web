@@ -20,6 +20,8 @@ export const queryKeys = {
   // and the admin's own list.
   feedMarketingPosts: ["marketingPosts", "feed"] as const,
   ownMarketingPosts: (userId: string) => ["marketingPosts", "own", userId] as const,
+  // Admin-only (FEAT-43). Not per user: every admin sees the same queue.
+  flaggedListings: ["flaggedListings"] as const,
   preferenceSets: (userId: string) => ["preferenceSets", userId] as const,
   preferenceSet: (userId: string, preferenceSetId: string) =>
     ["preferenceSets", userId, preferenceSetId] as const,

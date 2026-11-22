@@ -563,7 +563,9 @@ const mapListingRow = (
   };
 };
 
-const mapListingsWithProfiles = async (listings: any[]): Promise<Listing[]> => {
+// Exported for reports.ts, which reads listings through an RPC rather than a
+// table select and needs the same owner and like-count enrichment.
+export const mapListingsWithProfiles = async (listings: any[]): Promise<Listing[]> => {
   const userIds = [...new Set(listings.map((listing) => listing.user_id).filter(Boolean))];
   const listingIds = listings.map((listing) => listing.id).filter(Boolean);
   const [userMap, likeCountsMap] = await Promise.all([

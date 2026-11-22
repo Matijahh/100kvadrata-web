@@ -492,7 +492,29 @@ export type BuyerFilters = {
 
 // 'admin' is a broadcast from an admin account: in-app only, never pushed,
 // carries its own title and body and opens nothing when tapped.
-export type NotificationType = "like" | "save" | "message" | "offer" | "admin";
+// 'listing_removed' tells an owner an admin removed their listing (FEAT-43):
+// title is the listing's address, body the reason code (ListingRemovalReason).
+// 'listing_reported' tells every admin a listing was reported: listing_id is
+// the listing, body the reason code. No actor — reporters stay anonymous.
+export type NotificationType =
+  | "like"
+  | "save"
+  | "message"
+  | "offer"
+  | "admin"
+  | "listing_removed"
+  | "listing_reported";
+
+// The same two reasons a user can report a listing for.
+export type ListingRemovalReason = "spam" | "inappropriate";
+
+/** A reported listing in the admin's Flagged tab (FEAT-43). */
+export type FlaggedListing = Listing & {
+  reportCount: number;
+  spamReportCount: number;
+  inappropriateReportCount: number;
+  lastReportedAt: string;
+};
 
 export type Notification = {
   id: string;
@@ -501,7 +523,7 @@ export type Notification = {
   actorId: string | null;
   actor: Profile | null;
   listingId: number | null;
-  /** Only set on 'admin' notifications. */
+  /** Only set on 'admin' and 'listing_removed' notifications. */
   title: string | null;
   body: string | null;
   isRead: boolean;
