@@ -59,6 +59,23 @@ export const fetchFeedMarketingPosts = async (): Promise<MarketingPost[]> => {
   return (data ?? []).map(mapPostRow);
 };
 
+/**
+ * One post, for the web's /post/:id page. Null when it doesn't exist or RLS
+ * hides it (a hidden post, unless the viewer is the admin who posted it).
+ */
+export const fetchMarketingPostById = async (
+  postId: number | string,
+): Promise<MarketingPost | null> => {
+  const { data } = await supabase
+    .from("marketing_posts")
+    .select(POST_SELECT)
+    .eq("id", postId)
+    .maybeSingle()
+    .throwOnError();
+
+  return data ? mapPostRow(data) : null;
+};
+
 /** Every post an admin has published, hidden ones included. */
 export const fetchOwnMarketingPosts = async (
   userId: string,

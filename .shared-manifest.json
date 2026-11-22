@@ -90,7 +90,7 @@
   "src/services/feedback.ts": "51b64a222b4c0c8b2b391699884d37566493bd57116e3dfc9cb242cfbcecd999",
   "src/services/listings.ts": "ab226a7320ee8c01eeb66a050a3bce1bd725f948b154e9d1c6108da6955e946f",
   "src/services/locations.ts": "11a5dd34c31228819f9404555f3506e255148999f2f86fca1fc0bcac9d779628",
-  "src/services/marketingPosts.ts": "eefd2b057c86d5b267940efdc6fbd83f7c3290b2bee25fe16ea0aaa93d8406e9",
+  "src/services/marketingPosts.ts": "0a6c8246c7f8c7aec84c36999120a791fc7f5f1423b1bf12a567917da72b01ff",
   "src/services/notifications.ts": "b18e8e988dda20832bd3bbd77a4014a033767b4609fe5bf0228fc8e49e197a34",
   "src/services/packages.ts": "f47921111c22289a54bd3ce915873f032a738a1d79a7469b607b04b4eb3c3662",
   "src/services/preferences.ts": "cf069482db4cb9c50576c721e9b66205a3f020510b010264ae0b1f3d6cb75aff",

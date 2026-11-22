@@ -7,6 +7,7 @@ import Avatar from "@/components/genericComponents/Avatar";
 import { ListingMedia } from "@/components/listing/ListingMedia";
 import { Modal } from "@/components/ui/Modal";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
+import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { MarketingPost } from "@/types/types";
@@ -18,7 +19,7 @@ import { useTranslation } from "react-i18next";
 // tile that look like their listing counterparts, with a Sponsored tag and no
 // price, place or details. Messaging opens a chat with the admin who posted.
 
-function SponsoredTag({ className }: { className?: string }) {
+export function SponsoredTag({ className }: { className?: string }) {
   const { t } = useTranslation();
   return (
     <span
@@ -38,7 +39,7 @@ const SHORT_DESCRIPTION_CHARS = 110;
 const isLongDescription = (description: string) =>
   description.length > SHORT_DESCRIPTION_CHARS || description.split("\n").length > 3;
 
-const useMessageAuthor = (post: MarketingPost) => {
+export const useMessageAuthor = (post: MarketingPost) => {
   const sessionUser = useAuthStore((state) => state.sessionUser);
   const { openDirectMessage, pendingUserId } = useDirectMessage();
   return {
@@ -163,21 +164,17 @@ function PostDetails({ post }: { post: MarketingPost }) {
 
 /**
  * One post in the desktop grid, shaped like ListingCard. Clicking opens the
- * post in a dialog with its full media and description, since a post has no
- * page of its own.
+ * post's own page (/post/:id), like a listing opens /listing/:id.
  */
 export function MarketingGridCard({ post }: { post: MarketingPost }) {
   const { t } = useTranslation();
-  const author = useMessageAuthor(post);
-  const [isOpen, setOpen] = useState(false);
   const photo = post.media.find((item) => item.kind === "photo");
   const authorName = post.user?.username ?? t("admin.senderName");
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
+      <Link
+        href={`/post/${post.id}`}
         className="group flex flex-col overflow-hidden rounded-3xl bg-surface text-left shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_8px_28px_rgba(0,0,0,0.12)]"
       >
         <div className="relative aspect-[4/3] w-full overflow-hidden bg-media-placeholder">
@@ -200,36 +197,7 @@ export function MarketingGridCard({ post }: { post: MarketingPost }) {
           <p className="line-clamp-2 text-[14px] text-text">{post.description}</p>
           <p className="truncate text-[13px] text-text-muted">{authorName}</p>
         </div>
-      </button>
-
-      <Modal open={isOpen} onOpenChange={setOpen} title={t("admin.sponsored")}>
-        <div className="flex flex-col gap-4">
-          <ListingMedia
-            listing={post}
-            isActive={isOpen}
-            sizes="(min-width: 768px) 60vw, 100vw"
-            className="aspect-[4/5] w-full rounded-3xl bg-black"
-          />
-          <p className="whitespace-pre-line text-[15px] leading-[22px] text-text">{post.description}</p>
-          <div className="flex items-center gap-3">
-            <span className="block h-10 w-10 shrink-0 overflow-hidden rounded-full">
-              <Avatar userId={post.user_id} avatarUrl={post.user?.avatarUrl} />
-            </span>
-            <span className="min-w-0 flex-1 truncate font-semibold text-text">{authorName}</span>
-            {!author.isOwnPost ? (
-              <button
-                type="button"
-                onClick={author.message}
-                disabled={author.isPending}
-                className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 font-display text-sm uppercase text-text-on-primary disabled:opacity-60"
-              >
-                <ChatIcon width={16} height={16} aria-hidden />
-                {t("admin.message")}
-              </button>
-            ) : null}
-          </div>
-        </div>
-      </Modal>
+      </Link>
     </>
   );
 }
