@@ -735,6 +735,10 @@ export const en = {
     sending: "Sending...",
     success: "Thanks — we’ve got your report.",
     error: "We couldn’t send that. Please try again.",
+    // Admins' notification for a new report.
+    notificationText: "reported a problem: {{message}}",
+    notificationTitle: "Problem report",
+    deletedUser: "Deleted account",
   },
   admin: {
     senderName: "100 Kvadrata",

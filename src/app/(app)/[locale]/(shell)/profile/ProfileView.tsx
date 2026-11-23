@@ -217,15 +217,18 @@ export function ProfileView() {
           isBarStuck && "bg-surface-muted/85 shadow-[0_6px_16px_rgba(0,0,0,0.06)] backdrop-blur-md",
         )}
       >
-        <button
-          type="button"
-          onClick={() => setFeedbackOpen(true)}
-          aria-label={t("feedback.title")}
-          title={t("feedback.title")}
-          className="rounded-full p-2.5 text-text hover:bg-surface"
-        >
-          <ReportProblemIcon width={24} height={24} aria-hidden />
-        </button>
+        {/* Admins receive reports as notifications; they don't send them. */}
+        {!isAdmin ? (
+          <button
+            type="button"
+            onClick={() => setFeedbackOpen(true)}
+            aria-label={t("feedback.title")}
+            title={t("feedback.title")}
+            className="rounded-full p-2.5 text-text hover:bg-surface"
+          >
+            <ReportProblemIcon width={24} height={24} aria-hidden />
+          </button>
+        ) : null}
         <Link
           href="/notifications"
           aria-label={t("notifications.title")}

@@ -496,6 +496,9 @@ export type BuyerFilters = {
 // title is the listing's address, body the reason code (ListingRemovalReason).
 // 'listing_reported' tells every admin a listing was reported: listing_id is
 // the listing, body the reason code. No actor — reporters stay anonymous.
+// 'feedback' tells every admin someone sent "Report a problem": actor is the
+// sender (null once they delete their account), body the message, title
+// where it was sent from ("platform · app version · route").
 export type NotificationType =
   | "like"
   | "save"
@@ -503,7 +506,8 @@ export type NotificationType =
   | "offer"
   | "admin"
   | "listing_removed"
-  | "listing_reported";
+  | "listing_reported"
+  | "feedback";
 
 // The same two reasons a user can report a listing for.
 export type ListingRemovalReason = "spam" | "inappropriate";
@@ -523,7 +527,7 @@ export type Notification = {
   actorId: string | null;
   actor: Profile | null;
   listingId: number | null;
-  /** Only set on 'admin' and 'listing_removed' notifications. */
+  /** Only set on 'admin', 'listing_removed' and 'feedback' notifications. */
   title: string | null;
   body: string | null;
   isRead: boolean;

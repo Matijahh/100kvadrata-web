@@ -751,6 +751,10 @@ export const sr = {
     sending: "Slanje...",
     success: "Hvala - primili smo tvoju prijavu.",
     error: "Nismo uspeli da pošaljemo. Pokušaj ponovo.",
+    // Admins' notification for a new report.
+    notificationText: "je prijavio/la problem: {{message}}",
+    notificationTitle: "Prijava problema",
+    deletedUser: "Obrisan nalog",
   },
   admin: {
     senderName: "100 Kvadrata",

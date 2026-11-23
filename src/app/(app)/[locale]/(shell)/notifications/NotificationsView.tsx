@@ -72,6 +72,17 @@ export function NotificationsView() {
       return;
     }
 
+    // A problem report (admins only) opens the whole message, with where it
+    // was sent from (title) underneath.
+    if (notification.type === "feedback") {
+      setOpenAdminNotification({
+        ...notification,
+        title: t("feedback.notificationTitle"),
+        body: notification.title ? `${notification.body ?? ""}\n\n${notification.title}` : notification.body,
+      });
+      return;
+    }
+
     // A new report (admins only) opens the queue it landed in.
     if (notification.type === "listing_reported") {
       router.push("/profile?section=flagged");
@@ -122,6 +133,9 @@ export function NotificationsView() {
         return t("notifications.offerText");
       case "listing_removed":
         return t("moderation.notificationText");
+      case "feedback":
+        // The row is two lines, so this is the start of the message.
+        return t("feedback.notificationText", { message: (reason ?? "").replace(/\s+/g, " ").trim() });
       case "save":
       default:
         return t("notifications.saveText");
@@ -207,6 +221,8 @@ export function NotificationsView() {
                           ? t("moderation.reportedSender")
                           : notification.type === "admin" || notification.type === "listing_removed"
                           ? t("admin.senderName")
+                          : notification.type === "feedback"
+                          ? (notification.actor?.username ?? t("feedback.deletedUser"))
                           : (notification.actor?.username ?? t("notifications.unknownActor"))}
                       </span>{" "}
                       {notification.type === "admin"
@@ -232,12 +248,24 @@ export function NotificationsView() {
         title={openAdminNotification?.title ?? t("admin.senderName")}
       >
         <div className="flex flex-col gap-3">
-          <span className="flex items-center gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#161722]">
-              <Logo width={30} height={18} aria-hidden />
+          {openAdminNotification?.type === "feedback" ? (
+            // A problem report shows who sent it.
+            <span className="flex items-center gap-3">
+              <span className="block h-11 w-11 overflow-hidden rounded-full bg-surface-muted">
+                <Avatar userId={openAdminNotification.actor?.id} avatarUrl={openAdminNotification.actor?.avatarUrl} />
+              </span>
+              <span className="font-semibold text-text">
+                {openAdminNotification.actor?.username ?? t("feedback.deletedUser")}
+              </span>
             </span>
-            <span className="font-semibold text-text">{t("admin.senderName")}</span>
-          </span>
+          ) : (
+            <span className="flex items-center gap-3">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#161722]">
+                <Logo width={30} height={18} aria-hidden />
+              </span>
+              <span className="font-semibold text-text">{t("admin.senderName")}</span>
+            </span>
+          )}
           <p className="whitespace-pre-line text-[15px] leading-[22px] text-text">{openAdminNotification?.body}</p>
         </div>
       </Modal>
