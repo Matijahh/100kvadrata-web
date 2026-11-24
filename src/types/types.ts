@@ -595,3 +595,78 @@ export type Message = {
   listing?: MessageListing | null;
   attachments?: MessageAttachment[];
 };
+
+// ---------------------------------------------------------------------------
+// "Admin igra" (Admin game): the admin-only growth screen
+// ---------------------------------------------------------------------------
+
+/** The six numbers the database works out (see 20261124_growth_progress.sql). */
+export type GrowthMetric =
+  | "active_listings"
+  | "active_advertisers"
+  | "municipalities"
+  | "conversations"
+  | "buyer_requests"
+  | "fresh_listings_pct";
+
+export type GrowthMetrics = Record<GrowthMetric, number>;
+
+/** The three team characters who carry missions. */
+export type GrowthCharacter = "bard" | "herald" | "host";
+
+export type GrowthCriterion = {
+  metric: GrowthMetric;
+  target: number;
+};
+
+export type GrowthMission = {
+  number: number;
+  /** Missions sharing a stage run side by side. */
+  stage: number;
+  nameSr: string;
+  nameEn: string;
+  rewardSr: string;
+  rewardEn: string;
+  boss: "mini" | "final" | null;
+  carriers: GrowthCharacter[];
+  criteria: GrowthCriterion[];
+  /** Belgrade date (YYYY-MM-DD) of the first snapshot that met every target. */
+  wonOn: string | null;
+};
+
+/** One day's numbers (Belgrade date), saved when an admin opens the screen. */
+export type GrowthSnapshot = {
+  day: string;
+  metrics: GrowthMetrics;
+  note: string | null;
+  noteByName: string | null;
+  computedAt: string;
+};
+
+/** The admin who plays a character (growth_players). */
+export type GrowthPlayer = {
+  character: GrowthCharacter;
+  userId: string;
+  name: string | null;
+  avatarUrl: string | null;
+};
+
+/** One item of a character's daily checklist, with today's tick. */
+export type GrowthDailyTask = {
+  key: string;
+  character: GrowthCharacter;
+  labelSr: string;
+  labelEn: string;
+  /** When it was ticked today (Belgrade day); null = not done yet. */
+  checkedAt: string | null;
+};
+
+export type GrowthProgress = {
+  missions: GrowthMission[];
+  /** Newest first; the first one is today's, just worked out. */
+  snapshots: GrowthSnapshot[];
+  players: GrowthPlayer[];
+  /** The signed-in admin's own character; null when they don't play one. */
+  myCharacter: GrowthCharacter | null;
+  dailyTasks: GrowthDailyTask[];
+};

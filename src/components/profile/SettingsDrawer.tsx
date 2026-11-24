@@ -145,6 +145,20 @@ export function SettingsDrawer({
             </button>
           ) : null}
 
+          {isAdmin ? (
+            // Admins only: "Admin igra", the growth screen.
+            <button
+              type="button"
+              onClick={() => {
+                onOpenChange(false);
+                router.push("/admin-game");
+              }}
+              className="-my-2 py-2.5 text-left text-base text-text hover:text-primary"
+            >
+              {t("growth.title")}
+            </button>
+          ) : null}
+
           <OptionGroup
             title={t("profile.languageTitle")}
             options={languages}
