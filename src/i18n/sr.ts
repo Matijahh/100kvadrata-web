@@ -11,6 +11,7 @@ export const sr = {
     userFallback: "Korisnik",
     noMediaAvailable: "Nema dostupnog sadržaja",
     noMedia: "Nema sadržaja",
+    retry: "Pokušaj ponovo",
   },
   auth: {
     heroTitle: "Jedan swipe bliže tvom novom domu.",
@@ -115,7 +116,7 @@ export const sr = {
     closeFilters: "Zatvori filtere",
     saveSearchAction: "Sačuvaj ovu pretragu",
     backToTop: "Nazad na vrh",
-    fetchError: "Došlo je do greške pri učitavanju oglasa.",
+    fetchError: "Nismo uspeli da učitamo oglase. Proveri internet vezu i pokušaj ponovo.",
     emptyListings:
       "Nijedan oglas nije pronađen, probaj pretragu sa drugim pojmovima.",
     saveSearchLoginRequired:
@@ -584,6 +585,17 @@ export const sr = {
     detailsGround: "Pod",
     detailsFurniture: "Nameštenost",
     detailsParking: "Parking",
+    muteVideo: "Isključi zvuk",
+    unmuteVideo: "Uključi zvuk",
+    like: "Lajkuj",
+    unlike: "Ukloni lajk",
+    likesCount: "Broj lajkova: {{count}}",
+    save: "Sačuvaj oglas",
+    unsave: "Ukloni iz sačuvanih",
+    contactOwner: "Pošalji poruku vlasniku",
+    share: "Podeli oglas",
+    openOwnerProfile: "Otvori profil korisnika {{username}}",
+    reportListing: "Prijavi oglas",
   },
   onboarding: {
     welcomeTitle: "Drago nam je što si tu",
@@ -663,6 +675,7 @@ export const sr = {
   inbox: {
     title: "Poruke",
     emptyState: "Nema razgovora. Započni chat sa oglasa.",
+    loadError: "Nismo uspeli da učitamo tvoje razgovore. Proveri internet vezu i pokušaj ponovo.",
   },
   chat: {
     inputPlaceholder: "Napiši poruku...",
@@ -670,6 +683,11 @@ export const sr = {
     send: "Pošalji",
     viewListing: "Pogledaj oglas",
     emptyState: "Nema poruka. Pozdravi se!",
+    sending: "Šalje se…",
+    notSent: "Nije poslato. Dodirni da pokušaš ponovo.",
+    notSentTitle: "Poruka nije poslata",
+    notSentHint: "Otvara opcije da je pošalješ ponovo ili obrišeš",
+    deleteUnsent: "Obriši poruku",
   },
   buyers: {
     searchPlaceholder: "Pretraži kupce...",
@@ -677,7 +695,7 @@ export const sr = {
     filterBuyerTitle: "Kupac",
     filterUsernamePlaceholder: "Korisničko ime",
     emptyState: "Nijedan kupac nije pronađen.",
-    fetchError: "Došlo je do greške pri učitavanju kupaca.",
+    fetchError: "Nismo uspeli da učitamo kupce. Proveri internet vezu i pokušaj ponovo.",
     offerApartment: "PONUDI NEKRETNINU",
     offerSheetTitle: "Ponudi nekretninu",
     offerProperty: "Ponudi nekretninu",
@@ -933,5 +951,11 @@ export const sr = {
     showLessHistory: "Prikaži manje",
     loadError: "Nismo uspeli da učitamo napredak. Pokušaj ponovo.",
     retry: "Pokušaj ponovo",
+  },
+  time: {
+    now: "sada",
+    minutesShort: "{{count}} min",
+    hoursShort: "{{count}} h",
+    daysShort: "{{count}} d",
   },
 } as const;

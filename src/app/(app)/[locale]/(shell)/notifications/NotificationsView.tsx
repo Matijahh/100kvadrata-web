@@ -12,7 +12,7 @@ import { useToast } from "@/components/providers/ToastProvider";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
-import { formatRelativeTime } from "@/lib/relativeTime";
+import { formatRelativeTime } from "@/utils/relativeTime";
 import { findOrCreateConversation } from "@/services/chat";
 import { fetchNotifications, markAllNotificationsRead, markNotificationRead } from "@/services/notifications";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -230,7 +230,7 @@ export function NotificationsView() {
                         : actionText(notification.type, notification.body)}
                     </span>
                     <span className="mt-0.5 block text-xs text-text-muted">
-                      {formatRelativeTime(notification.createdAt)}
+                      {formatRelativeTime(notification.createdAt, t)}
                     </span>
                   </span>
                 </button>

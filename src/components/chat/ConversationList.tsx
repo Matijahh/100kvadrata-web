@@ -6,7 +6,7 @@ import { Spinner } from "@/components/genericComponents/EmptyState";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
-import { formatRelativeTime } from "@/lib/relativeTime";
+import { formatRelativeTime } from "@/utils/relativeTime";
 import { fetchConversations } from "@/services/chat";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useQuery } from "@tanstack/react-query";
@@ -74,7 +74,7 @@ export function ConversationList({ activeConversationId }: { activeConversationI
                 <span className="flex items-baseline justify-between gap-2">
                   <span className="truncate font-semibold text-text">{conversation.otherUser.username}</span>
                   <span className="shrink-0 text-xs text-text-muted">
-                    {formatRelativeTime(conversation.lastMessageAt)}
+                    {formatRelativeTime(conversation.lastMessageAt, t)}
                   </span>
                 </span>
                 {conversation.lastMessage ? (

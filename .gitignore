@@ -35,3 +35,6 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /blob-report/
+
+# internal setup runbooks (kept locally)
+docs/WEB_AUTH_SETUP.md

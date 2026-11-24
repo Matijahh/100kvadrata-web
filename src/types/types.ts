@@ -643,7 +643,7 @@ export type GrowthSnapshot = {
   computedAt: string;
 };
 
-/** The admin who plays a character (growth_players). */
+/** The admin who plays a character (profiles.admin_type). */
 export type GrowthPlayer = {
   character: GrowthCharacter;
   userId: string;

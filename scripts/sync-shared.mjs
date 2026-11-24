@@ -57,6 +57,7 @@ const SHARED = new Set([
   "src/utils/phone.ts",
   "src/utils/preferenceSets.ts",
   "src/utils/rangeLabels.ts",
+  "src/utils/relativeTime.ts",
   "src/stores/useHomeFiltersStore.ts",
   "src/stores/useSignInPromptStore.ts",
   "src/hooks/useCurrentUser.ts",
@@ -102,6 +103,8 @@ const APP_ONLY = new Set([
   // Next ships its own `*.svg` module declaration.
   "src/types/svg.d.ts",
   "src/utils/videoThumbnailCache.ts",
+  // Mute state of the swipe feed's autoplaying videos (the web has no such feed).
+  "src/stores/useVideoSoundStore.ts",
 ]);
 
 // Folders scanned for unclassified files.

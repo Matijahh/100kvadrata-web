@@ -40,10 +40,12 @@ export const lightColors: ThemeColors = {
   textOnPrimary: "#FFFFFF",
   formLabel: "#5A6270",
   textMuted: "#6B7280",
-  placeholder: "#8B94A3",
+  // Placeholder text, success and destructive all reach 4.5:1 on white, and
+  // inactive tab icons 3:1 (WCAG AA for text and for icons).
+  placeholder: "#6F7785",
   border: "#E5E7EB",
   divider: "#EFEFEF",
-  tabInactive: "#ABABAB",
+  tabInactive: "#767E8C",
   mediaPlaceholder: "#D9D9D9",
   mediaPlaceholderText: "#5C5C5C",
   // Content layered over listing photos/video stays light in both themes —
@@ -52,20 +54,23 @@ export const lightColors: ThemeColors = {
   onMediaMuted: "#D9D9D9",
   overlay: "rgba(17, 17, 17, 0.18)",
   shadow: "#000000",
-  destructive: "#D94B4B",
-  success: "#2E9E5B",
+  destructive: "#B4332F",
+  success: "#1E7A46",
   // burgundy, terracotta, sand, cream, slate, rose
   avatarPalette: ["#6E1515", "#B5562F", "#E2B49A", "#F3E6D8", "#3F4A5A", "#A55A5A"],
 };
 
 export const darkColors: ThemeColors = {
-  primary: "#f0616d",
+  // Dusty rose: the burgundy brand lightened for dark backgrounds, rather than
+  // a different hue. Text on it is a near-black burgundy, because white on a
+  // colour this light fails contrast (it was 2.96:1 on the old coral).
+  primary: "#E8848A",
   primarySoft: "#f0b4b4",
   surface: "#181A1F",
   surfaceMuted: "#101217",
   surfaceElevated: "#20242B",
   text: "#F5F7FA",
-  textOnPrimary: "#FFF5F5",
+  textOnPrimary: "#2A0608",
   formLabel: "#B4BCC9",
   textMuted: "#A4ACB8",
   placeholder: "#7E8796",

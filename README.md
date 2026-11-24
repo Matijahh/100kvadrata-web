@@ -1,4 +1,37 @@
-# 100m² - website and web app (Next.js)
+# 100m² (100 Kvadrata) - real estate, video-first
+
+**[Live →](https://100kvadrata-web.vercel.app)**
+
+100 Kvadrata is a real estate app where you browse properties in a vertical,
+video-first feed (like Reels) instead of scrolling endless lists. This repo is
+the **website and full web app**. It shares one Supabase backend, and most of its
+business logic, with the Expo / React Native mobile app.
+
+<!-- Screenshots: add 3 images (feed, listing, chat) to docs/ and uncomment
+<p>
+  <img src="docs/screenshot-feed.png" width="32%" />
+  <img src="docs/screenshot-listing.png" width="32%" />
+  <img src="docs/screenshot-chat.png" width="32%" />
+</p>
+-->
+
+### Highlights
+
+- **Feed**: reel on phones, grid on desktop, filters, saved searches and a buyers feed
+- **Listings**: create/edit with drag-and-drop media, HEIC conversion and in-browser video processing
+- **Messaging**: chat inbox with two panes on desktop, plus notifications for likes, saves and offers
+- **Auth**: email OTP, Google and Apple OAuth. Authorization is enforced by Postgres Row Level Security
+- **SEO**: server-rendered listing pages with OG images and JSON-LD, sitemap, app links into the mobile app
+- **i18n**: Serbian at `/`, English at `/en`
+- **Code sharing**: a sync script copies platform-neutral code (types, services, stores, i18n) from the
+  mobile repo, refuses to overwrite local edits and flags unclassified files
+- **Quality**: strict CSP and security headers, Playwright smoke tests on desktop and phone viewports
+
+**Stack:** Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · Radix · React Query · Zustand · Supabase · Playwright · Vercel
+
+---
+
+## Developer notes
 
 The public site **and** the web version of the **100 Kvadrata (100m²)** real-estate
 app. It talks to the same Supabase project as the mobile app (Expo, sibling repo
@@ -72,7 +105,7 @@ them is a full page load):
 | `(app)` | `/notifications` | Likes, saves, messages, offers; read / read all |
 | `(app)` | `/login`, `/register`, `/verify-email`, `/forgot-password` | Auth (OTP codes, same as the app) |
 | `(app)` | `/update-password`, `/choose-username`, `/onboarding` | Signed-in setup steps (`/onboarding`: offer a property or look for one — opens `/new-listing` or `/looking-for`, saves nothing) |
-| `(app)` | `/auth/callback` | Google / Apple OAuth return (see `docs/WEB_AUTH_SETUP.md`) |
+| `(app)` | `/auth/callback` | Google / Apple OAuth return (provider setup notes are kept outside the repo) |
 
 **No guest mode:** every `(app)` page needs an account except the sign-in screens
 (`/login`, `/register`, `/verify-email`, `/forgot-password`, `/auth/callback`); the list is `src/lib/publicPaths.ts`. `src/proxy.ts` runs next-intl
@@ -117,8 +150,8 @@ third-party service means adding its origin there.
 ## Tests
 
 `npm run test:e2e` runs Playwright against the installed Chrome (`PW_BUNDLED=1`
-for Playwright's Chromium) on a desktop and a phone viewport. There is only the
-production database, so the suite only reads:
+for Playwright's Chromium) on a desktop and a phone viewport. The suite only
+reads data, so it is safe to run against any environment:
 
 - signed out: the website, its header into the app, every app page
   redirecting to login, no guest option on the auth screens, the phone "get

@@ -42,7 +42,7 @@ const COLLAPSED_ROWS = 14;
 /**
  * "Admin igra" (Admin game), admins only. Reached from the profile's settings
  * drawer, or bookmarked at /admin-game. Each team admin plays one character
- * (growth_players), shown first. Opening it works today's numbers out again on
+ * (profiles.admin_type), shown first. Opening it works today's numbers out again on
  * the server and saves them as today's snapshot; the database refuses anyone
  * who isn't an admin, so hiding the link is not the only guard.
  */
