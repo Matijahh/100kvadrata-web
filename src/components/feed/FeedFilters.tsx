@@ -1,7 +1,7 @@
 "use client";
 
-import BookmarkFilledIcon from "@assets/icons/bookmark-icon-filled.svg";
-import BookmarkIcon from "@assets/icons/bookmark-icon.svg";
+import BookmarkFilledIcon from "@assets/icons/save-icon-filled.svg";
+import BookmarkIcon from "@assets/icons/save-icon.svg";
 import { CriteriaFields, SectionTitle } from "@/components/criteria/CriteriaFields";
 import { PillInput } from "@/components/form/PillInput";
 import Button from "@/components/genericComponents/Button";
