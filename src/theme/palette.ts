@@ -21,6 +21,9 @@ export type ThemeColors = {
   onMedia: string;
   onMediaMuted: string;
   overlay: string;
+  // The dim behind a modal (sheet, dialog): darker than `overlay`, which
+  // only softens the feed behind the open filter panel.
+  scrim: string;
   shadow: string;
   destructive: string;
   success: string;
@@ -53,6 +56,7 @@ export const lightColors: ThemeColors = {
   onMedia: "#FFFFFF",
   onMediaMuted: "#D9D9D9",
   overlay: "rgba(17, 17, 17, 0.18)",
+  scrim: "rgba(0, 0, 0, 0.45)",
   shadow: "#000000",
   destructive: "#B4332F",
   success: "#1E7A46",
@@ -82,6 +86,7 @@ export const darkColors: ThemeColors = {
   onMedia: "#FFFFFF",
   onMediaMuted: "#A4ACB8",
   overlay: "rgba(0, 0, 0, 0.5)",
+  scrim: "rgba(0, 0, 0, 0.6)",
   shadow: "#000000",
   destructive: "#FF8D8D",
   success: "#4ADE80",

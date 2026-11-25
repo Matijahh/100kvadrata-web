@@ -35,6 +35,9 @@ const HEADER =
 const SHARED = new Set([
   "src/types/types.ts",
   "src/theme/palette.ts",
+  // Type scale and spacing/radius/elevation tokens (pure numbers).
+  "src/theme/typography.ts",
+  "src/theme/spacing.ts",
   "src/i18n/en.ts",
   "src/i18n/sr.ts",
   "src/lib/queryKeys.ts",
@@ -105,6 +108,8 @@ const APP_ONLY = new Set([
   "src/utils/videoThumbnailCache.ts",
   // Mute state of the swipe feed's autoplaying videos (the web has no such feed).
   "src/stores/useVideoSoundStore.ts",
+  // expo-haptics; the web has no haptic feedback.
+  "src/utils/haptics.ts",
 ]);
 
 // Folders scanned for unclassified files.
