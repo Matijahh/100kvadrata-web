@@ -19,7 +19,7 @@ export const sr = {
     fieldRequired: "Ovo polje je obavezno.",
   },
   auth: {
-    heroTitle: "Jedan swipe bliže tvom novom domu.",
+    heroTitle: "Jedan svajp bliže tvom novom domu.",
     heroSubtitle: "Kupi. Prodaj. Iznajmi.",
     loginWelcome: "Dobrodošao nazad.",
     loginIdentifierLabel: "Email:",
