@@ -13,6 +13,7 @@ export const sr = {
     noMedia: "Nema sadržaja",
     retry: "Pokušaj ponovo",
     close: "Zatvori",
+    browseListings: "Pregledaj oglase",
   },
   form: {
     required: "obavezno",
@@ -126,6 +127,8 @@ export const sr = {
     fetchError: "Nismo uspeli da učitamo oglase. Proveri internet vezu i pokušaj ponovo.",
     emptyListings:
       "Nijedan oglas nije pronađen, probaj pretragu sa drugim pojmovima.",
+    clearFilters: "Očisti filtere",
+    refresh: "Osveži",
     saveSearchLoginRequired:
       "Prijavi se da bi sačuvao/la pretragu.",
     saveSearchFailed: "Nismo uspeli da sačuvamo ovu pretragu. Pokušaj ponovo za koji trenutak.",

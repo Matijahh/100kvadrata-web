@@ -1,0 +1,8 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<mask id="house-search-filled-gap" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+<rect width="24" height="24" fill="white"/>
+<circle cx="16.25" cy="16.25" r="6.6" fill="black"/>
+</mask>
+<path mask="url(#house-search-filled-gap)" d="M5.25 9.25L12 3.6L18.75 9.25V18.75C18.75 19.8546 17.8546 20.75 16.75 20.75H7.25C6.14543 20.75 5.25 19.8546 5.25 18.75V9.25Z" fill="currentColor" stroke="currentColor" stroke-width="2.38" stroke-linejoin="round"/>
+<path d="M2.75 11L12 3.25L21.25 11M18.9 18.9L21.25 21.25M20 16.25C20 18.3211 18.3211 20 16.25 20C14.1789 20 12.5 18.3211 12.5 16.25C12.5 14.1789 14.1789 12.5 16.25 12.5C18.3211 12.5 20 14.1789 20 16.25Z" stroke="currentColor" stroke-width="2.38" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -12,6 +12,7 @@ export const en = {
     noMedia: "No media",
     retry: "Try again",
     close: "Close",
+    browseListings: "Browse listings",
   },
   form: {
     required: "required",
@@ -121,6 +122,8 @@ export const en = {
     backToTop: "Back to top",
     fetchError: "We couldn't load listings. Check your connection and try again.",
     emptyListings: "No listings found, try searching by other terms.",
+    clearFilters: "Clear filters",
+    refresh: "Refresh",
     saveSearchLoginRequired: "You need to be logged in to save a search.",
     saveSearchFailed: "We couldn't save this search. Try again in a moment.",
     saveSearchSuccess: "Search saved.",
