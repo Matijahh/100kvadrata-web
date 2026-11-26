@@ -606,8 +606,8 @@ export type GrowthMetric =
 
 export type GrowthMetrics = Record<GrowthMetric, number>;
 
-/** The three team characters who carry missions. */
-export type GrowthCharacter = "bard" | "herald" | "host";
+/** The three team characters; each admin on the team plays one. */
+export type GrowthCharacter = "bard" | "hunter" | "host";
 
 export type GrowthCriterion = {
   metric: GrowthMetric;
@@ -620,10 +620,7 @@ export type GrowthMission = {
   stage: number;
   nameSr: string;
   nameEn: string;
-  rewardSr: string;
-  rewardEn: string;
   boss: "mini" | "final" | null;
-  carriers: GrowthCharacter[];
   criteria: GrowthCriterion[];
   /** Belgrade date (YYYY-MM-DD) of the first snapshot that met every target. */
   wonOn: string | null;

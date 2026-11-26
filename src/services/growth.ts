@@ -31,7 +31,7 @@ export const GROWTH_METRICS: readonly GrowthMetric[] = [
 
 export const GROWTH_NOTE_MAX = 200;
 
-const CHARACTERS: readonly GrowthCharacter[] = ["bard", "herald", "host"];
+const CHARACTERS: readonly GrowthCharacter[] = ["bard", "hunter", "host"];
 
 type Row = Record<string, unknown>;
 
@@ -63,14 +63,7 @@ const mapMission = (row: Row): GrowthMission => ({
   stage: toNumber(row.stage),
   nameSr: String(row.name_sr ?? ""),
   nameEn: String(row.name_en ?? ""),
-  rewardSr: String(row.reward_sr ?? ""),
-  rewardEn: String(row.reward_en ?? ""),
   boss: row.boss === "mini" || row.boss === "final" ? row.boss : null,
-  carriers: Array.isArray(row.carriers)
-    ? row.carriers.filter((item): item is GrowthCharacter =>
-        CHARACTERS.includes(item as GrowthCharacter),
-      )
-    : [],
   criteria: mapCriteria(row.criteria),
   wonOn: toText(row.won_on),
 });

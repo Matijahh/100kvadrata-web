@@ -10,9 +10,9 @@ import { useTranslation } from "react-i18next";
  * message needs to see it comes from the 100 Kvadrata team and not from a
  * stranger: on the profile, at the top of the chat and in the inbox.
  *
- * `compact` is the short "Admin" pill for a row that also holds a name and
- * more (chat header, inbox); the full "100 Kvadrata admin" is for the profile
- * card, which has the room.
+ * `compact` is the smaller pill, for a row that also holds a name and more
+ * (chat header, inbox). The profile card uses the regular size, on the bottom
+ * edge of the profile picture.
  */
 export function AdminBadge({ compact = false, className }: { compact?: boolean; className?: string }) {
   const { t } = useTranslation();
@@ -27,7 +27,7 @@ export function AdminBadge({ compact = false, className }: { compact?: boolean; 
       )}
     >
       <CheckIcon width={compact ? 12 : 14} height={compact ? 12 : 14} aria-hidden />
-      <span className="whitespace-nowrap">{compact ? t("admin.badgeShort") : t("admin.profileBadge")}</span>
+      <span className="whitespace-nowrap">{t("admin.badgeShort")}</span>
     </span>
   );
 }

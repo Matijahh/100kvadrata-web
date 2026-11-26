@@ -1,6 +1,7 @@
 "use client";
 
 import AnchorRightIcon from "@assets/icons/anchor-right-icon.svg";
+import RefreshIcon from "@assets/icons/refresh-icon.svg";
 import Button from "@/components/genericComponents/Button";
 import { Spinner } from "@/components/genericComponents/EmptyState";
 import { LabeledTextField } from "@/components/form/LabeledTextField";
@@ -40,9 +41,10 @@ import { useTranslation } from "react-i18next";
 const COLLAPSED_ROWS = 14;
 
 /**
- * "Admin igra" (Admin game), admins only. Reached from the profile's settings
- * drawer, or bookmarked at /admin-game. Each team admin plays one character
- * (profiles.admin_type), shown first. Opening it works today's numbers out again on
+ * "Admin igra" (Admin game), admins only. Reached from the trophy button on
+ * the profile, or bookmarked at /admin-game. The seven missions belong to the
+ * whole team; each team admin plays one character (profiles.admin_type) with
+ * its own daily checklist, shown first. Opening it works today's numbers out again on
  * the server and saves them as today's snapshot; the database refuses anyone
  * who isn't an admin, so hiding the link is not the only guard.
  */
@@ -121,6 +123,7 @@ export function AdminGameView() {
         <div className="hidden md:block">
           <Button
             title={t("growth.refresh")}
+            iconSvg={RefreshIcon}
             variant="secondary"
             onClick={() => progressQuery.refetch()}
             disabled={progressQuery.isFetching}
@@ -203,7 +206,7 @@ export function AdminGameView() {
               ) : null}
               <div className={stage.length > 1 ? "grid gap-7 md:grid-cols-2" : "grid"}>
                 {stage.map((mission) => (
-                  <GrowthMissionCard key={mission.number} mission={mission} playerNames={board.playerNames} />
+                  <GrowthMissionCard key={mission.number} mission={mission} />
                 ))}
               </div>
             </Fragment>

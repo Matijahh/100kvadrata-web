@@ -5,6 +5,8 @@ import {
   GROWTH_SPRITE_HEIGHT,
   GROWTH_SPRITE_TILE,
   GROWTH_SPRITE_WIDTH,
+  GROWTH_TROPHY,
+  GROWTH_TROPHY_SIZE,
 } from "@/constants/growthSprites";
 import { cn } from "@/lib/cn";
 import { useLanguageStore } from "@/stores/useLanguageStore";
@@ -14,7 +16,6 @@ import {
   type GrowthBoard,
   type GrowthCharacterState,
   type GrowthMissionState,
-  formatCarriers,
   formatGrowthDay,
   getDailyTaskLabel,
   formatGrowthScore,
@@ -22,7 +23,6 @@ import {
   formatGrowthValue,
   formatMissionNumber,
   getMissionName,
-  getMissionReward,
 } from "@/utils/growthMissions";
 import { formatAmount } from "@/utils/rangeLabels";
 import type { CSSProperties } from "react";
@@ -55,6 +55,23 @@ export function GrowthSprite({
       aria-hidden
     >
       {GROWTH_SPRITES[character].map((layer) => (
+        <path key={layer.fill} fill={layer.fill} d={layer.d} />
+      ))}
+    </svg>
+  );
+}
+
+/** The boss missions' pixel trophy, `size` pixels square. */
+export function GrowthTrophy({ size }: { size: number }) {
+  return (
+    <svg
+      viewBox={`0 0 ${GROWTH_TROPHY_SIZE} ${GROWTH_TROPHY_SIZE}`}
+      width={size}
+      height={size}
+      shapeRendering="crispEdges"
+      aria-hidden
+    >
+      {GROWTH_TROPHY.map((layer) => (
         <path key={layer.fill} fill={layer.fill} d={layer.d} />
       ))}
     </svg>
@@ -132,24 +149,40 @@ export function GrowthHud({ board }: { board: GrowthBoard }) {
             {t("growth.xpHint", { per: formatAmount(board.listingsPerBlock) })}
           </span>
         </div>
-        <div className="relative mx-[9px] mb-1.5 mt-2.5 h-[26px]">
-          {board.flags.map((flag) => (
-            <span
-              key={`${flag.missionNumber}-${flag.target}`}
-              title={`${t("growth.missionsTitle")} ${flag.missionNumber}`}
-              className={cn(
-                "absolute top-0 grid h-[26px] w-[26px] place-items-center font-pixel text-[10px]",
-                flag.isWon ? "bg-primary text-text-on-primary" : "bg-surface text-primary",
-              )}
-              style={{
-                left: `${flag.position * 100}%`,
-                transform: flag.position >= 1 ? "translateX(-100%)" : "translateX(-50%)",
-                boxShadow: "inset 0 0 0 2px var(--c-primary)",
-              }}
-            >
-              {flag.missionNumber}
-            </span>
-          ))}
+        <div className="relative mx-[9px] mb-1.5 mt-2.5 h-[54px]">
+          {board.flags.map((flag) => {
+            const key = `${flag.missionNumber}-${flag.target}`;
+            const place = {
+              left: `${flag.position * 100}%`,
+              transform: flag.position >= 1 ? "translateX(-100%)" : "translateX(-50%)",
+            };
+            // The bosses' flags are their trophies on the sprites' tile (so the
+            // outline shows in dark mode too), dimmed until beaten.
+            return flag.boss ? (
+              <span
+                key={key}
+                title={`${t("growth.missionsTitle")} ${flag.missionNumber} · ${t(
+                  flag.boss === "final" ? "growth.bossFinal" : "growth.bossMini",
+                )}`}
+                className={cn("absolute bottom-0 flex p-[3px]", !flag.isWon && "opacity-50")}
+                style={{ ...place, backgroundColor: GROWTH_SPRITE_TILE }}
+              >
+                <GrowthTrophy size={flag.boss === "final" ? 48 : 32} />
+              </span>
+            ) : (
+              <span
+                key={key}
+                title={`${t("growth.missionsTitle")} ${flag.missionNumber}`}
+                className={cn(
+                  "absolute bottom-0 grid h-[26px] w-[26px] place-items-center font-pixel text-[10px]",
+                  flag.isWon ? "bg-primary text-text-on-primary" : "bg-surface text-primary",
+                )}
+                style={{ ...place, boxShadow: "inset 0 0 0 2px var(--c-primary)" }}
+              >
+                {flag.missionNumber}
+              </span>
+            );
+          })}
         </div>
         <div
           role="img"
@@ -176,13 +209,12 @@ export function GrowthHud({ board }: { board: GrowthBoard }) {
   );
 }
 
-export function GrowthMissionCard({
-  mission,
-  playerNames,
-}: {
-  mission: GrowthMissionState;
-  playerNames: GrowthBoard["playerNames"];
-}) {
+/**
+ * One mission, shared by the whole team: its targets against today's numbers.
+ * The two bosses also show their reward under a pixel trophy, a small one for
+ * the mini boss and a big one for the final boss.
+ */
+export function GrowthMissionCard({ mission }: { mission: GrowthMissionState }) {
   const { t } = useTranslation();
   const language = useLanguageStore((state) => state.language);
   const won = mission.isWon;
@@ -218,16 +250,6 @@ export function GrowthMissionCard({
             {t("growth.next")}
           </span>
         ) : null}
-        {mission.isMine ? (
-          <span
-            className={cn(
-              "whitespace-nowrap px-2 py-1.5 font-pixel text-[10px]",
-              won ? "bg-text-on-primary text-primary" : "bg-primary-soft text-text-on-primary",
-            )}
-          >
-            {t("growth.mine")}
-          </span>
-        ) : null}
       </div>
 
       <ul className="m-0 grid list-none gap-1.5 p-0">
@@ -261,24 +283,39 @@ export function GrowthMissionCard({
         ))}
       </ul>
 
-      <p className="m-0 flex flex-wrap gap-x-4 gap-y-1 text-sm">
-        <span>
-          <b className="font-semibold">{t("growth.reward")}</b> {getMissionReward(mission, language)}
-        </span>
-        {mission.carriers.length ? (
-          <span>
-            <b className="font-semibold">{t("growth.carriers")}</b>{" "}
-            {formatCarriers(mission, playerNames, (character) => t(`growth.characters.${character}.name`))}
+      {mission.boss ? (
+        <div
+          className={cn(
+            "mt-1 flex items-center gap-4 border-t-2 border-dashed pt-3.5",
+            won ? "border-primary-soft" : "border-border",
+          )}
+        >
+          <span className="grid shrink-0 place-items-center p-2" style={{ backgroundColor: GROWTH_SPRITE_TILE }}>
+            <GrowthTrophy size={mission.boss === "final" ? 80 : 48} />
           </span>
-        ) : null}
-      </p>
+          <div className="flex flex-col gap-1.5">
+            <span className={cn("font-pixel text-[10px] leading-4", won ? "text-text-on-primary" : "text-primary")}>
+              {t("growth.bossReward")}
+            </span>
+            <span
+              className={cn(
+                "font-pixel-text font-semibold leading-snug",
+                mission.boss === "final" ? "text-2xl" : "text-lg",
+              )}
+            >
+              {t(`growth.bossRewards.${mission.boss}`)}
+            </span>
+          </div>
+        </div>
+      ) : null}
     </article>
   );
 }
 
 /**
- * "You play as Glasnik": the signed-in admin's own character, at the top, with
- * today's checklist they tick off.
+ * "You play as Lovac": the signed-in admin's own character, at the top, with
+ * today's checklist they tick off. Missions are shared by the whole team, so
+ * the card has none of its own.
  */
 export function GrowthPlayerCard({
   state,
@@ -301,42 +338,10 @@ export function GrowthPlayerCard({
         <div>
           <p className="m-0 font-pixel text-[10px] leading-4 text-primary">{t("growth.playingAs")}</p>
           <h2 className="mb-0 mt-2 font-pixel text-2xl leading-snug">{t(`${key}.name`)}</h2>
-          <p className="m-0 mt-1 font-semibold text-text-muted">
-            {[state.player?.name, t(`${key}.className`)].filter(Boolean).join(" · ")}
-          </p>
         </div>
         <p className="m-0 bg-primary px-3 py-2.5 font-pixel-text text-lg font-semibold leading-snug text-text-on-primary">
           {t(`${key}.power`)}
         </p>
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="m-0 font-pixel text-[10px] leading-4 text-primary">{t("growth.yourNextMission")}</p>
-            <p className="m-0 mt-1 font-pixel-text text-lg font-semibold">
-              {state.nextMission
-                ? `${formatMissionNumber(state.nextMission.number)} · ${getMissionName(state.nextMission, language)}`
-                : t("growth.yourMissionsDone")}
-            </p>
-          </div>
-          <div>
-            <p className="mb-2 mt-0 font-pixel text-[10px] leading-4 text-primary">
-              {t("growth.characterMissions", { won: state.wonCount, total: state.missions.length })}
-            </p>
-            <div className="flex flex-wrap gap-1.5">
-              {state.missions.map((mission) => (
-                <span
-                  key={mission.number}
-                  className={cn(
-                    "grid h-[34px] w-[34px] place-items-center font-pixel text-[10px]",
-                    mission.isWon ? "bg-primary text-text-on-primary" : "text-primary",
-                  )}
-                  style={{ boxShadow: "inset 0 0 0 2px var(--c-primary)" }}
-                >
-                  {formatMissionNumber(mission.number)}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
 
         {state.dailyTasks.length ? (
           <fieldset className="m-0 flex flex-col gap-2.5 border-2 border-primary-soft bg-surface-muted p-3.5">

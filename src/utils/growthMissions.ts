@@ -42,8 +42,6 @@ export type GrowthCriterionState = GrowthCriterion & {
 export type GrowthMissionState = GrowthMission & {
   isWon: boolean;
   isNext: boolean;
-  /** Carried by the signed-in admin's character. */
-  isMine: boolean;
   criteriaState: GrowthCriterionState[];
 };
 
@@ -53,6 +51,8 @@ export type GrowthFlag = {
   /** 0-1 along the XP bar. */
   position: number;
   isWon: boolean;
+  /** A boss mission's flag is drawn as its trophy instead of its number. */
+  boss: GrowthMission["boss"];
 };
 
 export type GrowthCharacterState = {
@@ -61,10 +61,6 @@ export type GrowthCharacterState = {
   player: GrowthPlayer | null;
   /** The signed-in admin plays it. */
   isMine: boolean;
-  missions: GrowthMissionState[];
-  wonCount: number;
-  /** Its first mission not won yet. */
-  nextMission: GrowthMissionState | null;
   /** Today's checklist, in order. */
   dailyTasks: GrowthDailyTask[];
   /** How many of today's tasks are ticked. */
@@ -88,24 +84,19 @@ export type GrowthBoard = {
   characters: GrowthCharacterState[];
   /** The signed-in admin's character, or null when they don't play one. */
   me: GrowthCharacterState | null;
-  /** First name of whoever plays each character ("Stefan"). */
-  playerNames: Partial<Record<GrowthCharacter, string>>;
 };
 
-export const GROWTH_CHARACTERS: readonly GrowthCharacter[] = ["bard", "herald", "host"];
+export const GROWTH_CHARACTERS: readonly GrowthCharacter[] = ["bard", "hunter", "host"];
 
 export const buildGrowthBoard = (progress: GrowthProgress): GrowthBoard => {
   const latest = progress.snapshots[0] ?? null;
   const metrics = latest?.metrics ?? ZERO_METRICS;
   const firstOpen = progress.missions.find((mission) => !mission.wonOn);
 
-  const myCharacter = progress.myCharacter;
-
   const missions: GrowthMissionState[] = progress.missions.map((mission) => ({
     ...mission,
     isWon: !!mission.wonOn,
     isNext: mission === firstOpen,
-    isMine: !!myCharacter && mission.carriers.includes(myCharacter),
     criteriaState: mission.criteria.map((criterion) => {
       const current = metrics[criterion.metric] ?? 0;
       return {
@@ -142,18 +133,15 @@ export const buildGrowthBoard = (progress: GrowthProgress): GrowthBoard => {
     target,
     position: target / listingsGoal,
     isWon: mission.isWon,
+    boss: mission.boss,
   }));
 
   const characters: GrowthCharacterState[] = GROWTH_CHARACTERS.map((character) => {
-    const carried = missions.filter((mission) => mission.carriers.includes(character));
     const dailyTasks = progress.dailyTasks.filter((task) => task.character === character);
     return {
       character,
       player: progress.players.find((player) => player.character === character) ?? null,
-      isMine: character === myCharacter,
-      missions: carried,
-      wonCount: carried.filter((mission) => mission.isWon).length,
-      nextMission: carried.find((mission) => !mission.isWon) ?? null,
+      isMine: character === progress.myCharacter,
       dailyTasks,
       dailyDone: dailyTasks.filter((task) => task.checkedAt).length,
     };
@@ -172,26 +160,8 @@ export const buildGrowthBoard = (progress: GrowthProgress): GrowthBoard => {
     flags,
     characters,
     me: characters.find((state) => state.isMine) ?? null,
-    playerNames: Object.fromEntries(
-      progress.players
-        .filter((player) => player.name)
-        .map((player) => [player.character, player.name as string]),
-    ),
   };
 };
-
-/** "Glasnik (Stefan), Domaćin (Aleksa)": a mission's carriers with who plays them. */
-export const formatCarriers = (
-  mission: GrowthMission,
-  playerNames: GrowthBoard["playerNames"],
-  characterName: (character: GrowthCharacter) => string,
-) =>
-  mission.carriers
-    .map((character) => {
-      const player = playerNames[character];
-      return player ? `${characterName(character)} (${player})` : characterName(character);
-    })
-    .join(", ");
 
 export const getMissionName = (mission: GrowthMission, language: AppLanguage) =>
   language === "en" ? mission.nameEn : mission.nameSr;
@@ -212,9 +182,6 @@ export const withDailyCheck = (
       : task,
   ),
 });
-
-export const getMissionReward = (mission: GrowthMission, language: AppLanguage) =>
-  language === "en" ? mission.rewardEn : mission.rewardSr;
 
 /** "0042" — the arcade score, four digits like the artifact. */
 export const formatGrowthScore = (value: number) =>

@@ -96,13 +96,19 @@ export function ProfileCard({
 
   return (
     <div className="flex flex-col items-center gap-5 rounded-[32px] bg-surface p-6 text-center md:flex-row md:items-start md:gap-7 md:text-left">
-      <span className="block h-[120px] w-[120px] shrink-0 overflow-hidden rounded-full border-4 border-primary">
-        <Avatar userId={user?.id} avatarUrl={user?.avatarUrl} alt={name} />
+      <span className="relative block shrink-0">
+        <span className="block h-[120px] w-[120px] overflow-hidden rounded-full border-4 border-primary">
+          <Avatar userId={user?.id} avatarUrl={user?.avatarUrl} alt={name} />
+        </span>
+        {/* An admin's picture carries the "Admin" tag on its bottom edge, so
+            it reads as the 100 Kvadrata team at a glance. */}
+        {user?.isAdmin ? (
+          <AdminBadge className="absolute -bottom-3 left-1/2 min-h-7 -translate-x-1/2 border-2 border-surface" />
+        ) : null}
       </span>
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <h1 className="font-display text-2xl text-text">{name}</h1>
         <p className="text-sm text-text-muted">@{user?.username ?? "user"}</p>
-        {user?.isAdmin ? <AdminBadge className="mt-1 self-center md:self-start" /> : null}
         {user?.bio ? (
           <button
             type="button"

@@ -774,7 +774,6 @@ export const en = {
   },
   admin: {
     senderName: "100 Kvadrata",
-    profileBadge: "100 Kvadrata admin",
     badgeShort: "Admin",
     close: "Close",
     postsTab: "Posts",
@@ -916,16 +915,13 @@ export const en = {
     title: "Admin game",
     world: "World 1: Serbia",
     playingAs: "You play as",
-    mine: "Yours",
-    yourNextMission: "Your next mission",
-    yourMissionsDone: "All your missions are won!",
     todayTasks: "Today's tasks",
     todayTasksHint: "Starts over every day at midnight.",
     todayAllDone: "All done for today!",
     todayCount: "Today: {{done}} / {{total}}",
     todaySaveError: "We couldn't save the task. Please try again.",
-    lead_one: "{{count}} mission, one goal: {{goal}} active listings and packages for everyone.",
-    lead_other: "{{count}} missions, one goal: {{goal}} active listings and packages for everyone.",
+    lead_one: "{{count}} mission, one goal: {{goal}} active listings.",
+    lead_other: "{{count}} missions, one goal: {{goal}} active listings.",
     scoreLabel: "Active listings",
     wonMissions: "Missions won",
     nextGoal: "Next goal",
@@ -935,7 +931,7 @@ export const en = {
     updatedAtValue: "today at {{time}}",
     refresh: "Refresh",
     xpLabel: "XP bar",
-    xpHint: "1 block = {{per}} listings · flags are missions",
+    xpHint: "1 block = {{per}} listings · flags are missions, trophies are bosses",
     xpAccessibility: "XP bar: {{current}} of {{goal}} active listings",
     missionsTitle: "Missions",
     missionsHint:
@@ -946,8 +942,11 @@ export const en = {
     wonOn: "Won {{date}}",
     bossMini: "Mini boss",
     bossFinal: "Final boss",
-    reward: "Reward:",
-    carriers: "Carried by:",
+    bossReward: "Reward",
+    bossRewards: {
+      mini: "We can charge for listing extras",
+      final: "We can charge for full listings (packages)",
+    },
     met: "met",
     notMet: "not met",
     metrics: {
@@ -970,21 +969,17 @@ export const en = {
     },
     howCounted: "How it's counted",
     leftOut: "Admin accounts and banned accounts are never counted.",
-    characterMissions: "Missions {{won}} / {{total}}",
     characters: {
       bard: {
         name: "Bard",
-        className: "Class: content",
         power: "A reel people watch to the end",
       },
-      herald: {
-        name: "Herald",
-        className: "Class: calls",
+      hunter: {
+        name: "Hunter",
         power: "\"Got a flat to sell or rent?\"",
       },
       host: {
         name: "Host",
-        className: "Class: support",
         power: "Turns \"maybe\" into a published listing",
       },
     },
