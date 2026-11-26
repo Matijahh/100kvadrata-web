@@ -1,7 +1,6 @@
 "use client";
 
 import AnchorRightIcon from "@assets/icons/anchor-right-icon.svg";
-import PaperPlaneIcon from "@assets/icons/paper-plane-icon.svg";
 import { LabeledTextField } from "@/components/form/LabeledTextField";
 import Button from "@/components/genericComponents/Button";
 import { Spinner } from "@/components/genericComponents/EmptyState";
@@ -21,7 +20,7 @@ import { useTranslation } from "react-i18next";
 
 /**
  * Admin-only (FEAT-42): one in-app notification to every user, no push.
- * Reached from the admin's profile. The database function refuses anyone who
+ * Reached from the notifications page. The database function refuses anyone who
  * isn't an admin, so hiding this page is not the only guard.
  */
 export function AdminNotificationForm() {
@@ -102,7 +101,7 @@ export function AdminNotificationForm() {
         <h1 className="flex-1 font-display text-2xl text-text">{t("admin.sendNotification")}</h1>
       </div>
 
-      <div className="max-w-xl rounded-[32px] bg-surface p-5 md:p-8">
+      <div className="rounded-[32px] bg-surface p-5 md:p-8">
         <LabeledTextField
           label={t("admin.notificationTitleLabel")}
           placeholder={t("admin.notificationTitlePlaceholder")}
@@ -124,13 +123,13 @@ export function AdminNotificationForm() {
           disabled={isSending}
           className="min-h-[140px] w-full resize-y rounded-[20px] bg-surface-muted px-[15px] py-3.5 text-base leading-[22px] text-text placeholder:text-placeholder focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-soft"
         />
-        <div className="mt-6">
+        <div className="mt-6 flex justify-end">
           <Button
             title={isSending ? t("admin.notificationSending") : t("admin.notificationSend")}
             onClick={handleSend}
             disabled={isSending || !trimmedTitle || !trimmedBody}
-            iconSvg={PaperPlaneIcon}
             fullWidth
+            className="md:w-auto"
           />
         </div>
       </div>

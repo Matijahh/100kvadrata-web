@@ -7,7 +7,6 @@ import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 import { updateProfilePreferences } from "@/services/profile";
 import { useAuthStore } from "@/stores/useAuthStore";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useLanguageStore } from "@/stores/useLanguageStore";
 import { useThemeStore } from "@/stores/useThemeStore";
 import type { AppLanguage, AppThemePreference, Profile } from "@/types/types";
@@ -31,7 +30,6 @@ export function SettingsDrawer({
   const { t } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
-  const isAdmin = useCurrentUser().currentUser?.isAdmin === true;
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const sessionUser = useAuthStore((state) => state.sessionUser);
@@ -130,34 +128,6 @@ export function SettingsDrawer({
             </Dialog.Close>
           </div>
           <Dialog.Description className="sr-only">{t("profile.title")}</Dialog.Description>
-
-          {isAdmin ? (
-            // Admins only (FEAT-42).
-            <button
-              type="button"
-              onClick={() => {
-                onOpenChange(false);
-                router.push("/admin-notification");
-              }}
-              className="-my-2 py-2.5 text-left text-base text-text hover:text-primary"
-            >
-              {t("admin.sendNotification")}
-            </button>
-          ) : null}
-
-          {isAdmin ? (
-            // Admins only: "Admin igra", the growth screen.
-            <button
-              type="button"
-              onClick={() => {
-                onOpenChange(false);
-                router.push("/admin-game");
-              }}
-              className="-my-2 py-2.5 text-left text-base text-text hover:text-primary"
-            >
-              {t("growth.title")}
-            </button>
-          ) : null}
 
           <OptionGroup
             title={t("profile.languageTitle")}

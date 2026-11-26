@@ -9,7 +9,9 @@ import { Modal } from "@/components/ui/Modal";
 import Logo from "@assets/logo.svg";
 import { useState } from "react";
 import { useToast } from "@/components/providers/ToastProvider";
-import { useRouter } from "@/i18n/navigation";
+import { buttonClasses } from "@/components/genericComponents/Button";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatRelativeTime } from "@/utils/relativeTime";
@@ -32,6 +34,7 @@ export function NotificationsView() {
   const queryClient = useQueryClient();
   const sessionUser = useAuthStore((state) => state.sessionUser);
   const userId = sessionUser?.id ?? "";
+  const isAdmin = useCurrentUser().currentUser?.isAdmin === true;
   const [openAdminNotification, setOpenAdminNotification] = useState<Notification | null>(null);
 
   const notificationsQuery = useQuery({
@@ -171,6 +174,16 @@ export function NotificationsView() {
           </button>
         ) : null}
       </div>
+
+      {isAdmin ? (
+        // Admins only (FEAT-42): opens the broadcast composer.
+        <Link
+          href="/admin-notification"
+          className={cn(buttonClasses({ variant: "secondary", fullWidth: true }), "mb-4 max-w-xs")}
+        >
+          {t("admin.sendNotification")}
+        </Link>
+      ) : null}
 
       <div className="overflow-hidden rounded-[32px] bg-surface">
         {notificationsQuery.isLoading ? (

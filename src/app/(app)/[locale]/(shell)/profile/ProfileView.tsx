@@ -2,6 +2,7 @@
 
 import BellIcon from "@assets/icons/bell-icon.svg";
 import ReportProblemIcon from "@assets/icons/report-problem-icon.svg";
+import TrophyIcon from "@assets/icons/trophy-icon.svg";
 import { ReportProblemDialog } from "@/components/feedback/ReportProblemDialog";
 import FilterFilledIcon from "@assets/icons/filter-icon-filled.svg";
 import FilterIcon from "@assets/icons/filter-icon.svg";
@@ -228,8 +229,18 @@ export function ProfileView() {
           isBarStuck && "bg-surface-muted/85 shadow-[0_6px_16px_rgba(0,0,0,0.06)] backdrop-blur-md",
         )}
       >
-        {/* Admins receive reports as notifications; they don't send them. */}
-        {!isAdmin ? (
+        {/* Admins receive reports as notifications; they don't send them.
+            Their slot holds "Admin igra" instead. */}
+        {isAdmin ? (
+          <Link
+            href="/admin-game"
+            aria-label={t("growth.title")}
+            title={t("growth.title")}
+            className="rounded-full p-2.5 text-text hover:bg-surface"
+          >
+            <TrophyIcon width={24} height={24} aria-hidden />
+          </Link>
+        ) : (
           <button
             type="button"
             onClick={() => setFeedbackOpen(true)}
@@ -239,7 +250,7 @@ export function ProfileView() {
           >
             <ReportProblemIcon width={24} height={24} aria-hidden />
           </button>
-        ) : null}
+        )}
         <Link
           href="/notifications"
           aria-label={t("notifications.title")}
