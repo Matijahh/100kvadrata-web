@@ -40,7 +40,6 @@ export const webEn = {
     chatFailed: "We couldn't open the chat right now.",
     playVideo: "Play video",
     openInApp: "Open in the app",
-    expiredNotice: "This listing has expired and is no longer shown in the feed.",
     notFoundTitle: "Listing not found",
     notFoundMessage: "It may have been removed by its owner.",
     browseListings: "Browse listings",

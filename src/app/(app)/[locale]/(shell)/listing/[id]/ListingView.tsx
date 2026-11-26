@@ -12,7 +12,6 @@ import { useIsStuck } from "@/hooks/useIsStuck";
 import { useListingViewTracker } from "@/hooks/useListingViewTracker";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-import { getDaysLeft, isListingExpired } from "@/lib/listingFormat";
 import { queryKeys } from "@/lib/queryKeys";
 import { deleteListing, fetchListingById, fetchOwnListingViewCounts } from "@/services/listings";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -59,7 +58,6 @@ export function ListingView({ initialListing }: { initialListing: Listing }) {
   useListingViewTracker(listing, true);
 
   const isOwnListing = !!sessionUser && sessionUser.id === listing.user_id;
-  const isExpired = isListingExpired(listing);
 
   // The headline pins 8px above the top edge (-top-2), hiding some of its top
   // padding so it sits closer to the edge once stuck.
@@ -97,12 +95,6 @@ export function ListingView({ initialListing }: { initialListing: Listing }) {
           stop the headline sticking to the screen. (overflow-x-clip keeps long
           words in without making it one.) */}
       <div className="flex flex-col overflow-x-clip px-5 pb-10 md:px-8 md:pt-4">
-        {isExpired && !isOwnListing ? (
-          <p className="mt-4 rounded-2xl bg-surface-muted px-4 py-3 text-sm text-text-muted md:mt-0">
-            {t("web.listing.expiredNotice")}
-          </p>
-        ) : null}
-
         <div ref={headlineSentinelRef} aria-hidden />
         <ListingHeadline
           listing={listing}
@@ -133,7 +125,6 @@ function OwnerTools({ listing }: { listing: Listing }) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const sessionUser = useAuthStore((state) => state.sessionUser);
-  const daysLeft = getDaysLeft(listing);
 
   const viewCountsQuery = useQuery({
     queryKey: queryKeys.listingViewCounts(sessionUser?.id ?? ""),
@@ -176,20 +167,6 @@ function OwnerTools({ listing }: { listing: Listing }) {
         <h2 className="mr-auto text-[13px] font-semibold uppercase tracking-wide text-text-muted">
           {t("web.listing.ownerTools")}
         </h2>
-        {daysLeft != null ? (
-          <span
-            className={cn(
-              "rounded-full px-2.5 py-1 text-xs font-semibold",
-              daysLeft <= 0 ? "bg-destructive/15 text-destructive" : "bg-surface-muted text-text",
-            )}
-          >
-            {daysLeft <= 0
-              ? t("listing.expired")
-              : daysLeft === 1
-                ? t("listing.dayLeft")
-                : t("listing.daysLeft", { count: daysLeft })}
-          </span>
-        ) : null}
         {views != null ? (
           <span
             className="inline-flex items-center gap-1 rounded-full bg-surface-muted px-2.5 py-1 text-xs font-semibold text-text-muted"
@@ -201,8 +178,8 @@ function OwnerTools({ listing }: { listing: Listing }) {
         ) : null}
       </div>
       <div className="flex flex-wrap gap-2">
-        {/* Editing stays allowed after expiry: it changes content only; the
-            lifecycle columns are pinned by a database trigger. */}
+        {/* Editing changes content only: the columns the database decides are
+            pinned by a trigger. */}
         <Link
           href={`/new-listing?editListingId=${listing.id}`}
           className="inline-flex h-11 items-center gap-2 rounded-full bg-surface-muted px-4 text-sm font-semibold text-text hover:opacity-90"

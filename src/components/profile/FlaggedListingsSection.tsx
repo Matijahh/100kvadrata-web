@@ -20,8 +20,7 @@ import { useTranslation } from "react-i18next";
 /**
  * The admin's queue of reported listings (FEAT-43). Web counterpart of the
  * app's Flagged tab: there the actions sit in the listing screen's header,
- * here on each card, since a desktop grid has the room and a reported listing
- * that has expired can't be opened on its own page.
+ * here on each card, since a desktop grid has the room.
  */
 export function FlaggedListingsSection() {
   const { t } = useTranslation();

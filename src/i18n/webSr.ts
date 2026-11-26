@@ -39,7 +39,6 @@ export const webSr: WebDictionary = {
     chatFailed: "Trenutno nismo uspeli da otvorimo poruke.",
     playVideo: "Pusti video",
     openInApp: "Otvori u aplikaciji",
-    expiredNotice: "Ovaj oglas je istekao i više se ne prikazuje u pregledu oglasa.",
     notFoundTitle: "Oglas nije pronađen",
     notFoundMessage: "Možda ga je vlasnik uklonio.",
     browseListings: "Pregledaj oglase",

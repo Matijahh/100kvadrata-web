@@ -55,7 +55,7 @@ const getSortOrder = (filters?: ListingFilters) =>
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ListingQuery = any;
 
-/** Every filter and the expiry rule, applied to a listings query. */
+/** Every filter, applied to a listings query. */
 const applyListingFilters = (query: ListingQuery, filters?: ListingFilters): ListingQuery => {
   if (filters?.category) {
     query = query.eq("category", filters.category);
@@ -170,18 +170,14 @@ const applyListingFilters = (query: ListingQuery, filters?: ListingFilters): Lis
     ].join(","));
   }
 
-  // Hide expired listings; legacy listings have a null expires_at (never expire).
-  const nowIso = new Date().toISOString();
-  query = query.or(`expires_at.is.null,expires_at.gt.${nowIso}`);
-
   return query;
 };
 
 export const fetchListings = async (input: FetchListingsInput) => {
   const { cursorRank, cursorValue, cursorId, filters, limit } = input;
-  // Premium/exclusive listings are only boosted when the user has narrowed the
+  // Exclusive sellers' listings are only boosted when the user has narrowed the
   // feed with filters, a search or a sort. The default feed stays newest-first
-  // so regular listings aren't buried under premium ones. A price sort keeps
+  // so regular listings aren't buried under exclusive ones. A price sort keeps
   // them on top too (the product decision for FEAT-45): price order applies
   // within each priority level.
   const sortOrder = getSortOrder(filters);
@@ -474,17 +470,16 @@ export const createListingMedia = async (
 };
 
 // Everything an owner may change. Derived from CreateListingInput so the two
-// stay in step, minus the fields the client must never write: `user_id` is
-// ownership, `tier` drives priority_rank and the expiry window. The database
-// pins those anyway (trg_pin_listing_lifecycle_columns), but leaving them out
-// of the type stops us sending them in the first place.
+// stay in step, minus the field the client must never write: `user_id` is
+// ownership. The database pins it anyway (trg_pin_listing_privileged_columns),
+// but leaving it out of the type stops us sending it in the first place.
 // `media_mode` is excluded on purpose: it describes the photos or video the
 // listing was published with, and an edit cannot change those. Keeping it out
 // of the type makes a stray media write a compile error rather than a silent
 // mismatch between the column and the rows in `listing_media`.
 export type UpdateListingInput = Omit<
   CreateListingInput,
-  "user_id" | "tier" | "media_mode"
+  "user_id" | "media_mode"
 >;
 
 export const updateListing = async (
@@ -695,7 +690,7 @@ const getVideoContentType = (fileExtension: string) => {
 };
 
 // True when any listing filter or search term is set. Used to decide whether
-// premium priority ordering applies (it does not on the default feed), and
+// exclusive-seller priority ordering applies (it does not on the default feed), and
 // whether marketing posts are mixed in (they are only on the default feed).
 export const hasActiveListingFilters = (filters?: ListingFilters): boolean => {
   if (!filters) {
@@ -742,27 +737,3 @@ const normalizeSearchText = (value?: string | null) => {
 };
 
 const buildSearchPattern = (value: string) => `%${normalizeSearchText(value)}%`;
-
-/**
- * Whether a listing is live, i.e. in the feed: not archived or deleted, and
- * not past its expiry (the hourly job archives it some time after that).
- */
-export const isListingLive = (
-  listing: Pick<Listing, "status" | "expires_at">,
-  now: number = Date.now(),
-) =>
-  (listing.status == null || listing.status === "active") &&
-  (!listing.expires_at || new Date(listing.expires_at).getTime() > now);
-
-/**
- * Puts an expired listing back in the feed. During the free launch this is
- * free and gives another 30 days, the same as publishing; a listing credit is
- * spent if the owner has one (see 20261126_free_launch_reactivation.sql).
- */
-export const reactivateListing = async (listingId: number) => {
-  const { data } = await supabase
-    .rpc("reactivate_listing", { p_listing_id: listingId })
-    .throwOnError();
-
-  return data as Listing;
-};

@@ -402,13 +402,10 @@ export function NewListingFlow() {
         video = { ...optimized, bytes };
       }
 
-      // Free launch (PACKAGES_ENABLED = false): no tier; the database stamps
-      // the standard one and the 30-day expiry.
       const input: CreateListingInput = {
         ...columnsFromDraft(draft),
         user_id: sessionUser.id,
         media_mode: draft.mediaMode!,
-        tier: null,
       } as CreateListingInput;
       const listing = await createListing(input);
 

@@ -14,7 +14,6 @@ import { useListingActions } from "@/hooks/useListingActions";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { getListingAddressLabel } from "@/lib/listingFormat";
-import { isPremiumTier } from "@/lib/packages";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { Listing } from "@/types/types";
 import { getListingPriceLabel } from "@/utils/listingPrice";
@@ -27,12 +26,11 @@ const SAVED_COLOR = "#F4C542";
 const LIKED_COLOR = "#FF6B6B";
 const EXCLUSIVE_TEXT = "#2A2200";
 
-/** Exclusive (seller) beats Premium (listing tier) — one badge, never two. */
+/** Exclusive is a property of the seller, so every listing they publish carries it. */
 export function ListingBadge({ listing, className }: { listing: Listing; className?: string }) {
   const { t } = useTranslation();
-  const isExclusive = listing.user?.isExclusive === true;
 
-  if (!isExclusive && !isPremiumTier(listing.tier)) {
+  if (listing.user?.isExclusive !== true) {
     return null;
   }
 
@@ -40,13 +38,12 @@ export function ListingBadge({ listing, className }: { listing: Listing; classNa
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold",
-        isExclusive ? "text-[#2A2200]" : "bg-primary text-text-on-primary",
         className,
       )}
-      style={isExclusive ? { backgroundColor: SAVED_COLOR, color: EXCLUSIVE_TEXT } : undefined}
+      style={{ backgroundColor: SAVED_COLOR, color: EXCLUSIVE_TEXT }}
     >
       <StarFilledIcon width={12} height={12} aria-hidden />
-      {isExclusive ? t("packages.exclusiveBadge") : t("packages.premiumBadge")}
+      {t("listing.exclusiveBadge")}
     </span>
   );
 }

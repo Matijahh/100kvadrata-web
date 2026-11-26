@@ -1,6 +1,6 @@
 import { getServerT } from "@/i18n/server";
 import { SITE_ORIGIN } from "@/content/common";
-import { getListingAddressLabel, isListingExpired, splitListingMedia } from "@/lib/listingFormat";
+import { getListingAddressLabel, splitListingMedia } from "@/lib/listingFormat";
 import { buildListingUrl } from "@/lib/shareListing";
 import { fetchListingById } from "@/services/listings";
 import type { AppLanguage, Listing } from "@/types/types";
@@ -66,9 +66,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return {
     title,
     description,
-    // Expired listings stay reachable for anyone holding the link, but drop
-    // out of search results.
-    robots: isListingExpired(listing) ? { index: false, follow: true } : undefined,
     alternates: {
       canonical: locale === "en" ? `/en${path}` : path,
       languages: { sr: path, en: `/en${path}` },

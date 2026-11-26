@@ -64,12 +64,3 @@ export const splitListingMedia = (listing: MediaSource) => {
 
   return { photos, videoUrl, showVideo, showPhotos };
 };
-
-/** Whole days until expiry (≤ 0 once expired), or null for listings that never expire. */
-export const getDaysLeft = (listing: Listing) =>
-  listing.expires_at
-    ? Math.ceil((new Date(listing.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-    : null;
-
-export const isListingExpired = (listing: Listing) =>
-  !!listing.expires_at && new Date(listing.expires_at).getTime() <= Date.now();

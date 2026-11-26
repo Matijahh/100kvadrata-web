@@ -6,7 +6,7 @@ import { ListingBadge } from "@/components/listing/ListingSummary";
 import { VideoPoster } from "@/components/media/VideoPoster";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-import { getListingAddressLabel, getListingCardFacts, isListingExpired } from "@/lib/listingFormat";
+import { getListingAddressLabel, getListingCardFacts } from "@/lib/listingFormat";
 import type { Listing } from "@/types/types";
 import { formatEuros, getListingPriceLabel, getListingPricePerSquare } from "@/utils/listingPrice";
 import Image from "next/image";
@@ -24,14 +24,11 @@ import { useTranslation } from "react-i18next";
 export function ListingCard({
   listing,
   viewCount,
-  showLifecycle = false,
   className,
 }: {
   listing: Listing;
   /** Owner-only: how many times it has been viewed. */
   viewCount?: number | null;
-  /** Owner-only: mark expired listings. */
-  showLifecycle?: boolean;
   className?: string;
 }) {
   const { t } = useTranslation();
@@ -41,7 +38,6 @@ export function ListingCard({
   const pricePerSquare = getListingPricePerSquare(listing);
   const address = getListingAddressLabel(listing);
   const facts = getListingCardFacts(listing, t);
-  const expired = showLifecycle && isListingExpired(listing);
 
   return (
     <Link
@@ -58,13 +54,10 @@ export function ListingCard({
             alt=""
             fill
             sizes="(min-width: 1280px) 22vw, (min-width: 768px) 30vw, 50vw"
-            className={cn(
-              "object-cover transition-transform duration-300 group-hover:scale-[1.03]",
-              expired && "grayscale",
-            )}
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />
         ) : videoUrl ? (
-          <VideoPoster videoUrl={videoUrl} dimmed={expired} />
+          <VideoPoster videoUrl={videoUrl} />
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-text-muted">
             {t("common.noMedia")}
@@ -72,11 +65,6 @@ export function ListingCard({
         )}
         <div className="absolute left-2.5 top-2.5 flex gap-1.5">
           <ListingBadge listing={listing} />
-          {expired ? (
-            <span className="rounded-full bg-black/60 px-2.5 py-1 text-xs font-semibold text-white">
-              {t("listing.expired")}
-            </span>
-          ) : null}
         </div>
         {viewCount != null ? (
           <span

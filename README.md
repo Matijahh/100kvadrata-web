@@ -67,8 +67,8 @@ The mobile app is the source of truth for everything platform-neutral.
 `@/services/...`, `@/types/types`, `@/utils/...` resolve identically in both repos:
 
 - **Shared** (copied, header says so, never edit here): `types/types.ts`, all
-  `services/*` except `socialAuth.ts`, pure `utils/*`, `lib/queryKeys|packages|shareListing`,
-  `constants/auth|featureFlags|legal`, `i18n/en.ts` + `sr.ts`, `theme/palette.ts`,
+  `services/*` except `socialAuth.ts`, pure `utils/*`, `lib/queryKeys|shareListing`,
+  `constants/auth|legal`, `i18n/en.ts` + `sr.ts`, `theme/palette.ts`,
   `stores/useHomeFiltersStore|useSignInPromptStore`, `hooks/useCurrentUser`, and
   the SVGs in `assets/icons`, `assets/illustrations`, `assets/logo.svg`.
 - **Adapters** (same path and exports, web implementation, never synced):

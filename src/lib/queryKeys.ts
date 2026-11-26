@@ -33,9 +33,7 @@ export const queryKeys = {
     ["preferenceSets", userId, preferenceSetId] as const,
   buyers: (filters: BuyerFilters, currentUserId: string | null) =>
     ["buyers", currentUserId, filters] as const,
-  listingCredits: (userId: string) => ["listingCredits", userId] as const,
   blockedUserIds: (userId: string) => ["blockedUserIds", userId] as const,
-  buyersAccess: (userId: string) => ["buyersAccess", userId] as const,
   activeCountries: ["activeCountries"] as const,
   citySearch: (countryCode: string, query: string) =>
     ["citySearch", countryCode, query] as const,

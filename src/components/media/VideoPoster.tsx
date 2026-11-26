@@ -14,14 +14,11 @@ import { useRef } from "react";
 export function VideoPoster({
   videoUrl,
   size = "large",
-  dimmed = false,
   className,
 }: {
   videoUrl: string;
   /** The play mark: large on cards, small on thumbnails. */
   size?: "large" | "small";
-  /** Grey the frame out (expired listings on the owner's profile). */
-  dimmed?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -35,7 +32,7 @@ export function VideoPoster({
         <img
           src={poster}
           alt=""
-          className={cn("absolute inset-0 h-full w-full object-cover", dimmed && "grayscale")}
+          className="absolute inset-0 h-full w-full object-cover"
         />
       ) : null}
       <span className="absolute inset-0 flex items-center justify-center">

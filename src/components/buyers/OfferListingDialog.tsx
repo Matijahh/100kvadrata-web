@@ -10,7 +10,7 @@ import { useToast } from "@/components/providers/ToastProvider";
 import { Modal } from "@/components/ui/Modal";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-import { formatListingMetric, getDaysLeft, isListingExpired } from "@/lib/listingFormat";
+import { formatListingMetric } from "@/lib/listingFormat";
 import { queryKeys } from "@/lib/queryKeys";
 import { findOrCreateConversation, sendMessage } from "@/services/chat";
 import { fetchUserListings } from "@/services/listings";
@@ -102,9 +102,7 @@ export function OfferListingDialog({
     setSelectedExpanded(false);
   };
 
-  // Only what a buyer could actually open; the query is shared with the
-  // profile grid, where expired listings belong.
-  const listings = (listingsQuery.data ?? []).filter((listing) => !isListingExpired(listing));
+  const listings = listingsQuery.data ?? [];
 
   return (
     <Modal
@@ -176,9 +174,6 @@ function OfferRow({
     listing.surface_m2 != null ? t("buyers.offerSurface", { value: formatListingMetric(listing.surface_m2) }) : null,
     listing.rooms != null ? t("buyers.offerRooms", { count: listing.rooms }) : null,
   ].filter((fact): fact is string => !!fact);
-  const daysLeft = getDaysLeft(listing);
-  const daysLeftLabel =
-    daysLeft == null ? null : Math.max(1, daysLeft) === 1 ? t("listing.dayLeft") : t("listing.daysLeft", { count: daysLeft });
 
   return (
     <div
@@ -207,16 +202,13 @@ function OfferRow({
           <span className="block truncate font-semibold text-text">{price ?? kind}</span>
           {address ? <span className="block truncate text-[13px] text-text-muted">{address}</span> : null}
           {price && kind ? <span className="block truncate text-[13px] text-text-muted">{kind}</span> : null}
-          {facts.length > 0 || daysLeftLabel ? (
+          {facts.length > 0 ? (
             <span className="mt-1 flex flex-wrap gap-1.5">
               {facts.map((fact) => (
                 <span key={fact} className="rounded-full bg-surface-muted px-2 py-0.5 text-[12px] text-text">
                   {fact}
                 </span>
               ))}
-              {daysLeftLabel ? (
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[12px] text-primary">{daysLeftLabel}</span>
-              ) : null}
             </span>
           ) : null}
         </span>
