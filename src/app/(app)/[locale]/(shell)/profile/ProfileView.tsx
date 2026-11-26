@@ -5,13 +5,18 @@ import ReportProblemIcon from "@assets/icons/report-problem-icon.svg";
 import { ReportProblemDialog } from "@/components/feedback/ReportProblemDialog";
 import FilterFilledIcon from "@assets/icons/filter-icon-filled.svg";
 import FilterIcon from "@assets/icons/filter-icon.svg";
+import ChartFilledIcon from "@assets/icons/chart-icon-filled.svg";
+import ChartIcon from "@assets/icons/chart-icon.svg";
 import FlagIcon from "@assets/icons/flag-icon.svg";
 import ImageIcon from "@assets/icons/image-icon.svg";
 import { AdminPostsSection } from "@/components/profile/AdminPostsSection";
+import { AdminStatsSection } from "@/components/profile/AdminStatsSection";
+import { ExpiredListingRow } from "@/components/profile/ExpiredListingRow";
 import { FlaggedListingsSection } from "@/components/profile/FlaggedListingsSection";
 import HouseFilledIcon from "@assets/icons/house-icon-filled.svg";
 import HouseIcon from "@assets/icons/house-icon.svg";
 import MenuIcon from "@assets/icons/menu-icon.svg";
+import ReloadIcon from "@assets/icons/reload-icon.svg";
 import PlusIcon from "@assets/icons/plus-icon.svg";
 import SaveFilledIcon from "@assets/icons/save-icon-filled.svg";
 import SaveIcon from "@assets/icons/save-icon.svg";
@@ -31,7 +36,13 @@ import { useIsStuck } from "@/hooks/useIsStuck";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
-import { fetchOwnListingViewCounts, fetchSavedListings, fetchUserListings } from "@/services/listings";
+import {
+  fetchOwnListingViewCounts,
+  fetchSavedListings,
+  fetchUserListings,
+  isListingLive,
+  reactivateListing,
+} from "@/services/listings";
 import { fetchNotifications } from "@/services/notifications";
 import { deletePreferenceSet, fetchPreferenceSets } from "@/services/preferences";
 import { deleteSavedSearch, fetchSavedSearches } from "@/services/savedSearches";
@@ -41,20 +52,24 @@ import { confirmDestructiveAction } from "@/utils/confirmAction";
 import { getListingFilterChipLabels } from "@/utils/listingFilters";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState, type FC, type SVGProps } from "react";
+import { useEffect, useMemo, useRef, useState, type FC, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
-// "adminPosts" (FEAT-42) and "flagged" (FEAT-43) are admins only, in place of
-// the other four: admins don't post, look or keep anything themselves.
+// "adminPosts" (FEAT-42), "flagged" (FEAT-43) and "adminStats" are admins
+// only, in place of the other four: admins don't post, look or keep anything
+// themselves.
 const SECTIONS = [
   "yourListings",
+  // The owner's expired listings, with Renew. Only shown while there are any.
+  "expiredListings",
   "preferences",
   "savedListings",
   "savedSearches",
   "adminPosts",
   "flagged",
+  "adminStats",
 ] as const;
-const ADMIN_SECTIONS: readonly Section[] = ["adminPosts", "flagged"];
+const ADMIN_SECTIONS: readonly Section[] = ["adminPosts", "flagged", "adminStats"];
 type Section = (typeof SECTIONS)[number];
 
 const isSection = (value: string | null): value is Section =>
@@ -98,11 +113,41 @@ export function ProfileView() {
     else if (!isAdmin && !isLoadingProfile && isAdminSection) setSection("yourListings");
   }, [isAdmin, isLoadingProfile, section]);
 
+  // Read whichever tab is open: whether the Expired tab exists depends on it.
   const userListingsQuery = useQuery({
     queryKey: queryKeys.userListings(userId),
     queryFn: () => fetchUserListings(userId),
-    enabled: !!sessionUser && section === "yourListings",
+    enabled: !!sessionUser && !isAdmin,
   });
+  // "Your listings" is what is in the feed now; the rest wait in Expired,
+  // where they can be put back with one click.
+  const liveUserListings = useMemo(
+    () => (userListingsQuery.data ?? []).filter((listing) => isListingLive(listing)),
+    [userListingsQuery.data],
+  );
+  const expiredUserListings = useMemo(
+    () =>
+      (userListingsQuery.data ?? []).filter((listing) => !isListingLive(listing) && listing.status !== "deleted"),
+    [userListingsQuery.data],
+  );
+  // Renewing the last one takes the Expired tab away; don't leave the profile
+  // on a tab that is no longer there.
+  useEffect(() => {
+    if (section === "expiredListings" && userListingsQuery.isSuccess && expiredUserListings.length === 0) {
+      setSection("yourListings");
+    }
+  }, [section, expiredUserListings.length, userListingsQuery.isSuccess]);
+
+  const reactivateMutation = useMutation({
+    mutationFn: (listingId: number) => reactivateListing(listingId),
+    onSuccess: async () => {
+      showToast({ type: "success", message: t("profile.reactivated") });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.userListings(userId) });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.listings });
+    },
+    onError: () => showToast({ type: "error", message: t("profile.reactivateFailed") }),
+  });
+  const reactivatingListingId = reactivateMutation.isPending ? reactivateMutation.variables : null;
   const viewCountsQuery = useQuery({
     queryKey: queryKeys.listingViewCounts(userId),
     queryFn: fetchOwnListingViewCounts,
@@ -192,12 +237,18 @@ export function ProfileView() {
   const allTabs: { value: Section; label: string; icon: FC<SVGProps<SVGSVGElement>>; activeIcon: FC<SVGProps<SVGSVGElement>> }[] = [
     { value: "adminPosts", label: t("admin.postsTab"), icon: ImageIcon, activeIcon: ImageIcon },
     { value: "yourListings", label: t("profile.yourListingsTab"), icon: HouseIcon, activeIcon: HouseFilledIcon },
+    { value: "expiredListings", label: t("profile.expiredTab"), icon: ReloadIcon, activeIcon: ReloadIcon },
     { value: "preferences", label: t("preferences.tab"), icon: SearchIcon, activeIcon: SearchFilledIcon },
     { value: "savedListings", label: t("profile.savedListingsTab"), icon: SaveIcon, activeIcon: SaveFilledIcon },
     { value: "savedSearches", label: t("profile.savedSearchesTab"), icon: FilterIcon, activeIcon: FilterFilledIcon },
     { value: "flagged", label: t("moderation.flaggedTab"), icon: FlagIcon, activeIcon: FlagIcon },
+    { value: "adminStats", label: t("adminStats.tab"), icon: ChartIcon, activeIcon: ChartFilledIcon },
   ];
-  const tabs = allTabs.filter((tab) => ADMIN_SECTIONS.includes(tab.value) === isAdmin);
+  const tabs = allTabs.filter(
+    (tab) =>
+      ADMIN_SECTIONS.includes(tab.value) === isAdmin &&
+      (tab.value !== "expiredListings" || expiredUserListings.length > 0),
+  );
 
   const preferenceSets = preferenceSetsQuery.data ?? [];
 
@@ -300,12 +351,14 @@ export function ProfileView() {
 
         {section === "flagged" && isAdmin ? <FlaggedListingsSection /> : null}
 
+        {section === "adminStats" && isAdmin ? <AdminStatsSection /> : null}
+
         {section === "yourListings" ? (
           userListingsQuery.isLoading ? (
             <Spinner />
           ) : userListingsQuery.isError ? (
             <EmptyState title={t("profile.listingsLoadError")} />
-          ) : (userListingsQuery.data ?? []).length === 0 ? (
+          ) : liveUserListings.length === 0 ? (
             <EmptyState icon={HouseIcon} title={t("profile.yourListingsEmpty")}>
               <Link href="/new-listing" className={buttonClasses()}>
                 {t("profile.postListingCta")}
@@ -313,7 +366,7 @@ export function ProfileView() {
             </EmptyState>
           ) : (
             <ListingGrid>
-              {(userListingsQuery.data ?? []).map((listing) => (
+              {liveUserListings.map((listing) => (
                 <ListingCard
                   key={listing.id}
                   listing={listing}
@@ -322,6 +375,23 @@ export function ProfileView() {
                 />
               ))}
             </ListingGrid>
+          )
+        ) : null}
+
+        {section === "expiredListings" ? (
+          userListingsQuery.isLoading ? (
+            <Spinner />
+          ) : (
+            <ul className="grid gap-3 md:grid-cols-2 2xl:grid-cols-3">
+              {expiredUserListings.map((listing) => (
+                <ExpiredListingRow
+                  key={listing.id}
+                  listing={listing}
+                  onReactivate={() => reactivateMutation.mutate(listing.id)}
+                  isReactivating={reactivatingListingId === listing.id}
+                />
+              ))}
+            </ul>
           )
         ) : null}
 

@@ -3,6 +3,7 @@
 import GlobeIcon from "@assets/icons/globe-icon.svg";
 import PhoneIcon from "@assets/icons/phone-icon.svg";
 import Avatar from "@/components/genericComponents/Avatar";
+import { AdminBadge } from "@/components/profile/AdminBadge";
 import { cn } from "@/lib/cn";
 import type { Profile } from "@/types/types";
 import { promptDestructiveChoice } from "@/utils/confirmAction";
@@ -101,6 +102,7 @@ export function ProfileCard({
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <h1 className="font-display text-2xl text-text">{name}</h1>
         <p className="text-sm text-text-muted">@{user?.username ?? "user"}</p>
+        {user?.isAdmin ? <AdminBadge className="mt-1 self-center md:self-start" /> : null}
         {user?.bio ? (
           <button
             type="button"

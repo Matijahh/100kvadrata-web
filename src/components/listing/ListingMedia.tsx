@@ -96,6 +96,7 @@ function PhotoStrip({
   sizes: string;
   dotsPosition: "top" | "bottom";
 }) {
+  const { t } = useTranslation();
   const stripRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -127,7 +128,7 @@ function PhotoStrip({
             type="button"
             onClick={() => setLightboxIndex(index)}
             className="relative h-full w-full shrink-0 snap-center cursor-zoom-in"
-            aria-label={`${index + 1} / ${photos.length}`}
+            aria-label={t("listing.openPhoto", { index: index + 1, count: photos.length })}
           >
             <Image
               src={src}
@@ -150,23 +151,17 @@ function PhotoStrip({
             hidden={activeIndex === photos.length - 1}
             onClick={() => scrollTo(activeIndex + 1)}
           />
-          <div
+          {/* "3/12" rather than a row of dots, like the app: it says how many
+              photos there are, which dots stop doing past a handful. */}
+          <span
             className={cn(
-              "pointer-events-none absolute inset-x-0 flex justify-center gap-1.5",
+              "pointer-events-none absolute right-4 rounded-full bg-black/45 px-2.5 py-1 text-xs font-semibold text-on-media tabular-nums",
               dotsPosition === "top" ? "top-4" : "bottom-4",
             )}
             aria-hidden
           >
-            {photos.map((src, index) => (
-              <span
-                key={src}
-                className={cn(
-                  "h-2 rounded-full transition-all",
-                  index === activeIndex ? "w-5 bg-surface" : "w-2 bg-white/45",
-                )}
-              />
-            ))}
-          </div>
+            {activeIndex + 1}/{photos.length}
+          </span>
         </>
       ) : null}
 

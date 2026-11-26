@@ -9,7 +9,9 @@ import {
   LISTING_NEARBY_OBJECT_VALUES,
   LISTING_ORIENTATION_VALUES,
   LISTING_PARKING_VALUES,
+  LISTING_PRICE_BASIS_VALUES,
   LISTING_PROPERTY_CONDITION_VALUES,
+  LISTING_SORT_VALUES,
   LISTING_STOREY_VALUES,
   LISTING_TYPE_VALUES,
   ListingFilters,
@@ -42,6 +44,8 @@ const ALLOWED_FILTER_VALUES: Partial<Record<keyof ListingFilters, readonly strin
   furniture: LISTING_FURNITURE_VALUES,
   nearbyObjects: LISTING_NEARBY_OBJECT_VALUES,
   additionalFeatures: LISTING_ADDITIONAL_FEATURE_VALUES,
+  sort: LISTING_SORT_VALUES,
+  priceBasis: LISTING_PRICE_BASIS_VALUES,
 };
 
 // The criteria that used to hold one value and now hold several. A saved
@@ -105,130 +109,192 @@ export const normalizeListingFilters = (filters: ListingFilters): ListingFilters
     normalizedFilters[key] = value;
   });
 
+  // Defaults are left out, so a filter set means the same thing whether or not
+  // it spells them out: two otherwise identical saved searches must not differ
+  // only by an explicit "newest" or "per m²".
+  if (normalizedFilters.sort === "newest") {
+    delete normalizedFilters.sort;
+  }
+
+  if (
+    normalizedFilters.priceBasis !== "total" ||
+    (normalizedFilters.minPriceEur == null && normalizedFilters.maxPriceEur == null)
+  ) {
+    delete normalizedFilters.priceBasis;
+  }
+
   return normalizedFilters as ListingFilters;
 };
 
 export const getListingFiltersSignature = (filters: ListingFilters) =>
   stableSerialize(normalizeListingFilters(filters));
 
-export const getListingFilterChipLabels = (
+/** One removable chip: its text, and the filters with it taken away. */
+export type FilterChip<F> = {
+  key: string;
+  label: string;
+  without: F;
+};
+
+/**
+ * The applied filters as chips, each removable on its own. Ranges are one
+ * chip (min and max together), and a multi-select gives one chip per value.
+ * The sort shows as a chip too when it isn't the default, so a sorted feed
+ * always says so.
+ */
+export const getListingFilterChips = (
   filters: ListingFilters,
   t: TranslateFn,
-) => {
-  const normalizedFilters = normalizeListingFilters(filters);
-  const prioritizedLabels: string[] = [];
-  const labels: string[] = [];
+): FilterChip<ListingFilters>[] => {
+  const normalized = normalizeListingFilters(filters);
+  const prioritized: FilterChip<ListingFilters>[] = [];
+  const rest: FilterChip<ListingFilters>[] = [];
 
-  if (normalizedFilters.searchText) {
-    labels.push(normalizedFilters.searchText);
+  const without = (patch: Partial<ListingFilters>) =>
+    normalizeListingFilters({ ...normalized, ...patch });
+  const withoutValue = <K extends keyof ListingFilters>(key: K, value: string) =>
+    without({
+      [key]: ((normalized[key] as string[] | undefined) ?? []).filter((item) => item !== value),
+    } as Partial<ListingFilters>);
+
+  if (normalized.sort) {
+    prioritized.push({
+      key: "sort",
+      label: t(`feed.sort.${normalized.sort}`),
+      without: without({ sort: undefined }),
+    });
   }
 
-  if (normalizedFilters.category) {
-    labels.push(t(`newListing.categories.${normalizedFilters.category}`));
+  if (normalized.searchText) {
+    rest.push({ key: "searchText", label: normalized.searchText, without: without({ searchText: undefined }) });
   }
 
-  if (normalizedFilters.listingType) {
-    labels.push(t(`newListing.listingTypes.${normalizedFilters.listingType}`));
+  if (normalized.category) {
+    rest.push({
+      key: "category",
+      label: t(`newListing.categories.${normalized.category}`),
+      without: without({ category: undefined }),
+    });
   }
 
-  if (normalizedFilters.state) {
-    labels.push(normalizedFilters.state);
+  if (normalized.listingType) {
+    rest.push({
+      key: "listingType",
+      label: t(`newListing.listingTypes.${normalized.listingType}`),
+      without: without({ listingType: undefined }),
+    });
   }
 
-  if (normalizedFilters.city) {
-    labels.push(normalizedFilters.city);
+  // A smaller place is meaningless without the larger one it sits in, so
+  // removing a city also removes its municipality.
+  if (normalized.state) {
+    rest.push({
+      key: "state",
+      label: normalized.state,
+      without: without({ state: undefined, city: undefined, municipality: undefined }),
+    });
   }
 
-  if (normalizedFilters.municipality) {
-    labels.push(normalizedFilters.municipality);
+  if (normalized.city) {
+    rest.push({
+      key: "city",
+      label: normalized.city,
+      without: without({ city: undefined, municipality: undefined }),
+    });
   }
 
-  // One chip per selected value: two orientations are two chips, the same way
-  // two heating types always were.
-  (normalizedFilters.orientation ?? []).forEach((value) => {
-    labels.push(t(`newListing.orientations.${value}`));
+  if (normalized.municipality) {
+    rest.push({
+      key: "municipality",
+      label: normalized.municipality,
+      without: without({ municipality: undefined }),
+    });
+  }
+
+  const multi: [keyof ListingFilters, string][] = [
+    ["orientation", "newListing.orientations"],
+    ["parking", "newListing.parkingOptions"],
+    ["furniture", "newListing.furnitureOptions"],
+    ["constructionType", "newListing.constructionTypeOptions"],
+    ["propertyCondition", "newListing.propertyConditionOptions"],
+    ["storey", "newListing.storeyOptions"],
+    ["heatingTypes", "newListing.heatingOptions"],
+    ["groundType", "newListing.groundOptions"],
+    ["nearbyObjects", "newListing.nearbyObjectOptions"],
+    ["additionalFeatures", "newListing.additionalFeatureOptions"],
+  ];
+
+  multi.forEach(([key, prefix]) => {
+    ((normalized[key] as string[] | undefined) ?? []).forEach((value) => {
+      // "floor" is the form's "Other (enter number)" option, which means
+      // nothing as a chip. The floor number chip stands in for it.
+      if (key === "storey" && value === "floor") {
+        return;
+      }
+
+      rest.push({ key: `${key}:${value}`, label: t(`${prefix}.${value}`), without: withoutValue(key, value) });
+    });
   });
 
-  (normalizedFilters.parking ?? []).forEach((value) => {
-    labels.push(t(`newListing.parkingOptions.${value}`));
-  });
+  // A sale's price is per m² unless the filter says total; the chip says
+  // which, since "do 2.000 €" means very different things for the two.
+  const priceLabel = getRangeLabel(
+    normalized.minPriceEur,
+    normalized.maxPriceEur,
+    PRICE_RANGE_KEYS,
+    t,
+    formatAmount,
+  );
+  if (priceLabel) {
+    const perSquare = normalized.priceBasis !== "total" && normalized.listingType === "forSale";
+    prioritized.push({
+      key: "price",
+      label: perSquare ? `${priceLabel} ${t("listing.pricePerSquareSuffix")}` : priceLabel,
+      without: without({ minPriceEur: undefined, maxPriceEur: undefined, priceBasis: undefined }),
+    });
+  }
 
-  (normalizedFilters.furniture ?? []).forEach((value) => {
-    labels.push(t(`newListing.furnitureOptions.${value}`));
-  });
+  const surfaceLabel = getRangeLabel(
+    normalized.minSurfaceM2,
+    normalized.maxSurfaceM2,
+    SURFACE_RANGE_KEYS,
+    t,
+    formatAmount,
+  );
+  if (surfaceLabel) {
+    prioritized.push({
+      key: "surface",
+      label: surfaceLabel,
+      without: without({ minSurfaceM2: undefined, maxSurfaceM2: undefined }),
+    });
+  }
 
-  (normalizedFilters.constructionType ?? []).forEach((value) => {
-    labels.push(t(`newListing.constructionTypeOptions.${value}`));
-  });
+  const roomsLabel = getRangeLabel(normalized.minRooms, normalized.maxRooms, ROOMS_RANGE_KEYS, t);
+  if (roomsLabel) {
+    prioritized.push({
+      key: "rooms",
+      label: roomsLabel,
+      without: without({ minRooms: undefined, maxRooms: undefined }),
+    });
+  }
 
-  (normalizedFilters.propertyCondition ?? []).forEach((value) => {
-    labels.push(t(`newListing.propertyConditionOptions.${value}`));
-  });
-
-  // "floor" is the form's "Other (enter number)" option, which means nothing
-  // as a chip. The floor number chip below stands in for it.
-  (normalizedFilters.storey ?? []).forEach((value) => {
-    if (value !== "floor") {
-      labels.push(t(`newListing.storeyOptions.${value}`));
-    }
-  });
-
-  (normalizedFilters.heatingTypes ?? []).forEach((value) => {
-    labels.push(t(`newListing.heatingOptions.${value}`));
-  });
-
-  (normalizedFilters.groundType ?? []).forEach((value) => {
-    labels.push(t(`newListing.groundOptions.${value}`));
-  });
-
-  // Both ends of a pair read as one range. These chips are a read-only
-  // summary, so nothing is lost by merging them — unlike the home filter
-  // summary, where each chip has to stay separately removable.
-  [
-    getRangeLabel(
-      normalizedFilters.minPriceEur,
-      normalizedFilters.maxPriceEur,
-      PRICE_RANGE_KEYS,
-      t,
-      formatAmount,
-    ),
-    getRangeLabel(
-      normalizedFilters.minSurfaceM2,
-      normalizedFilters.maxSurfaceM2,
-      SURFACE_RANGE_KEYS,
-      t,
-      formatAmount,
-    ),
-    getRangeLabel(
-      normalizedFilters.minRooms,
-      normalizedFilters.maxRooms,
-      ROOMS_RANGE_KEYS,
-      t,
-    ),
-  ].forEach((label) => {
-    if (label) {
-      prioritizedLabels.push(label);
-    }
-  });
-
-  if (normalizedFilters.storeyFloorNumber != null) {
-    prioritizedLabels.push(
-      t("feed.filterSummary.floorNumber", {
-        value: normalizedFilters.storeyFloorNumber,
+  if (normalized.storeyFloorNumber != null) {
+    prioritized.push({
+      key: "storeyFloorNumber",
+      label: t("feed.filterSummary.floorNumber", { value: normalized.storeyFloorNumber }),
+      without: without({
+        storeyFloorNumber: undefined,
+        storey: (normalized.storey ?? []).filter((value) => value !== "floor"),
       }),
-    );
+    });
   }
 
-  (normalizedFilters.nearbyObjects ?? []).forEach((value) => {
-    labels.push(t(`newListing.nearbyObjectOptions.${value}`));
-  });
-
-  (normalizedFilters.additionalFeatures ?? []).forEach((value) => {
-    labels.push(t(`newListing.additionalFeatureOptions.${value}`));
-  });
-
-  return [...prioritizedLabels, ...labels];
+  return [...prioritized, ...rest];
 };
+
+/** The chips' text only, for read-only summaries (saved searches). */
+export const getListingFilterChipLabels = (filters: ListingFilters, t: TranslateFn) =>
+  getListingFilterChips(filters, t).map((chip) => chip.label);
 
 export const stableSerialize = (value: unknown): string => {
   if (Array.isArray(value)) {

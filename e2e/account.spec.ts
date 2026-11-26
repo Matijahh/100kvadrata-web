@@ -51,29 +51,36 @@ test.describe("signed in", () => {
     await expect(page.getByRole("button", { name: "Filters" })).toHaveAttribute("aria-expanded", "true");
   });
 
-  test("a filter narrows the feed and lights up the Filters button", async ({ page }, testInfo) => {
+  test("a filter narrows the feed, shows as a chip and is removed from it", async ({ page }, testInfo) => {
     await expect(page.locator("[data-reel-index='0'], main a[href*='/listing/']").first()).toBeVisible();
     // No free-text search (as in the app): the filters do the narrowing.
     await expect(page.getByRole("searchbox")).toHaveCount(0);
 
     // Desktop: the panel is open beside the grid. Phones: Filters opens a sheet.
-    if (testInfo.project.name === "phone") await page.getByRole("button", { name: "Filters" }).click();
-    const filters = testInfo.project.name === "phone" ? page.getByRole("dialog") : page.locator("main aside");
+    const isPhone = testInfo.project.name === "phone";
+    if (isPhone) await page.getByRole("button", { name: "Filters" }).click();
+    const filters = () => (isPhone ? page.getByRole("dialog") : page.locator("main aside"));
 
-    await filters.getByRole("radio", { name: "For Sale" }).click();
-    await filters.getByRole("button", { name: "SEARCH" }).click();
+    await filters().getByRole("radio", { name: "For Sale" }).click();
+    await filters().getByRole("button", { name: "Show listings" }).click();
 
-    // No chips row above the feed: the Filters button carries the count
-    // (filled on phones), and the panel / sheet is where filters are seen
-    // and cleared.
-    const toggle = page.getByRole("button", { name: "Filters (1)" });
+    // Like the app: the Filters button carries the count, and each applied
+    // filter is a chip above the feed.
+    const toggle = page.getByRole("button", { name: "Filters, 1 active" });
     await expect(toggle).toBeVisible();
-    await expect(page.locator("main header li")).toHaveCount(0);
-    if (testInfo.project.name === "phone") await toggle.click();
-    await (testInfo.project.name === "phone" ? page.getByRole("dialog") : page.locator("main aside"))
-      .getByRole("button", { name: "Clear all" })
-      .click();
+    const chip = page.getByRole("button", { name: "Remove filter For Sale" });
+    await expect(chip).toBeVisible();
+
+    // "Clear all" resets the form only; the feed keeps what was applied.
+    if (isPhone) await toggle.click();
+    await filters().getByRole("button", { name: "Clear all" }).click();
+    if (isPhone) await page.keyboard.press("Escape");
+    await expect(chip).toBeVisible();
+
+    // The chip removes its filter straight away.
+    await chip.click();
     await expect(page.getByRole("button", { name: "Filters", exact: true })).toBeVisible();
+    await expect(chip).toHaveCount(0);
   });
 
   test("listing pages render with their metadata, and missing ones 404", async ({ page }, testInfo) => {

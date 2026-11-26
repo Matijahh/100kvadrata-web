@@ -16,9 +16,39 @@ const declarations = (colors: ThemeColors) =>
 const avatarPalette = (colors: ThemeColors) =>
   colors.avatarPalette.map((color, index) => `--c-avatar-${index}:${color};`).join("");
 
+const relativeLuminance = (hex: string) => {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex);
+  if (!match) return 0;
+  const [r, g, b] = [0, 2, 4].map((offset) => {
+    const channel = parseInt(match[1].slice(offset, offset + 2), 16) / 255;
+    return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+
+// White or near-black on a chart fill, whichever contrasts more (same rule as
+// the app's SegmentedBar).
+const NEAR_BLACK = "#161722";
+const inkOn = (fill: string) => {
+  const luminance = relativeLuminance(fill);
+  const onWhite = 1.05 / (luminance + 0.05);
+  const onBlack = (luminance + 0.05) / (relativeLuminance(NEAR_BLACK) + 0.05);
+  return onWhite >= onBlack ? "#FFFFFF" : NEAR_BLACK;
+};
+
+// Group colours of the admin statistics charts: --c-chart-N and the text
+// colour that reads on it, --c-chart-ink-N.
+const chartSeries = (colors: ThemeColors) =>
+  colors.chartSeries
+    .map((color, index) => `--c-chart-${index}:${color};--c-chart-ink-${index}:${inkOn(color)};`)
+    .join("");
+
+const tokens = (colors: ThemeColors) =>
+  `${declarations(colors)}${avatarPalette(colors)}${chartSeries(colors)}`;
+
 const css =
-  `:root{${declarations(lightColors)}${avatarPalette(lightColors)}color-scheme:light;}` +
-  `[data-theme="dark"]{${declarations(darkColors)}${avatarPalette(darkColors)}color-scheme:dark;}`;
+  `:root{${tokens(lightColors)}color-scheme:light;}` +
+  `[data-theme="dark"]{${tokens(darkColors)}color-scheme:dark;}`;
 
 // Resolves the stored preference (light / dark / system) before first paint so
 // a dark-theme visitor never sees a light flash. Mirrors resolveThemeScheme in

@@ -1,4 +1,5 @@
 import type { Listing, ListingMedia } from "@/types/types";
+import { getListingFacts } from "@/utils/listingFacts";
 
 // Small display helpers the app keeps private inside its listing card
 // (flatswipe/src/components/listingListItem.tsx). Same rules, so a listing
@@ -7,6 +8,22 @@ import type { Listing, ListingMedia } from "@/types/types";
 /** Rooms can be fractional (2.5): integers print as-is, the rest to one decimal. */
 export const formatListingMetric = (value: number) =>
   Number.isInteger(value) ? value.toString() : value.toFixed(1);
+
+/**
+ * The facts line on a feed card: the type of property, then the app's
+ * getListingFacts (size and rooms, with proper plurals). The area those
+ * facts end with is left out here: the web card prints the address on its own
+ * line just above.
+ *
+ *   ["Stan", "65 m²", "2 sobe"]
+ */
+export const getListingCardFacts = (
+  listing: Listing,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string[] => [
+  ...(listing.category ? [t(`newListing.categories.${listing.category}`)] : []),
+  ...getListingFacts({ ...listing, municipality: null, city: null }, t),
+];
 
 /** "Street 12, City", or whichever half exists. */
 export const getListingAddressLabel = (listing: Listing) => {

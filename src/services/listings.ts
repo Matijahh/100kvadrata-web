@@ -8,6 +8,7 @@ import {
   Listing,
   ListingFilters,
   ListingMedia,
+  ListingSort,
 } from "@/types/types";
 
 type StorageInput = {
@@ -23,10 +24,11 @@ type StorageUploadResult = {
 };
 
 type PaginationInput = {
-  // Keyset cursor of the last item on the page. The composite (priority_rank,
-  // id) pair is used for filtered/searched feeds; only `cursorId` is used for
-  // the default feed, which is ordered by id alone.
+  // Keyset cursor of the last item on the page; see getListingFeedCursor.
+  // The default feed uses only `cursorId`, a filtered one (priority_rank, id),
+  // and a sorted one (priority_rank, sort value, id).
   cursorRank?: number;
+  cursorValue?: number | null;
   cursorId?: number;
   limit?: number;
 };
@@ -35,21 +37,26 @@ type FetchListingsInput = PaginationInput & {
   filters?: ListingFilters;
 };
 
-export const fetchListings = async (input: FetchListingsInput) => {
-  const { cursorRank, cursorId, filters, limit } = input;
-  // Premium/exclusive listings are only boosted when the user has narrowed the
-  // feed with filters or a search. The default feed stays newest-first so
-  // regular listings aren't buried under premium ones.
-  const usePriorityOrdering = hasActiveListingFilters(filters);
+/** The column and direction behind each sort. "newest" orders by id. */
+const SORT_ORDER: Record<
+  Exclude<ListingSort, "newest">,
+  { column: "effective_total_price_eur" | "effective_price_per_m2_eur"; ascending: boolean }
+> = {
+  priceAsc: { column: "effective_total_price_eur", ascending: true },
+  priceDesc: { column: "effective_total_price_eur", ascending: false },
+  pricePerM2Asc: { column: "effective_price_per_m2_eur", ascending: true },
+};
 
-  let query = supabase.from("listings").select("*, media:listing_media(*)");
+const getSortOrder = (filters?: ListingFilters) =>
+  filters?.sort && filters.sort !== "newest" ? SORT_ORDER[filters.sort] : null;
 
-  query = usePriorityOrdering
-    ? query
-        .order("priority_rank", { ascending: false })
-        .order("id", { ascending: false })
-    : query.order("id", { ascending: false });
+// The PostgREST builder's generics differ between the app and the web's
+// supabase-js versions; the filters below only use methods both have.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ListingQuery = any;
 
+/** Every filter and the expiry rule, applied to a listings query. */
+const applyListingFilters = (query: ListingQuery, filters?: ListingFilters): ListingQuery => {
   if (filters?.category) {
     query = query.eq("category", filters.category);
   }
@@ -88,12 +95,17 @@ export const fetchListings = async (input: FetchListingsInput) => {
     query = query.lte("rooms", filters.maxRooms);
   }
 
+  // A sale's price_eur is per m², so a buyer who thinks in totals filters on
+  // the generated total instead (a rental's total is its monthly rent).
+  const priceColumn =
+    filters?.priceBasis === "total" ? "effective_total_price_eur" : "price_eur";
+
   if (filters?.minPriceEur != null) {
-    query = query.gte("price_eur", filters.minPriceEur);
+    query = query.gte(priceColumn, filters.minPriceEur);
   }
 
   if (filters?.maxPriceEur != null) {
-    query = query.lte("price_eur", filters.maxPriceEur);
+    query = query.lte(priceColumn, filters.maxPriceEur);
   }
 
   // `in`, not `eq`: a listing has exactly one orientation, but the buyer may
@@ -162,13 +174,57 @@ export const fetchListings = async (input: FetchListingsInput) => {
   const nowIso = new Date().toISOString();
   query = query.or(`expires_at.is.null,expires_at.gt.${nowIso}`);
 
+  return query;
+};
+
+export const fetchListings = async (input: FetchListingsInput) => {
+  const { cursorRank, cursorValue, cursorId, filters, limit } = input;
+  // Premium/exclusive listings are only boosted when the user has narrowed the
+  // feed with filters, a search or a sort. The default feed stays newest-first
+  // so regular listings aren't buried under premium ones. A price sort keeps
+  // them on top too (the product decision for FEAT-45): price order applies
+  // within each priority level.
+  const sortOrder = getSortOrder(filters);
+  const usePriorityOrdering = hasActiveListingFilters(filters);
+
+  let query = applyListingFilters(
+    supabase.from("listings").select("*, media:listing_media(*)"),
+    filters,
+  );
+
+  if (sortOrder) {
+    query = query
+      .order("priority_rank", { ascending: false })
+      .order(sortOrder.column, { ascending: sortOrder.ascending, nullsFirst: false })
+      .order("id", { ascending: false });
+  } else if (usePriorityOrdering) {
+    query = query
+      .order("priority_rank", { ascending: false })
+      .order("id", { ascending: false });
+  } else {
+    query = query.order("id", { ascending: false });
+  }
+
   if (limit) {
     query = query.limit(limit);
   }
 
-  // Keyset pagination. Composite (priority_rank, id) cursor when prioritising
-  // filtered results; id-only cursor for the default newest-first feed.
-  if (usePriorityOrdering) {
+  // Keyset pagination: everything strictly after the last row of the
+  // previous page, in the same order as above. Listings without a price to
+  // sort by come last (nulls last), so a null cursor value means the page
+  // ended among them.
+  if (sortOrder) {
+    if (cursorRank != null && cursorId != null) {
+      const column = sortOrder.column;
+      const afterValue =
+        cursorValue == null
+          ? `and(${column}.is.null,id.lt.${cursorId})`
+          : `or(${column}.${sortOrder.ascending ? "gt" : "lt"}.${cursorValue},${column}.is.null,and(${column}.eq.${cursorValue},id.lt.${cursorId}))`;
+      query = query.or(
+        `priority_rank.lt.${cursorRank},and(priority_rank.eq.${cursorRank},${afterValue})`,
+      );
+    }
+  } else if (usePriorityOrdering) {
     if (cursorRank != null && cursorId != null) {
       query = query.or(
         `priority_rank.lt.${cursorRank},and(priority_rank.eq.${cursorRank},id.lt.${cursorId})`,
@@ -181,6 +237,17 @@ export const fetchListings = async (input: FetchListingsInput) => {
   const { data } = await query.throwOnError();
 
   return mapListingsWithProfiles(data ?? []);
+};
+
+/** The cursor for the page after `listing`, under the same filters and sort. */
+export const getListingFeedCursor = (listing: Listing, filters?: ListingFilters) => {
+  const sortOrder = getSortOrder(filters);
+
+  return {
+    cursorRank: listing.priority_rank ?? 0,
+    cursorValue: sortOrder ? (listing[sortOrder.column] ?? null) : null,
+    cursorId: listing.id,
+  };
 };
 
 export const fetchUserListings = async (userId: string) => {
@@ -661,6 +728,7 @@ export const hasActiveListingFilters = (filters?: ListingFilters): boolean => {
       filters.furniture?.length ||
       filters.nearbyObjects?.length ||
       filters.additionalFeatures?.length ||
+      (filters.sort != null && filters.sort !== "newest") ||
       normalizeSearchText(filters.searchText),
   );
 };
@@ -674,3 +742,27 @@ const normalizeSearchText = (value?: string | null) => {
 };
 
 const buildSearchPattern = (value: string) => `%${normalizeSearchText(value)}%`;
+
+/**
+ * Whether a listing is live, i.e. in the feed: not archived or deleted, and
+ * not past its expiry (the hourly job archives it some time after that).
+ */
+export const isListingLive = (
+  listing: Pick<Listing, "status" | "expires_at">,
+  now: number = Date.now(),
+) =>
+  (listing.status == null || listing.status === "active") &&
+  (!listing.expires_at || new Date(listing.expires_at).getTime() > now);
+
+/**
+ * Puts an expired listing back in the feed. During the free launch this is
+ * free and gives another 30 days, the same as publishing; a listing credit is
+ * spent if the owner has one (see 20261126_free_launch_reactivation.sql).
+ */
+export const reactivateListing = async (listingId: number) => {
+  const { data } = await supabase
+    .rpc("reactivate_listing", { p_listing_id: listingId })
+    .throwOnError();
+
+  return data as Listing;
+};

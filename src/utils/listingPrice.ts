@@ -37,6 +37,30 @@ export const getListingTotalPrice = (listing: PricedListing) => {
   return Math.round((listing.price_eur * listing.surface_m2) / 100) * 100;
 };
 
+/**
+ * A sale's price per m², for the small line under its total on the feed card,
+ * or null where there is nothing to add: a rental, or a sale whose main label
+ * is already the per-m² price because it has no surface to multiply by.
+ *
+ * The seller's own per-m² figure wins; otherwise it is worked out from the
+ * total they entered, rounded to the euro.
+ */
+export const getListingPricePerSquare = (listing: PricedListing) => {
+  if (getListingTotalPrice(listing) == null) {
+    return null;
+  }
+
+  if (listing.price_eur != null) {
+    return listing.price_eur;
+  }
+
+  if (listing.total_price_eur != null && listing.surface_m2 != null && listing.surface_m2 > 0) {
+    return Math.round(listing.total_price_eur / listing.surface_m2);
+  }
+
+  return null;
+};
+
 /** "178.600 €" — a euro amount with the Serbian thousands separator and no suffix. */
 export const formatEuros = (value: number) => `${formatAmount(value)} €`;
 

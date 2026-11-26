@@ -3,19 +3,25 @@
 import AnchorRightIcon from "@assets/icons/anchor-right-icon.svg";
 import CloseIcon from "@assets/icons/close-icon.svg";
 import FlagIcon from "@assets/icons/flag-icon.svg";
+import HouseIcon from "@assets/icons/house-icon.svg";
 import PlayFilledIcon from "@assets/icons/play-icon-filled.svg";
 import { ChatComposer, type PendingAttachment } from "@/components/chat/ChatComposer";
 import Avatar from "@/components/genericComponents/Avatar";
+import { AdminBadge } from "@/components/profile/AdminBadge";
 import { EmptyState, Spinner } from "@/components/genericComponents/EmptyState";
 import { useToast } from "@/components/providers/ToastProvider";
 import { Link, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
+import { supabase } from "@/lib/supabase";
 import { fetchConversationById, fetchMessages, markMessagesAsRead, sendMessage } from "@/services/chat";
+import { fetchListingById } from "@/services/listings";
 import { blockUser, type ReportReason, reportUser } from "@/services/reports";
 import { useAuthStore } from "@/stores/useAuthStore";
 import type { Message, MessageListing } from "@/types/types";
 import { confirmDestructiveAction, promptDestructiveChoice } from "@/utils/confirmAction";
+import { getListingPriceLabel } from "@/utils/listingPrice";
+import { formatClockTime, formatDayLabel, localDayKey } from "@/utils/relativeTime";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Dialog } from "radix-ui";
 import dynamic from "next/dynamic";
@@ -26,8 +32,9 @@ import { useTranslation } from "react-i18next";
 
 const ListingLightbox = dynamic(() => import("@/components/listing/ListingLightbox"), { ssr: false });
 
-// Same polling as the app (no realtime subscription there either); React
-// Query pauses it while the tab is hidden.
+// The fallback while the Realtime channel isn't live (or never is, on a
+// database without the realtime migration) — same as the app. React Query
+// pauses it while the tab is hidden.
 const MESSAGES_REFRESH_MS = 5000;
 // How close to the bottom still counts as following the conversation.
 const FOLLOW_THRESHOLD = 24;
@@ -39,13 +46,14 @@ export type SendPayload = {
 };
 
 /**
- * One conversation — web port of the app's chat/[conversationId]: 5 s
- * polling, text + photos/videos + the listing link carried over from a
+ * One conversation — web port of the app's chat/[conversationId]: live
+ * updates (Realtime, 5 s polling until it connects), day headings, the
+ * listing it is about under the header, text + photos/videos + the listing link carried over from a
  * listing's Message button, report and block. Opened from a listing, the
  * link arrives as ?listingRef=…&listingId=… exactly like the app's params.
  */
 export function ChatView({ conversationId }: { conversationId: string }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { showToast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -82,13 +90,73 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   const conversation = conversationQuery.data;
   const otherUser = conversation?.otherUser ?? null;
 
+  // New messages arrive through Supabase Realtime (inserts on `messages` for
+  // this conversation; RLS limits them to its two participants). Until the
+  // channel is live, the conversation keeps polling.
+  const [isRealtimeLive, setRealtimeLive] = useState(false);
+  useEffect(() => {
+    if (!myId) return;
+
+    const refresh = () => void queryClient.invalidateQueries({ queryKey: queryKeys.messages(conversationId) });
+    const channel = supabase
+      .channel(`messages:${conversationId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "messages", filter: `conversation_id=eq.${conversationId}` },
+        refresh,
+      )
+      .subscribe((status) => {
+        setRealtimeLive(status === "SUBSCRIBED");
+        // Anything sent while the channel was connecting is fetched once.
+        if (status === "SUBSCRIBED") refresh();
+      });
+
+    return () => {
+      setRealtimeLive(false);
+      void supabase.removeChannel(channel);
+    };
+  }, [conversationId, myId, queryClient]);
+
   const messagesQuery = useQuery({
     queryKey: queryKeys.messages(conversationId),
     queryFn: () => fetchMessages(conversationId),
     enabled: !!myId && !conversationQuery.isError,
-    refetchInterval: MESSAGES_REFRESH_MS,
+    refetchInterval: isRealtimeLive ? false : MESSAGES_REFRESH_MS,
   });
   const messages = useMemo(() => messagesQuery.data ?? [], [messagesQuery.data]);
+
+  // The listing the conversation is about: the one it was started from, or
+  // the last one either side linked in a message.
+  const stripListingId =
+    conversation?.listingId ?? [...messages].reverse().find((message) => message.listing)?.listing?.id ?? null;
+  const stripListingQuery = useQuery({
+    queryKey: queryKeys.listing(String(stripListingId ?? "none")),
+    queryFn: () => fetchListingById(stripListingId!),
+    enabled: stripListingId != null,
+    staleTime: 5 * 60 * 1000,
+  });
+  const stripListing = stripListingId != null ? (stripListingQuery.data ?? null) : null;
+  const stripPhoto = stripListing
+    ? ([...(stripListing.media ?? [])]
+        .filter((media) => media.kind === "photo")
+        .sort((a, b) => a.sort_order - b.sort_order)[0]?.public_url ?? null)
+    : null;
+
+  // A heading before the first message of each day.
+  const listRows = useMemo(() => {
+    const rows: ({ kind: "day"; key: string; label: string } | { kind: "message"; key: string; message: Message })[] =
+      [];
+    let previousDay: string | null = null;
+    for (const message of messages) {
+      const day = localDayKey(message.createdAt);
+      if (day !== previousDay) {
+        rows.push({ kind: "day", key: `day-${day}`, label: formatDayLabel(message.createdAt, t, i18n.language) });
+        previousDay = day;
+      }
+      rows.push({ kind: "message", key: message.id, message });
+    }
+    return rows;
+  }, [messages, t, i18n.language]);
 
   // Marked read on open, and again whenever something new arrives while the
   // conversation is on screen (the app only does the first; on a desktop the
@@ -245,6 +313,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
               {otherUser.username}
             </Link>
           ) : null}
+          {otherUser?.isAdmin ? <AdminBadge compact /> : null}
         </div>
         {otherUser ? (
           <button
@@ -259,6 +328,37 @@ export function ChatView({ conversationId }: { conversationId: string }) {
         ) : null}
       </header>
 
+      {/* What the conversation is about, one click from the listing. */}
+      {stripListing ? (
+        <Link
+          href={`/listing/${stripListing.id}`}
+          aria-label={t("chat.openListing")}
+          className="flex shrink-0 items-center gap-3 border-b border-divider bg-surface px-4 py-2.5 transition-colors hover:bg-surface-muted md:px-6"
+        >
+          <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-media-placeholder text-text-muted">
+            {stripPhoto ? (
+              <Image src={stripPhoto} alt="" fill sizes="44px" className="object-cover" />
+            ) : (
+              <HouseIcon width={18} height={18} aria-hidden />
+            )}
+          </span>
+          <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className="truncate font-display text-base text-primary">
+              {getListingPriceLabel(stripListing, t) ?? t("chat.viewListing")}
+            </span>
+            <span className="truncate text-xs text-text-muted">
+              {[
+                stripListing.category ? t(`newListing.categories.${stripListing.category}`) : null,
+                stripListing.municipality || stripListing.city,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </span>
+          </span>
+          <span className="shrink-0 text-xs font-semibold text-primary">{t("chat.viewListing")}</span>
+        </Link>
+      ) : null}
+
       <div
         ref={listRef}
         onScroll={handleScroll}
@@ -271,16 +371,22 @@ export function ChatView({ conversationId }: { conversationId: string }) {
           <p className="px-6 py-20 text-center text-sm text-text-muted">{t("chat.emptyState")}</p>
         ) : (
           <ol className="mx-auto flex max-w-page flex-col gap-2 p-4 md:px-6">
-            {messages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                isOwn={message.senderId === myId}
-                onImageLoad={() => scrollToLatest()}
-                onOpenImage={(url) => setLightboxIndex(photoAttachments.findIndex((item) => item.url === url))}
-                onOpenVideo={setVideoUrl}
-              />
-            ))}
+            {listRows.map((row) =>
+              row.kind === "day" ? (
+                <li key={row.key} className="my-1.5 self-center">
+                  <h2 className="rounded-full bg-surface px-3 py-1 text-xs font-semibold text-text-muted">{row.label}</h2>
+                </li>
+              ) : (
+                <MessageBubble
+                  key={row.key}
+                  message={row.message}
+                  isOwn={row.message.senderId === myId}
+                  onImageLoad={() => scrollToLatest()}
+                  onOpenImage={(url) => setLightboxIndex(photoAttachments.findIndex((item) => item.url === url))}
+                  onOpenVideo={setVideoUrl}
+                />
+              ),
+            )}
             {pendingSend ? <PendingBubble payload={pendingSend} /> : null}
           </ol>
         )}
@@ -352,7 +458,7 @@ function MessageBubble({
   if (!message.content && !message.listing && attachments.length === 0) return null;
 
   return (
-    <li className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
+    <li className={cn("flex flex-col gap-0.5", isOwn ? "items-end" : "items-start")}>
       <div className={bubbleClasses(isOwn)} title={new Date(message.createdAt).toLocaleString()}>
         {message.listing ? (
           <Link
@@ -390,6 +496,7 @@ function MessageBubble({
           ),
         )}
       </div>
+      <span className="px-1 text-[11px] text-text-muted tabular-nums">{formatClockTime(message.createdAt)}</span>
     </li>
   );
 }

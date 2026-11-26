@@ -1,5 +1,7 @@
 "use client";
 
+import { FilterSection } from "@/components/criteria/FilterSection";
+import { ChoiceChips } from "@/components/form/ChoiceChips";
 import { FloorNumberInput } from "@/components/form/FloorNumberInput";
 import { LabeledAutocompleteField } from "@/components/form/LabeledAutocompleteField";
 import { LabeledMultiSelectField } from "@/components/form/LabeledMultiSelectField";
@@ -36,6 +38,7 @@ import {
   type ListingNearbyObject,
   type ListingOrientation,
   type ListingParking,
+  type ListingPriceBasis,
   type ListingPropertyCondition,
   type ListingStorey,
   type ListingType,
@@ -74,6 +77,8 @@ export type CriteriaValues = {
   furniture?: ListingFurniture[];
   nearbyObjects?: ListingNearbyObject[];
   additionalFeatures?: ListingAdditionalFeature[];
+  /** Listing filters only: whether the price range is the total or per m². */
+  priceBasis?: ListingPriceBasis;
 };
 
 type NumberKey =
@@ -85,11 +90,15 @@ type NumberKey =
   | "minPriceEur"
   | "maxPriceEur";
 
+const length = (values?: readonly unknown[] | null) => values?.length ?? 0;
+
 export function CriteriaFields<T extends CriteriaValues>({
   value,
   onChange,
   columns = 2,
   stacked = false,
+  collapsible = false,
+  withPriceBasis = false,
 }: {
   value: T;
   onChange: (next: T) => void;
@@ -97,6 +106,17 @@ export function CriteriaFields<T extends CriteriaValues>({
   columns?: 1 | 2;
   /** Pairs (min/max, rent/sale) one under the other — the narrow desktop panel. */
   stacked?: boolean;
+  /**
+   * The feed's filters, like the app's FeedFilterSheet: grouped into sections
+   * that open and close (Basics open, the rest closed), each with how many of
+   * its filters are set.
+   */
+  collapsible?: boolean;
+  /**
+   * Listing filters: a sale's price range can be the total (the default for a
+   * new filter) or per m². Rentals have only the monthly rent.
+   */
+  withPriceBasis?: boolean;
 }) {
   const { t } = useTranslation();
   const grid = cn("grid gap-x-4", columns === 2 && "md:grid-cols-2");
@@ -140,15 +160,51 @@ export function CriteriaFields<T extends CriteriaValues>({
     };
   }, [t]);
 
-  const priceHintKey =
-    value.listingType === "forSale"
+  const hasPrice = value.minPriceEur != null || value.maxPriceEur != null;
+  const showPriceBasis = withPriceBasis && value.listingType !== "forRent";
+  // New price filters default to the total, which is how buyers think; an
+  // older filter with a price but no basis keeps meaning per m².
+  const priceBasis: ListingPriceBasis = value.priceBasis ?? (hasPrice ? "perSquare" : "total");
+
+  // A buyer's budget follows the listing type (per m² for a sale); a listing
+  // filter only says so when it is per m² or a rent.
+  const priceHintKey = withPriceBasis
+    ? value.listingType === "forRent"
+      ? "feed.filterForm.pricePerMonth"
+      : priceBasis === "perSquare"
+        ? "feed.filterForm.pricePerSquare"
+        : null
+    : value.listingType === "forSale"
       ? "feed.filterForm.pricePerSquare"
       : value.listingType === "forRent"
         ? "feed.filterForm.pricePerMonth"
         : "feed.filterForm.price";
 
-  return (
-    <div>
+  // A price typed under the basis on screen keeps that basis with it.
+  const setPrice = (key: "minPriceEur" | "maxPriceEur", next: number | null) =>
+    onChange(withPriceBasis ? { ...value, [key]: next, priceBasis } : { ...value, [key]: next });
+
+  const basicCount =
+    (value.category ? 1 : 0) +
+    (value.listingType ? 1 : 0) +
+    (value.city?.trim() ? 1 : 0) +
+    (value.municipality?.trim() ? 1 : 0) +
+    (hasPrice ? 1 : 0) +
+    (value.minSurfaceM2 != null || value.maxSurfaceM2 != null ? 1 : 0) +
+    (value.minRooms != null || value.maxRooms != null ? 1 : 0);
+  const featuresCount =
+    length(value.orientation) +
+    length(value.parking) +
+    length(value.furniture) +
+    length(value.constructionType) +
+    length(value.propertyCondition) +
+    length(value.heatingTypes) +
+    length(value.groundType);
+  const floorCount = length(value.storey);
+  const nearbyCount = length(value.nearbyObjects) + length(value.additionalFeatures);
+
+  const basics = (
+    <>
       <div className={grid}>
         <LabeledSelectField
           label={t("newListing.categoryLabel")}
@@ -196,6 +252,18 @@ export function CriteriaFields<T extends CriteriaValues>({
       </div>
 
       <SectionTitle>{t("feed.filterForm.priceAndSurfaceTitle")}</SectionTitle>
+      {showPriceBasis ? (
+        <ChoiceChips<ListingPriceBasis>
+          options={[
+            { label: t("feed.priceBasis.total"), value: "total" },
+            { label: t("feed.priceBasis.perSquare"), value: "perSquare" },
+          ]}
+          value={priceBasis}
+          onChange={(next) => set("priceBasis", next)}
+          ariaLabel={t("feed.filterForm.priceLabel")}
+          className="mb-3"
+        />
+      ) : null}
       <div className={cn(grid, "gap-y-0")}>
         <RangeRow
           stacked={stacked}
@@ -203,9 +271,9 @@ export function CriteriaFields<T extends CriteriaValues>({
           maxValue={value.maxPriceEur}
           minPlaceholder={t("feed.filterForm.minPricePlaceholder")}
           maxPlaceholder={t("feed.filterForm.maxPricePlaceholder")}
-          onMinChange={(next) => setNumber("minPriceEur", next)}
-          onMaxChange={(next) => setNumber("maxPriceEur", next)}
-          hint={t(priceHintKey)}
+          onMinChange={(next) => setPrice("minPriceEur", next)}
+          onMaxChange={(next) => setPrice("maxPriceEur", next)}
+          hint={priceHintKey ? t(priceHintKey) : undefined}
         />
         <RangeRow
           stacked={stacked}
@@ -231,95 +299,145 @@ export function CriteriaFields<T extends CriteriaValues>({
           decimal
         />
       </div>
+    </>
+  );
+
+  const features = (
+    <>
+      <LabeledMultiSelectField
+        label={t("newListing.orientationLabel")}
+        placeholder={t("newListing.orientationPlaceholder")}
+        options={options.orientation}
+        values={value.orientation ?? []}
+        onChange={(next) => set("orientation", next)}
+      />
+      <LabeledMultiSelectField
+        label={t("feed.filterForm.parkingLabel")}
+        placeholder={t("feed.filterForm.parkingPlaceholder")}
+        options={options.parking}
+        values={value.parking ?? []}
+        onChange={(next) => set("parking", next)}
+      />
+      <LabeledMultiSelectField
+        label={t("feed.filterForm.furnitureLabel")}
+        placeholder={t("feed.filterForm.furniturePlaceholder")}
+        options={options.furniture}
+        values={value.furniture ?? []}
+        onChange={(next) => set("furniture", next)}
+      />
+      <LabeledMultiSelectField
+        label={t("newListing.constructionTypeLabel")}
+        placeholder={t("newListing.constructionTypePlaceholder")}
+        options={options.constructionType}
+        values={value.constructionType ?? []}
+        onChange={(next) => set("constructionType", next)}
+      />
+      <LabeledMultiSelectField
+        label={t("newListing.propertyConditionLabel")}
+        placeholder={t("newListing.propertyConditionPlaceholder")}
+        options={options.propertyCondition}
+        values={value.propertyCondition ?? []}
+        onChange={(next) => set("propertyCondition", next)}
+      />
+    </>
+  );
+
+  const floor = (
+    <LabeledMultiSelectField
+      label={t("newListing.storeyLabel")}
+      placeholder={t("newListing.storeyPlaceholder")}
+      options={options.storey}
+      values={value.storey ?? []}
+      onChange={setStorey}
+      renderOptionDetail={(option) =>
+        option === "floor" ? (
+          <FloorNumberInput
+            value={value.storeyFloorNumber}
+            onChange={(next) => setNumber("storeyFloorNumber", parseNumber(sanitizeIntegerInput(next)))}
+          />
+        ) : null
+      }
+      getSelectedLabel={(option) =>
+        option === "floor" && value.storeyFloorNumber != null
+          ? t("feed.filterSummary.floorNumber", { value: value.storeyFloorNumber })
+          : null
+      }
+    />
+  );
+
+  const heatingAndGround = (
+    <>
+      <LabeledMultiSelectField
+        label={t("newListing.heatingLabel")}
+        placeholder={t("newListing.heatingPlaceholder")}
+        options={options.heating}
+        values={value.heatingTypes ?? []}
+        onChange={(next) => set("heatingTypes", next)}
+      />
+      <LabeledMultiSelectField
+        label={t("newListing.groundLabel")}
+        placeholder={t("newListing.groundPlaceholder")}
+        options={options.ground}
+        values={value.groundType ?? []}
+        onChange={(next) => set("groundType", next)}
+      />
+    </>
+  );
+
+  const nearby = (
+    <>
+      <LabeledMultiSelectField
+        label={t("feed.filterForm.nearbyObjectsLabel")}
+        placeholder={t("feed.filterForm.nearbyObjectsPlaceholder")}
+        options={options.nearbyObjects}
+        values={value.nearbyObjects ?? []}
+        onChange={(next) => set("nearbyObjects", next)}
+      />
+      <LabeledMultiSelectField
+        label={t("newListing.additionalFeaturesLabel")}
+        placeholder={t("newListing.additionalFeaturesPlaceholder")}
+        options={options.additionalFeatures}
+        values={value.additionalFeatures ?? []}
+        onChange={(next) => set("additionalFeatures", next)}
+      />
+    </>
+  );
+
+  if (collapsible) {
+    return (
+      <div>
+        <FilterSection title={t("feed.filterSections.basic")} activeCount={basicCount} defaultOpen>
+          {basics}
+        </FilterSection>
+        <FilterSection title={t("feed.filterSections.features")} activeCount={featuresCount}>
+          <div className={grid}>
+            {features}
+            {heatingAndGround}
+          </div>
+        </FilterSection>
+        <FilterSection title={t("feed.filterSections.floor")} activeCount={floorCount}>
+          {floor}
+        </FilterSection>
+        <FilterSection title={t("feed.filterSections.nearby")} activeCount={nearbyCount}>
+          <div className={grid}>{nearby}</div>
+        </FilterSection>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      {basics}
 
       <SectionTitle>{t("feed.filterForm.featuresTitle")}</SectionTitle>
       {/* Every one of these is multi-select: alternatives, not requirements
           (except features and nearby objects, which the services match as
           "has all of"). */}
       <div className={grid}>
-        <LabeledMultiSelectField
-          label={t("newListing.orientationLabel")}
-          placeholder={t("newListing.orientationPlaceholder")}
-          options={options.orientation}
-          values={value.orientation ?? []}
-          onChange={(next) => set("orientation", next)}
-        />
-        <LabeledMultiSelectField
-          label={t("feed.filterForm.parkingLabel")}
-          placeholder={t("feed.filterForm.parkingPlaceholder")}
-          options={options.parking}
-          values={value.parking ?? []}
-          onChange={(next) => set("parking", next)}
-        />
-        <LabeledMultiSelectField
-          label={t("feed.filterForm.furnitureLabel")}
-          placeholder={t("feed.filterForm.furniturePlaceholder")}
-          options={options.furniture}
-          values={value.furniture ?? []}
-          onChange={(next) => set("furniture", next)}
-        />
-        <LabeledMultiSelectField
-          label={t("newListing.constructionTypeLabel")}
-          placeholder={t("newListing.constructionTypePlaceholder")}
-          options={options.constructionType}
-          values={value.constructionType ?? []}
-          onChange={(next) => set("constructionType", next)}
-        />
-        <LabeledMultiSelectField
-          label={t("newListing.propertyConditionLabel")}
-          placeholder={t("newListing.propertyConditionPlaceholder")}
-          options={options.propertyCondition}
-          values={value.propertyCondition ?? []}
-          onChange={(next) => set("propertyCondition", next)}
-        />
-        <LabeledMultiSelectField
-          label={t("newListing.storeyLabel")}
-          placeholder={t("newListing.storeyPlaceholder")}
-          options={options.storey}
-          values={value.storey ?? []}
-          onChange={setStorey}
-          renderOptionDetail={(option) =>
-            option === "floor" ? (
-              <FloorNumberInput
-                value={value.storeyFloorNumber}
-                onChange={(next) => setNumber("storeyFloorNumber", parseNumber(sanitizeIntegerInput(next)))}
-              />
-            ) : null
-          }
-          getSelectedLabel={(option) =>
-            option === "floor" && value.storeyFloorNumber != null
-              ? t("feed.filterSummary.floorNumber", { value: value.storeyFloorNumber })
-              : null
-          }
-        />
-        <LabeledMultiSelectField
-          label={t("newListing.heatingLabel")}
-          placeholder={t("newListing.heatingPlaceholder")}
-          options={options.heating}
-          values={value.heatingTypes ?? []}
-          onChange={(next) => set("heatingTypes", next)}
-        />
-        <LabeledMultiSelectField
-          label={t("newListing.groundLabel")}
-          placeholder={t("newListing.groundPlaceholder")}
-          options={options.ground}
-          values={value.groundType ?? []}
-          onChange={(next) => set("groundType", next)}
-        />
-        <LabeledMultiSelectField
-          label={t("feed.filterForm.nearbyObjectsLabel")}
-          placeholder={t("feed.filterForm.nearbyObjectsPlaceholder")}
-          options={options.nearbyObjects}
-          values={value.nearbyObjects ?? []}
-          onChange={(next) => set("nearbyObjects", next)}
-        />
-        <LabeledMultiSelectField
-          label={t("newListing.additionalFeaturesLabel")}
-          placeholder={t("newListing.additionalFeaturesPlaceholder")}
-          options={options.additionalFeatures}
-          values={value.additionalFeatures ?? []}
-          onChange={(next) => set("additionalFeatures", next)}
-        />
+        {features}
+        {floor}
+        {heatingAndGround}
+        {nearby}
       </div>
     </div>
   );

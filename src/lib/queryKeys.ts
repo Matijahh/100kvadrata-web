@@ -25,6 +25,9 @@ export const queryKeys = {
   // Admin-only "Admin igra". Per user: the board puts each admin's own
   // character first.
   growthProgress: (userId: string) => ["growthProgress", userId] as const,
+  // Admin-only "Statistika" tab. Not per user: every admin sees the same
+  // numbers; one entry per period.
+  adminStats: (days: number) => ["adminStats", days] as const,
   preferenceSets: (userId: string) => ["preferenceSets", userId] as const,
   preferenceSet: (userId: string, preferenceSetId: string) =>
     ["preferenceSets", userId, preferenceSetId] as const,

@@ -31,6 +31,12 @@ export type ThemeColors = {
   // Avatar). Same order in both themes: an avatar keeps the slot it was given
   // and only the colour in that slot changes with the theme.
   avatarPalette: readonly string[];
+  // Charts that compare groups (the admin Statistika tab: sale vs rent), in a
+  // fixed order: a group keeps its slot. Checked with the dataviz palette
+  // validator against each theme's surface (lightness band, chroma,
+  // colour-blind and normal-vision separation, 3:1 contrast). A chart of one
+  // series uses `primary` instead.
+  chartSeries: readonly string[];
 };
 
 export const lightColors: ThemeColors = {
@@ -62,6 +68,8 @@ export const lightColors: ThemeColors = {
   success: "#1E7A46",
   // burgundy, terracotta, sand, cream, slate, rose
   avatarPalette: ["#6E1515", "#B5562F", "#E2B49A", "#F3E6D8", "#3F4A5A", "#A55A5A"],
+  // brand red, blue
+  chartSeries: ["#B4373D", "#2A78D6"],
 };
 
 export const darkColors: ThemeColors = {
@@ -92,6 +100,7 @@ export const darkColors: ThemeColors = {
   success: "#4ADE80",
   // Cream becomes a deep plum so a light-on-dark avatar still has a dark side.
   avatarPalette: ["#f0616d", "#E07A52", "#C9927A", "#3A2F33", "#8592A6", "#f0b4b4"],
+  chartSeries: ["#D9606A", "#3987E5"],
 };
 
 export const getThemeColors = (scheme?: "light" | "dark" | null) => {

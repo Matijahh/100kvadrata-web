@@ -1,5 +1,6 @@
 "use client";
 
+import ChevronLeftIcon from "@assets/icons/chevron-left-icon.svg";
 import CloseIcon from "@assets/icons/close-icon.svg";
 import ImageIcon from "@assets/icons/image-icon.svg";
 import { useToast } from "@/components/providers/ToastProvider";
@@ -146,6 +147,15 @@ export function ListingMediaStep({
 
   const clearVideo = () => onChange({ mediaMode: null, photos: [], video: null });
 
+  // One step left or right — the app's ‹ › arrows, for anyone who doesn't
+  // drag (keyboard, touch). The first photo is the cover.
+  const movePhoto = (uri: string, direction: -1 | 1) => {
+    const from = draft.photos.indexOf(uri);
+    const to = from + direction;
+    if (from < 0 || to < 0 || to >= draft.photos.length) return;
+    onChange({ mediaMode: "photos", photos: arrayMove(draft.photos, from, to), video: null });
+  };
+
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (!over || active.id === over.id) return;
     const from = draft.photos.indexOf(String(active.id));
@@ -203,7 +213,14 @@ export function ListingMediaStep({
             <SortableContext items={draft.photos} strategy={rectSortingStrategy}>
               <ul className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5">
                 {draft.photos.map((uri, index) => (
-                  <SortablePhoto key={uri} uri={uri} isCover={index === 0} onRemove={() => removePhoto(uri)} />
+                  <SortablePhoto
+                    key={uri}
+                    uri={uri}
+                    index={index}
+                    count={draft.photos.length}
+                    onRemove={() => removePhoto(uri)}
+                    onMove={(direction) => movePhoto(uri, direction)}
+                  />
                 ))}
               </ul>
             </SortableContext>
@@ -232,8 +249,23 @@ export function ListingMediaStep({
   );
 }
 
-function SortablePhoto({ uri, isCover, onRemove }: { uri: string; isCover: boolean; onRemove: () => void }) {
+function SortablePhoto({
+  uri,
+  index,
+  count,
+  onRemove,
+  onMove,
+}: {
+  uri: string;
+  index: number;
+  count: number;
+  onRemove: () => void;
+  onMove: (direction: -1 | 1) => void;
+}) {
   const { t } = useTranslation();
+  const isCover = index === 0;
+  // The controls must not start a drag.
+  const stopDrag = (event: React.PointerEvent) => event.stopPropagation();
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: uri });
 
   return (
@@ -252,18 +284,47 @@ function SortablePhoto({ uri, isCover, onRemove }: { uri: string; isCover: boole
       <img src={uri} alt="" className="h-full w-full cursor-grab object-cover active:cursor-grabbing" draggable={false} />
       {isCover ? (
         <span className="absolute bottom-2 left-2 rounded-full bg-primary px-2 py-0.5 text-[11px] font-semibold text-text-on-primary">
-          {t("web.newListing.cover")}
+          {t("newListing.cover")}
         </span>
       ) : null}
       <button
         type="button"
-        onPointerDown={(event) => event.stopPropagation()}
+        onPointerDown={stopDrag}
         onClick={onRemove}
-        aria-label={t("newListing.remove")}
+        aria-label={t("newListing.removePhotoNumber", { index: index + 1 })}
+        title={t("newListing.removePhotoNumber", { index: index + 1 })}
         className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
       >
         <CloseIcon width={14} height={14} aria-hidden />
       </button>
+      {count > 1 ? (
+        <span className="absolute bottom-1.5 right-1.5 flex gap-1">
+          {index > 0 ? (
+            <button
+              type="button"
+              onPointerDown={stopDrag}
+              onClick={() => onMove(-1)}
+              aria-label={t("newListing.movePhotoLeft")}
+              title={t("newListing.movePhotoLeft")}
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+            >
+              <ChevronLeftIcon width={14} height={14} aria-hidden />
+            </button>
+          ) : null}
+          {index < count - 1 ? (
+            <button
+              type="button"
+              onPointerDown={stopDrag}
+              onClick={() => onMove(1)}
+              aria-label={t("newListing.movePhotoRight")}
+              title={t("newListing.movePhotoRight")}
+              className="flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+            >
+              <ChevronLeftIcon width={14} height={14} className="rotate-180" aria-hidden />
+            </button>
+          ) : null}
+        </span>
+      ) : null}
     </li>
   );
 }

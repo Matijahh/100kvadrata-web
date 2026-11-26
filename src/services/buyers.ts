@@ -19,25 +19,16 @@ const normalizeSearchText = (value?: string | null) => {
 
 const buildSearchPattern = (value: string) => `%${normalizeSearchText(value)}%`;
 
-export const fetchBuyers = async (
-  input: FetchBuyersInput,
-): Promise<BuyerProfile[]> => {
-  const { currentUserId, filters } = input;
-  // One row per preference set, so a buyer with three matching sets produces three
-  // cards — each showing the criteria that actually matched this search. The
-  // rows are keyed by set id, not by user, which is what keeps them distinct
-  // in the feed.
-  let query = supabase
-    .from("user_preferences")
-    .select("*, profile:profiles!inner(*)")
-    .neq("user_id", currentUserId)
-    // Every account can keep sets — there is no buyer type to filter on — so
-    // the only gate is whether a set actually states something. An empty one
-    // tells a seller nothing. `has_preferences` is a generated column (FIX-15),
-    // so a set that gets anything filled in appears here on its next save
-    // without any further action.
-    .eq("has_preferences", true);
+// The PostgREST builder's generics differ between the app's and the web's
+// supabase-js versions; the filters only use methods both have.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type BuyerQuery = any;
 
+/**
+ * Every buyer filter, applied to a user_preferences query that already joins
+ * `profile:profiles!inner(...)`.
+ */
+const applyBuyerFilters = (query: BuyerQuery, filters?: BuyerFilters): BuyerQuery => {
   if (filters?.category) {
     query = query.eq("category", filters.category);
   }
@@ -145,6 +136,30 @@ export const fetchBuyers = async (
       buildSearchPattern(filters.usernameQuery),
     );
   }
+
+  return query;
+};
+
+export const fetchBuyers = async (
+  input: FetchBuyersInput,
+): Promise<BuyerProfile[]> => {
+  const { currentUserId, filters } = input;
+  // One row per preference set, so a buyer with three matching sets produces three
+  // cards — each showing the criteria that actually matched this search. The
+  // rows are keyed by set id, not by user, which is what keeps them distinct
+  // in the feed.
+  let query = supabase
+    .from("user_preferences")
+    .select("*, profile:profiles!inner(*)")
+    .neq("user_id", currentUserId)
+    // Every account can keep sets — there is no buyer type to filter on — so
+    // the only gate is whether a set actually states something. An empty one
+    // tells a seller nothing. `has_preferences` is a generated column (FIX-15),
+    // so a set that gets anything filled in appears here on its next save
+    // without any further action.
+    .eq("has_preferences", true);
+
+  query = applyBuyerFilters(query, filters);
 
   const { data } = await query.order("updated_at", { ascending: false }).throwOnError();
 

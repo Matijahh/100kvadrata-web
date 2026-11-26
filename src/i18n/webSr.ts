@@ -43,7 +43,6 @@ export const webSr: WebDictionary = {
     notFoundTitle: "Oglas nije pronađen",
     notFoundMessage: "Možda ga je vlasnik uklonio.",
     browseListings: "Pregledaj oglase",
-    roomsShort: "sobe",
     ownerTools: "Tvoj oglas",
   },
   newListing: {
@@ -51,13 +50,11 @@ export const webSr: WebDictionary = {
     dropzoneTitle: "Prevuci fotografije ili video ovde",
     dropzoneHint: "ili klikni da izabereš fajlove — do 15 fotografija ili jedan video",
     dropzoneActive: "Pusti da dodaš",
-    reorderHint: "Prevuci da promeniš redosled. Prva fotografija je naslovna.",
-    cover: "Naslovna",
+    reorderHint: "Prevuci ili koristi strelice da promeniš redosled. Prva fotografija je naslovna.",
     compressingVideo: "Pripremamo video… {{percent}}%",
     uploadingMedia: "Otpremanje…",
     unsupportedFile: "Taj tip fajla nije podržan.",
     leaveWarning: "Oglas još nije objavljen. Da li ipak želiš da izađeš?",
-    next: "Dalje",
   },
   getApp: {
     title: "100m² je najbolji u aplikaciji",

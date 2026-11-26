@@ -9,3 +9,10 @@ export const FEED_FILTERS_OPEN_STORAGE_KEY = "100m2.feedFiltersOpen";
 
 /** Set ("1") once the "get the app" card is closed; it stays closed for good. */
 export const APP_PROMPT_DISMISSED_KEY = "100m2.appPromptDismissed";
+
+/**
+ * The unfinished new listing's fields (JSON), like the app's
+ * useNewListingDraftStore. Photos and video are left out: they are blob: URLs
+ * that die with the tab.
+ */
+export const NEW_LISTING_DRAFT_KEY = "100m2.newListingDraft";

@@ -2,6 +2,7 @@
 
 import NoMessagesIllustration from "@assets/illustrations/no-messages.svg";
 import Avatar from "@/components/genericComponents/Avatar";
+import { AdminBadge } from "@/components/profile/AdminBadge";
 import { Spinner } from "@/components/genericComponents/EmptyState";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
@@ -71,8 +72,13 @@ export function ConversationList({ activeConversationId }: { activeConversationI
                 ) : null}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="flex items-baseline justify-between gap-2">
-                  <span className="truncate font-semibold text-text">{conversation.otherUser.username}</span>
+                <span className="flex items-center justify-between gap-2">
+                  {/* The name and, for an admin, the badge right after it; the
+                      time stays pinned to the right edge. */}
+                  <span className="flex min-w-0 flex-1 items-center gap-1.5">
+                    <span className="truncate font-semibold text-text">{conversation.otherUser.username}</span>
+                    {conversation.otherUser.isAdmin ? <AdminBadge compact /> : null}
+                  </span>
                   <span className="shrink-0 text-xs text-text-muted">
                     {formatRelativeTime(conversation.lastMessageAt, t)}
                   </span>

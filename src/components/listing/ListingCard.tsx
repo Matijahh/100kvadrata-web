@@ -6,9 +6,9 @@ import { ListingBadge } from "@/components/listing/ListingSummary";
 import { VideoPoster } from "@/components/media/VideoPoster";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-import { formatListingMetric, getListingAddressLabel, isListingExpired } from "@/lib/listingFormat";
+import { getListingAddressLabel, getListingCardFacts, isListingExpired } from "@/lib/listingFormat";
 import type { Listing } from "@/types/types";
-import { getListingPriceLabel } from "@/utils/listingPrice";
+import { formatEuros, getListingPriceLabel, getListingPricePerSquare } from "@/utils/listingPrice";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 
@@ -38,12 +38,9 @@ export function ListingCard({
   const photo = listing.media.find((item) => item.kind === "photo");
   const videoUrl = listing.media.find((item) => item.kind === "video")?.public_url ?? listing.video_url ?? null;
   const price = getListingPriceLabel(listing, t);
+  const pricePerSquare = getListingPricePerSquare(listing);
   const address = getListingAddressLabel(listing);
-  const facts = [
-    listing.category ? t(`newListing.categories.${listing.category}`) : null,
-    listing.surface_m2 != null ? `${listing.surface_m2} m²` : null,
-    listing.rooms != null ? `${formatListingMetric(listing.rooms)} ${t("web.listing.roomsShort")}` : null,
-  ].filter(Boolean);
+  const facts = getListingCardFacts(listing, t);
   const expired = showLifecycle && isListingExpired(listing);
 
   return (
@@ -92,7 +89,17 @@ export function ListingCard({
         ) : null}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3.5">
-        {price ? <p className="font-display text-lg leading-tight text-text">{price}</p> : null}
+        {price ? (
+          <p className="flex flex-wrap items-baseline gap-x-2 leading-tight">
+            <span className="font-display text-lg text-text">{price}</span>
+            {/* Under a sale's total, so the per-m² price is still there to compare. */}
+            {pricePerSquare != null ? (
+              <span className="text-xs font-semibold text-text-muted">
+                {formatEuros(pricePerSquare)} {t("listing.pricePerSquareSuffix")}
+              </span>
+            ) : null}
+          </p>
+        ) : null}
         {address ? (
           <p className="flex items-center gap-1 truncate text-[13px] text-text-muted">
             <PinIcon width={10} height={12} className="shrink-0" aria-hidden />

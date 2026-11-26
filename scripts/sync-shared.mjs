@@ -48,9 +48,11 @@ const SHARED = new Set([
   "src/constants/legal.ts",
   "src/constants/growthSprites.ts",
   "src/utils/buyerFilters.ts",
+  "src/utils/chartData.ts",
   "src/utils/contentFilter.ts",
   "src/utils/generatedAvatar.ts",
   "src/utils/growthMissions.ts",
+  "src/utils/listingFacts.ts",
   "src/utils/listingFilters.ts",
   "src/utils/listingPrice.ts",
   "src/utils/locationText.ts",
@@ -110,6 +112,8 @@ const APP_ONLY = new Set([
   "src/stores/useVideoSoundStore.ts",
   // expo-haptics; the web has no haptic feedback.
   "src/utils/haptics.ts",
+  // The unfinished new listing, kept in AsyncStorage across app restarts.
+  "src/stores/useNewListingDraftStore.ts",
 ]);
 
 // Folders scanned for unclassified files.

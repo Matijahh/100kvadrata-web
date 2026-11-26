@@ -44,7 +44,6 @@ export const webEn = {
     notFoundTitle: "Listing not found",
     notFoundMessage: "It may have been removed by its owner.",
     browseListings: "Browse listings",
-    roomsShort: "rooms",
     ownerTools: "Your listing",
   },
   newListing: {
@@ -52,13 +51,11 @@ export const webEn = {
     dropzoneTitle: "Drag photos or a video here",
     dropzoneHint: "or click to choose files — up to 15 photos, or one video",
     dropzoneActive: "Drop to add",
-    reorderHint: "Drag to change the order. The first photo is the cover.",
-    cover: "Cover",
+    reorderHint: "Drag or use the arrows to change the order. The first photo is the cover.",
     compressingVideo: "Preparing video… {{percent}}%",
     uploadingMedia: "Uploading…",
     unsupportedFile: "That file type isn't supported.",
     leaveWarning: "Your listing isn't published yet. Leave anyway?",
-    next: "Next",
   },
   getApp: {
     title: "100m² feels best in the app",

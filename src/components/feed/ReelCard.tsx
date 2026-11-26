@@ -18,9 +18,9 @@ import { useListingActions } from "@/hooks/useListingActions";
 import { useListingViewTracker } from "@/hooks/useListingViewTracker";
 import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
-import { formatListingMetric, getListingAddressLabel } from "@/lib/listingFormat";
+import { getListingAddressLabel, getListingCardFacts } from "@/lib/listingFormat";
 import type { Listing } from "@/types/types";
-import { getListingPriceLabel } from "@/utils/listingPrice";
+import { formatEuros, getListingPriceLabel, getListingPricePerSquare } from "@/utils/listingPrice";
 import { useRef, useState, type FC, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -132,14 +132,13 @@ function ReelOverlay({ listing, onOpenDetails }: { listing: Listing; onOpenDetai
   const { t } = useTranslation();
   const actions = useListingActions(listing);
   const price = getListingPriceLabel(listing, t);
+  // Under a sale's total, so the per-m² price is still there to compare
+  // without opening the details.
+  const pricePerSquare = getListingPricePerSquare(listing);
   const address = getListingAddressLabel(listing);
   const username = listing.user?.username ?? t("common.userFallback");
   const profileHref = actions.isOwnListing ? "/profile" : `/user/${listing.user_id}`;
-  const facts = [
-    listing.category ? t(`newListing.categories.${listing.category}`) : null,
-    listing.surface_m2 != null ? `${listing.surface_m2} m²` : null,
-    listing.rooms != null ? `${formatListingMetric(listing.rooms)} ${t("web.listing.roomsShort")}` : null,
-  ].filter(Boolean);
+  const facts = getListingCardFacts(listing, t);
 
   return (
     // Click-through except on the controls, so taps on the media still reach
@@ -150,6 +149,11 @@ function ReelOverlay({ listing, onOpenDetails }: { listing: Listing; onOpenDetai
           <ListingBadge listing={listing} className="mb-2" />
           {price ? (
             <p className="font-display text-[26px] leading-tight [text-shadow:0_1px_8px_rgba(0,0,0,0.35)]">{price}</p>
+          ) : null}
+          {pricePerSquare != null ? (
+            <p className="text-xs font-semibold text-white/80 [text-shadow:0_1px_4px_rgba(0,0,0,0.4)]">
+              {formatEuros(pricePerSquare)} {t("listing.pricePerSquareSuffix")}
+            </p>
           ) : null}
           {address ? (
             <p className="mt-1 flex items-center gap-1.5 text-sm text-white/85">

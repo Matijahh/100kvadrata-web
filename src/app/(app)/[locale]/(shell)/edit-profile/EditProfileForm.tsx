@@ -17,6 +17,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { DEFAULT_COUNTRY_CODE, searchCities } from "@/services/locations";
 import { updateProfile, uploadAvatar } from "@/services/profile";
 import type { CurrentUser } from "@/types/types";
+import { confirmDestructiveAction } from "@/utils/confirmAction";
 import { isValidPhone, sanitizePhoneInput } from "@/utils/phone";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useId, useRef, useState } from "react";
@@ -71,6 +72,37 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
   const goBack = () => {
     if (window.history.length > 1) router.back();
     else router.replace("/profile");
+  };
+
+  // Anything typed that isn't saved yet. Compared with the profile as stored,
+  // so undoing an edit by hand counts as no change.
+  const isDirty =
+    username !== (currentUser.username ?? "") ||
+    fullName !== (currentUser.fullName ?? "") ||
+    bio !== (currentUser.bio ?? "") ||
+    phone !== (currentUser.phone ?? "") ||
+    phonePublic !== (currentUser.phonePublic ?? false) ||
+    city !== (currentUser.city ?? "") ||
+    agencyName !== (currentUser.agencyName ?? "") ||
+    websiteUrl !== (currentUser.websiteUrl ?? "") ||
+    instagramUrl !== (currentUser.instagramUrl ?? "") ||
+    youtubeUrl !== (currentUser.youtubeUrl ?? "") ||
+    avatarPreview !== null;
+
+  // Leaving with unsaved changes asks first, like the app: from the back
+  // arrow here, and the browser's own prompt when the tab is closed or
+  // reloaded.
+  const leave = () => {
+    if (!isDirty) {
+      goBack();
+      return;
+    }
+    confirmDestructiveAction({
+      title: t("profile.unsavedTitle"),
+      message: t("profile.unsavedMessage"),
+      confirmLabel: t("profile.discardChanges"),
+      onConfirm: goBack,
+    });
   };
 
   const { mutateAsync: saveProfile, isPending: isSaving } = useMutation({
@@ -147,6 +179,15 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
+  useEffect(() => {
+    if (!isDirty || isSaving) return;
+    const onBeforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [isDirty, isSaving]);
+
   const saveLabel = isSaving ? t("profile.savingProfile") : t("profile.saveProfile");
 
   return (
@@ -154,7 +195,7 @@ function EditProfileFields({ currentUser }: { currentUser: CurrentUser }) {
       <div className="mb-6 flex items-center gap-3">
         <button
           type="button"
-          onClick={goBack}
+          onClick={leave}
           aria-label={t("web.listing.back")}
           className="flex h-10 w-10 items-center justify-center rounded-full text-text hover:bg-surface"
         >

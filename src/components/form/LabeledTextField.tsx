@@ -16,6 +16,8 @@ type LabeledTextFieldProps = Omit<ComponentProps<"input">, "onChange"> & {
   onChangeText?: (value: string) => void;
   /** Rendered inside the pill on the right (e.g. a show/hide toggle). */
   trailing?: React.ReactNode;
+  /** Shown under the field in the error colour; marks the input invalid. */
+  error?: string;
 };
 
 export function LabeledTextField({
@@ -23,6 +25,7 @@ export function LabeledTextField({
   hint,
   onChangeText,
   trailing,
+  error,
   className,
   id,
   ...inputProps
@@ -30,6 +33,7 @@ export function LabeledTextField({
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const hintId = hint ? `${inputId}-hint` : undefined;
+  const errorId = error ? `${inputId}-error` : undefined;
 
   return (
     <div className="mb-[15px]">
@@ -39,13 +43,15 @@ export function LabeledTextField({
       <div className="relative">
         <input
           id={inputId}
-          aria-describedby={hintId}
+          aria-describedby={[errorId, hintId].filter(Boolean).join(" ") || undefined}
+          aria-invalid={error ? true : undefined}
           onChange={(event) => onChangeText?.(event.target.value)}
           className={cn(
             "w-full rounded-[25px] border border-transparent bg-surface-muted px-[15px] py-[15px] text-base text-text",
             "placeholder:text-placeholder focus:border-primary-soft focus:outline-none",
             "disabled:cursor-not-allowed disabled:text-text-muted disabled:opacity-70",
             trailing && "pr-12",
+            error && "border-destructive focus:border-destructive",
             className,
           )}
           {...inputProps}
@@ -54,6 +60,11 @@ export function LabeledTextField({
           <div className="absolute inset-y-0 right-3 flex items-center">{trailing}</div>
         ) : null}
       </div>
+      {error ? (
+        <p id={errorId} className="mt-1.5 px-[15px] text-xs font-semibold leading-[17px] text-destructive">
+          {error}
+        </p>
+      ) : null}
       {hint ? (
         <p id={hintId} className="mt-1.5 px-[15px] text-xs font-light leading-[17px] text-text-muted">
           {hint}

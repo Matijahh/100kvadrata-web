@@ -4,9 +4,10 @@ import NoListingsIllustration from "@assets/illustrations/no-listings.svg";
 import { BuyersFeed } from "@/components/buyers/BuyersFeed";
 import { OfferListingDialog } from "@/components/buyers/OfferListingDialog";
 import { FeedFilters } from "@/components/feed/FeedFilters";
-import { FeedTopBar } from "@/components/feed/FeedTopBar";
+import { FeedTopBar, type RemovableChip } from "@/components/feed/FeedTopBar";
 import { ListingFeedGrid } from "@/components/feed/ListingFeedGrid";
 import { ListingReel } from "@/components/feed/ListingReel";
+import { buttonClasses } from "@/components/genericComponents/Button";
 import { Spinner } from "@/components/genericComponents/EmptyState";
 import { useToast } from "@/components/providers/ToastProvider";
 import { Modal } from "@/components/ui/Modal";
@@ -16,7 +17,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 import { fetchBuyers } from "@/services/buyers";
-import { fetchListings, hasActiveListingFilters } from "@/services/listings";
+import { fetchListings, getListingFeedCursor, hasActiveListingFilters } from "@/services/listings";
 import { fetchFeedMarketingPosts } from "@/services/marketingPosts";
 import { mixMarketingPosts } from "@/utils/marketingFeed";
 import { fetchBlockedUserIds } from "@/services/reports";
@@ -27,12 +28,12 @@ import { useHomeFiltersStore } from "@/stores/useHomeFiltersStore";
 import { useSignInPromptStore } from "@/stores/useSignInPromptStore";
 import type { BuyerFilters, BuyerProfile, ListingFilters, SavedSearch } from "@/types/types";
 import {
-  getBuyerFilterChipLabels,
+  getBuyerFilterChips,
   getBuyerFiltersSignature,
   normalizeBuyerFilters,
 } from "@/utils/buyerFilters";
 import {
-  getListingFilterChipLabels,
+  getListingFilterChips,
   getListingFiltersSignature,
   normalizeListingFilters,
 } from "@/utils/listingFilters";
@@ -44,7 +45,9 @@ import { useTranslation } from "react-i18next";
 // one request per eight reel cards is still cheap.
 const PAGE_SIZE = 8;
 
-type PageParam = { limit: number; cursorRank?: number; cursorId?: number };
+// Keyset cursor of the last listing on a page (getListingFeedCursor): a
+// sorted feed pages on (priority_rank, sort value, id).
+type PageParam = { limit: number; cursorRank?: number; cursorValue?: number | null; cursorId?: number };
 
 const omitSearch = <T extends { searchText?: string }>(filters: T): T => {
   const { searchText: _searchText, ...rest } = filters;
@@ -164,7 +167,7 @@ export function FeedView() {
     getNextPageParam: (lastPage): PageParam | undefined => {
       if (lastPage.length < PAGE_SIZE) return undefined;
       const last = lastPage[lastPage.length - 1];
-      return { limit: PAGE_SIZE, cursorRank: last.priority_rank ?? 0, cursorId: last.id };
+      return { limit: PAGE_SIZE, ...getListingFeedCursor(last, listingFilters) };
     },
     enabled: !isBuyersTab,
   });
@@ -286,27 +289,31 @@ export function FeedView() {
     setFiltersOpen(false);
   };
 
-  const clearAll = () => {
+  // "Clear all" in the filters resets the form only; the feed keeps what was
+  // applied until "Show listings" / "Show buyers", like the app.
+  const clearDraft = () => {
     setDraftSearch("");
-    if (isBuyersTab) {
-      setDraftBuyer({});
-      setBuyerFilters({});
-    } else {
-      setDraftListing({});
-      setListingFilters({});
-    }
+    if (isBuyersTab) setDraftBuyer({});
+    else setDraftListing({});
     setRecentlySavedSignature(null);
-    setFiltersOpen(false);
+  };
+
+  // The empty feed's "Clear filters": drops what is applied.
+  const clearAppliedFilters = () => {
+    clearDraft();
+    if (isBuyersTab) setBuyerFilters({});
+    else setListingFilters({});
     setScrollToTopSignal((value) => value + 1);
   };
 
   const changeTab = (next: FeedTab) => {
     if (next === tab) return;
-    // As in the app: the search term belongs to the feed it was typed on,
-    // and leaving the Buyers feed drops its filters.
+    // As in the app: each feed keeps its own filters (a home to find, a
+    // buyer to find), and coming back to either finds it as it was left. The
+    // search term belongs to the feed it was typed on.
     setFiltersOpen(false);
     setListingFilters(omitSearch(listingFilters));
-    setBuyerFilters({});
+    setBuyerFilters(omitSearch(buyerFilters));
     setDraftSearch("");
     setRecentlySavedSignature(null);
     setTab(next);
@@ -316,15 +323,12 @@ export function FeedView() {
     ? Object.keys(buyerFilters).length > 0
     : Object.keys(listingFilters).length > 0;
 
-  // Clicking Home while already on the feed: clear filters if any, back to
-  // the top, and refetch so new listings show up — the app's re-tap on Home.
+  // Clicking Home while already on the feed: back to the top and refetch so
+  // new listings show up — the app's re-tap on Home. The filters stay: they
+  // are removed from their chips, not wiped by a click meant to scroll.
   useEffect(() => {
     const handleHome = () => {
-      if (hasActiveFeedState) {
-        clearAll();
-      } else {
-        setScrollToTopSignal((value) => value + 1);
-      }
+      setScrollToTopSignal((value) => value + 1);
       if (isBuyersTab) void buyersQuery.refetch();
       else void feedQuery.refetch();
     };
@@ -334,11 +338,32 @@ export function FeedView() {
 
   // --- Rendering ------------------------------------------------------------
 
-  const chipLabels = useMemo(
-    () =>
-      isBuyersTab ? getBuyerFilterChipLabels(buyerFilters, t) : getListingFilterChipLabels(listingFilters, t),
-    [isBuyersTab, buyerFilters, listingFilters, t],
-  );
+  // The applied filters as chips on the bar. Removing one applies straight
+  // away (and updates the draft to match), the way the chip promises: there is
+  // no form open to confirm it in.
+  const filterChips = useMemo<RemovableChip[]>(() => {
+    if (isBuyersTab) {
+      return getBuyerFilterChips(buyerFilters, t).map((chip) => ({
+        key: chip.key,
+        label: chip.label,
+        onRemove: () => {
+          setBuyerFilters(chip.without);
+          setDraftSearch(chip.without.searchText ?? "");
+          setScrollToTopSignal((value) => value + 1);
+        },
+      }));
+    }
+
+    return getListingFilterChips(listingFilters, t).map((chip) => ({
+      key: chip.key,
+      label: chip.label,
+      onRemove: () => {
+        setListingFilters(chip.without);
+        setDraftSearch(chip.without.searchText ?? "");
+        setScrollToTopSignal((value) => value + 1);
+      },
+    }));
+  }, [isBuyersTab, buyerFilters, listingFilters, t, setBuyerFilters, setListingFilters]);
   // A new filter set is a new feed: remounting starts it at the first card.
   const listingFeedKey = getListingFiltersSignature(listingFilters);
 
@@ -350,7 +375,7 @@ export function FeedView() {
         draft={draftBuyer}
         onDraftChange={setDraftBuyer}
         onApply={applyFilters}
-        onClearAll={clearAll}
+        onClearDraft={clearDraft}
         onSave={handleSaveSearch}
         isSaved={isDraftSaved}
         canSave={canSaveSearch}
@@ -362,7 +387,7 @@ export function FeedView() {
         draft={draftListing}
         onDraftChange={setDraftListing}
         onApply={applyFilters}
-        onClearAll={clearAll}
+        onClearDraft={clearDraft}
         onSave={handleSaveSearch}
         isSaved={isDraftSaved}
         canSave={canSaveSearch}
@@ -394,6 +419,11 @@ export function FeedView() {
         {/* Today's 240px on phones, growing with the screen, capped on wide monitors. */}
         <NoListingsIllustration className="h-auto w-[clamp(240px,26vw,380px)]" aria-hidden />
         <p className="max-w-sm text-[17px] font-semibold leading-6 text-text-muted">{t("feed.emptyListings")}</p>
+        {hasActiveFeedState ? (
+          <button type="button" onClick={clearAppliedFilters} className={buttonClasses({ variant: "secondary" })}>
+            {t("feed.clearFilters")}
+          </button>
+        ) : null}
       </div>
     );
   } else if (isDesktop) {
@@ -447,7 +477,7 @@ export function FeedView() {
           tab={tab}
           onTabChange={changeTab}
           showTabs={canUseBuyersTab}
-          activeFilterCount={chipLabels.length}
+          chips={filterChips}
           onToggleFilters={() => (isXl ? togglePanel(!isFilterPanelOpen) : setFiltersOpen(true))}
           filtersExpanded={isXl ? isFilterPanelOpen : undefined}
         />

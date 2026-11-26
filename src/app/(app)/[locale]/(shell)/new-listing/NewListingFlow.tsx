@@ -3,12 +3,17 @@
 import AnchorRightIcon from "@assets/icons/anchor-right-icon.svg";
 import Button from "@/components/genericComponents/Button";
 import { Spinner } from "@/components/genericComponents/EmptyState";
-import { ListingDetailsForm } from "@/components/newListing/ListingDetailsForm";
+import {
+  ListingDetailsForm,
+  STEP_ONE_FIELD_ORDER,
+  type StepOneErrors,
+} from "@/components/newListing/ListingDetailsForm";
 import { ListingMediaStep } from "@/components/newListing/ListingMediaStep";
+import { StepProgress } from "@/components/newListing/StepProgress";
 import { useToast } from "@/components/providers/ToastProvider";
+import { NEW_LISTING_DRAFT_KEY } from "@/constants/storageKeys";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useRouter } from "@/i18n/navigation";
-import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 import {
   createListing,
@@ -20,6 +25,7 @@ import {
   uploadVideoToStorage,
 } from "@/services/listings";
 import type { CreateListingInput, Listing, NewListingDraft } from "@/types/types";
+import { confirmDestructiveAction } from "@/utils/confirmAction";
 import { containsObjectionableContent } from "@/utils/contentFilter";
 import { IMAGE_PRESETS, optimizeImage, optimizeVideo, type OptimizedMedia } from "@/utils/mediaOptimizer";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -65,6 +71,41 @@ const initialDraft: NewListingDraft = {
 };
 
 const toDraftText = (value: number | string | null | undefined) => (value == null ? "" : String(value));
+
+// What the saved draft keeps: every field, without the media (blob: URLs of
+// files picked in this tab, gone after a reload) or the country (filled in
+// automatically).
+const draftFields = (draft: NewListingDraft) => {
+  const { photos: _photos, video: _video, mediaMode: _mediaMode, state: _state, ...fields } = draft;
+  return fields;
+};
+
+// Nothing typed yet. The country is filled in on open, so it doesn't count.
+const isDraftEmpty = (draft: NewListingDraft) =>
+  JSON.stringify(draftFields(draft)) === JSON.stringify(draftFields(initialDraft)) &&
+  draft.photos.length === 0 &&
+  !draft.video;
+
+const readSavedDraft = (): Partial<NewListingDraft> | null => {
+  try {
+    const raw = window.localStorage.getItem(NEW_LISTING_DRAFT_KEY);
+    return raw ? (JSON.parse(raw) as Partial<NewListingDraft>) : null;
+  } catch {
+    return null;
+  }
+};
+
+const writeSavedDraft = (draft: NewListingDraft | null) => {
+  try {
+    if (draft && !isDraftEmpty(draft)) {
+      window.localStorage.setItem(NEW_LISTING_DRAFT_KEY, JSON.stringify(draftFields(draft)));
+    } else {
+      window.localStorage.removeItem(NEW_LISTING_DRAFT_KEY);
+    }
+  } catch {
+    // Storage blocked or full: the draft just isn't kept.
+  }
+};
 
 // Media is not editable after publishing (same as the app), so an edit only
 // ever touches these columns.
@@ -168,8 +209,61 @@ export function NewListingFlow() {
   const [step, setStep] = useState<1 | 2>(1);
   const [draft, setDraft] = useState<NewListingDraft>(initialDraft);
   const [progress, setProgress] = useState<Progress>(null);
+  // Step 1's problems, shown under their fields; the revision bumps on every
+  // failed Next so the page scrolls to the first one even if it is the same.
+  const [stepOneErrors, setStepOneErrors] = useState<StepOneErrors>({});
+  const [errorRevision, setErrorRevision] = useState(0);
   const isDirtyRef = useRef(false);
   const hasPrefilledRef = useRef(false);
+  const hasRestoredDraftRef = useRef(false);
+
+  // The unfinished listing survives a reload or a closed tab, like the app's:
+  // restored once on open, then saved as it changes. Editing never touches it.
+  useEffect(() => {
+    if (isEditing || hasRestoredDraftRef.current) return;
+    hasRestoredDraftRef.current = true;
+
+    const saved = readSavedDraft();
+    if (!saved) return;
+    const restored: NewListingDraft = { ...initialDraft, ...saved, photos: [], video: null, mediaMode: null };
+    if (isDraftEmpty(restored)) return;
+
+    setDraft(restored);
+    showToast({ type: "info", message: t("newListing.draftRestored") });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditing]);
+
+  useEffect(() => {
+    if (isEditing || !hasRestoredDraftRef.current) return;
+    const timeout = setTimeout(() => writeSavedDraft(draft), 400);
+    return () => clearTimeout(timeout);
+  }, [draft, isEditing]);
+
+  const discardDraft = () =>
+    confirmDestructiveAction({
+      title: t("newListing.discardDraftTitle"),
+      message: t("newListing.discardDraftMessage"),
+      confirmLabel: t("newListing.discardDraftConfirm"),
+      onConfirm: () => {
+        isDirtyRef.current = false;
+        setDraft(initialDraft);
+        setStep(1);
+        setStepOneErrors({});
+        writeSavedDraft(null);
+        window.scrollTo({ top: 0 });
+      },
+    });
+
+  // Scrolls to and focuses the first field with a problem.
+  useEffect(() => {
+    if (errorRevision === 0) return;
+    const firstKey = STEP_ONE_FIELD_ORDER.find((key) => stepOneErrors[key]);
+    if (!firstKey) return;
+    const field = document.querySelector<HTMLElement>(`[data-field="${firstKey}"]`);
+    field?.scrollIntoView({ behavior: "smooth", block: "center" });
+    field?.focus({ preventScroll: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [errorRevision]);
 
   const editListingQuery = useQuery({
     queryKey: queryKeys.listing(editListingId ?? "new"),
@@ -198,47 +292,83 @@ export function NewListingFlow() {
   const updateDraft = <Key extends keyof NewListingDraft>(key: Key, value: NewListingDraft[Key]) => {
     isDirtyRef.current = true;
     setDraft((current) => ({ ...current, [key]: value }));
+    // Editing a field takes its error away.
+    setStepOneErrors((current) => {
+      if (!current[key]) return current;
+      const { [key]: _removed, ...rest } = current;
+      return rest;
+    });
   };
 
-  const validateStepOne = () => {
-    if (!draft.state.trim()) return t("newListing.stateRequired");
-    if (!draft.city.trim()) return t("newListing.cityRequired");
-    if (!draft.municipality.trim()) return t("newListing.municipalityRequired");
-    if (!draft.street.trim()) return t("newListing.streetRequired");
-    if (!draft.surfaceM2.trim()) return t("newListing.surfaceRequired");
-    if (!draft.priceEur.trim()) return t("newListing.priceRequired");
-    if (draft.storey === "floor" && !draft.storeyFloorNumber.trim()) return t("newListing.storeyFloorNumberRequired");
-    if (draft.groundType === "other" && !draft.groundOther.trim()) return t("newListing.groundOtherRequired");
+  // Every problem with step 1 at once, keyed by the field it belongs to, so
+  // each one shows under its own field instead of one toast at a time.
+  const validateStepOneFields = (): StepOneErrors => {
+    const errors: StepOneErrors = {};
+    const add = (key: keyof NewListingDraft, message: string) => {
+      if (!errors[key]) errors[key] = message;
+    };
+
+    // The country is filled in automatically; if it is ever missing, the city
+    // field is where the user can do something about it.
+    if (!draft.state.trim()) add("city", t("newListing.stateRequired"));
+    if (!draft.city.trim()) add("city", t("newListing.cityRequired"));
+    if (!draft.municipality.trim()) add("municipality", t("newListing.municipalityRequired"));
+    if (!draft.street.trim()) add("street", t("newListing.streetRequired"));
 
     const streetNumberText = draft.streetNumber.trim();
-    const streetNumber = streetNumberText.length > 0 ? Number(streetNumberText) : null;
-    if (streetNumber != null && (!Number.isInteger(streetNumber) || streetNumber <= 0)) {
-      return t("newListing.invalidStreetNumber");
+    if (streetNumberText.length > 0) {
+      const streetNumber = Number(streetNumberText);
+      if (!Number.isInteger(streetNumber) || streetNumber <= 0) add("streetNumber", t("newListing.invalidStreetNumber"));
     }
-    const surface = Number(draft.surfaceM2);
-    if (!Number.isFinite(surface) || surface <= 0) return t("newListing.invalidSurface");
-    const price = Number(draft.priceEur);
-    if (!Number.isFinite(price) || price <= 0) return t("newListing.invalidPrice");
 
-    const totalText = draft.totalPriceEur.trim();
-    if (draft.listingType === "forSale" && totalText.length > 0) {
-      const total = Number(totalText);
-      if (!Number.isSafeInteger(total) || total <= 0) return t("newListing.invalidTotalPrice");
+    if (!draft.surfaceM2.trim()) {
+      add("surfaceM2", t("newListing.surfaceRequired"));
+    } else {
+      const surface = Number(draft.surfaceM2);
+      if (!Number.isFinite(surface) || surface <= 0) add("surfaceM2", t("newListing.invalidSurface"));
     }
 
     // Optional; half rooms are normal (1.5, 2.5).
     const roomsText = draft.rooms.trim();
     if (roomsText.length > 0) {
       const rooms = Number(roomsText);
-      if (!Number.isFinite(rooms) || rooms <= 0) return t("newListing.invalidRooms");
+      if (!Number.isFinite(rooms) || rooms <= 0) add("rooms", t("newListing.invalidRooms"));
     }
 
-    const floor = Number(draft.storeyFloorNumber);
-    if (draft.storey === "floor" && (!Number.isInteger(floor) || floor <= 0)) {
-      return t("newListing.invalidStoreyFloorNumber");
+    if (!draft.priceEur.trim()) {
+      add("priceEur", t("newListing.priceRequired"));
+    } else {
+      const price = Number(draft.priceEur);
+      if (!Number.isFinite(price) || price <= 0) add("priceEur", t("newListing.invalidPrice"));
     }
 
-    return null;
+    const totalText = draft.totalPriceEur.trim();
+    if (draft.listingType === "forSale" && totalText.length > 0) {
+      const total = Number(totalText);
+      if (!Number.isSafeInteger(total) || total <= 0) add("totalPriceEur", t("newListing.invalidTotalPrice"));
+    }
+
+    if (draft.storey === "floor") {
+      if (!draft.storeyFloorNumber.trim()) {
+        add("storeyFloorNumber", t("newListing.storeyFloorNumberRequired"));
+      } else {
+        const floor = Number(draft.storeyFloorNumber);
+        if (!Number.isInteger(floor) || floor <= 0) add("storeyFloorNumber", t("newListing.invalidStoreyFloorNumber"));
+      }
+    }
+
+    if (draft.groundType === "other" && !draft.groundOther.trim()) {
+      add("groundOther", t("newListing.groundOtherRequired"));
+    }
+
+    return errors;
+  };
+
+  /** The first step-1 problem as a message: the publish and save guard's check. */
+  const validateStepOne = () => {
+    const errors = validateStepOneFields();
+    const firstKey = STEP_ONE_FIELD_ORDER.find((key) => errors[key]);
+    return firstKey ? (errors[firstKey] ?? null) : null;
   };
 
   const validateStepTwo = () =>
@@ -342,6 +472,9 @@ export function NewListingFlow() {
     },
     onSuccess: async (listingId) => {
       isDirtyRef.current = false;
+      // Published: the draft has done its job.
+      hasRestoredDraftRef.current = false;
+      writeSavedDraft(null);
       await queryClient.invalidateQueries({ queryKey: queryKeys.listings, refetchType: "all" });
       if (sessionUser) {
         await queryClient.invalidateQueries({ queryKey: queryKeys.userListings(sessionUser.id), refetchType: "all" });
@@ -398,11 +531,13 @@ export function NewListingFlow() {
   const isSubmitting = publishMutation.isPending || editMutation.isPending;
 
   const handleStepOne = () => {
-    const error = validateStepOne();
-    if (error) {
-      showToast({ type: "error", title: t("newListing.missingInformationTitle"), message: error });
+    const errors = validateStepOneFields();
+    if (Object.keys(errors).length > 0) {
+      setStepOneErrors(errors);
+      setErrorRevision((revision) => revision + 1);
       return;
     }
+    setStepOneErrors({});
     if (isEditing) {
       editMutation.mutate();
       return;
@@ -429,7 +564,9 @@ export function NewListingFlow() {
     progress?.phase === "video"
       ? t("web.newListing.compressingVideo", { percent: progress.percent })
       : progress?.phase === "upload"
-        ? `${t("web.newListing.uploadingMedia")} ${progress.total > 1 ? `${progress.done}/${progress.total}` : ""}`
+        ? progress.total > 1
+          ? t("newListing.uploadProgress", { done: progress.done, total: progress.total })
+          : t("web.newListing.uploadingMedia")
         : null;
 
   return (
@@ -438,27 +575,22 @@ export function NewListingFlow() {
         <h1 className="flex-1 font-display text-3xl text-text">
           {isEditing ? t("web.newListing.editTitle") : t("newListing.title")}
         </h1>
-        {!isEditing ? (
-          <ol className="flex items-center gap-2 text-sm" aria-label={t("newListing.step")}>
-            {[1, 2].map((number) => (
-              <li
-                key={number}
-                aria-current={step === number ? "step" : undefined}
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full font-semibold",
-                  step === number ? "bg-primary text-text-on-primary" : "bg-surface text-text-muted",
-                )}
-              >
-                {number}
-              </li>
-            ))}
-          </ol>
+        {!isEditing && !isDraftEmpty(draft) ? (
+          <button
+            type="button"
+            onClick={discardDraft}
+            disabled={isSubmitting}
+            className="shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold text-primary hover:bg-surface disabled:opacity-60"
+          >
+            {t("newListing.discardDraft")}
+          </button>
         ) : null}
       </div>
+      {!isEditing ? <StepProgress step={step} total={2} className="-mt-2 mb-6" /> : null}
 
       <div className="rounded-[32px] bg-surface p-5 md:p-8">
         {step === 1 ? (
-          <ListingDetailsForm draft={draft} onDraftChange={updateDraft} />
+          <ListingDetailsForm draft={draft} onDraftChange={updateDraft} errors={stepOneErrors} />
         ) : (
           <>
             <h2 className="mb-4 font-display text-lg text-text">{t("newListing.photosAndVideos")}</h2>
@@ -500,7 +632,7 @@ export function NewListingFlow() {
                   ? isSubmitting
                     ? t("common.posting")
                     : t("newListing.saveChanges")
-                  : `${t("web.newListing.next")} · ${t("newListing.step")} 1/2`
+                  : t("newListing.nextStep")
               }
               onClick={handleStepOne}
               disabled={isSubmitting}

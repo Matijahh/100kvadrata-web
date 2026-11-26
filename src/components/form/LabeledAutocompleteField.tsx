@@ -28,6 +28,10 @@ type LabeledAutocompleteFieldProps<T> = {
   suggestionsEnabled?: boolean;
   editable?: boolean;
   onFocus?: () => void;
+  /** Shown under the field in the error colour; marks the input invalid. */
+  error?: string;
+  /** Set on the input as data-field, so a form can scroll to and focus it. */
+  fieldKey?: string;
 };
 
 export function LabeledAutocompleteField<T>({
@@ -44,10 +48,13 @@ export function LabeledAutocompleteField<T>({
   suggestionsEnabled = true,
   editable = true,
   onFocus,
+  error,
+  fieldKey,
 }: LabeledAutocompleteFieldProps<T>) {
   const { t } = useTranslation();
   const inputId = useId();
   const listId = `${inputId}-list`;
+  const errorId = `${inputId}-error`;
   const [isFocused, setIsFocused] = useState(false);
   const [debouncedQuery, setDebouncedQuery] = useState("");
   // Once a suggestion is picked, keep the list closed until the user types again.
@@ -134,6 +141,9 @@ export function LabeledAutocompleteField<T>({
           aria-controls={listId}
           aria-autocomplete="list"
           aria-activedescendant={activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
+          data-field={fieldKey}
           onChange={(event) => {
             setIsDismissed(false);
             onChangeText(event.target.value);
@@ -143,7 +153,10 @@ export function LabeledAutocompleteField<T>({
             onFocus?.();
           }}
           onKeyDown={handleKeyDown}
-          className="min-h-[54px] w-full rounded-[25px] border border-transparent bg-surface-muted px-[15px] py-[15px] pr-11 text-base text-text placeholder:text-placeholder focus:border-primary-soft focus:outline-none disabled:opacity-70"
+          className={cn(
+            "min-h-[54px] w-full rounded-[25px] border border-transparent bg-surface-muted px-[15px] py-[15px] pr-11 text-base text-text placeholder:text-placeholder focus:border-primary-soft focus:outline-none disabled:opacity-70",
+            error && "border-destructive focus:border-destructive",
+          )}
         />
         {showLoading ? (
           <span
@@ -191,6 +204,11 @@ export function LabeledAutocompleteField<T>({
 
       {showNoResults ? (
         <p className="mt-1.5 px-[15px] text-xs text-text-muted">{t("common.autocompleteNoResults")}</p>
+      ) : null}
+      {error ? (
+        <p id={errorId} className="mt-1.5 px-[15px] text-xs font-semibold leading-[17px] text-destructive">
+          {error}
+        </p>
       ) : null}
     </div>
   );

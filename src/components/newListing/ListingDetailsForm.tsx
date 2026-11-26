@@ -39,6 +39,26 @@ import { useTranslation } from "react-i18next";
 
 type DraftChange = <Key extends keyof NewListingDraft>(key: Key, value: NewListingDraft[Key]) => void;
 
+/** Step 1's problems, keyed by the field they belong to (like the app). */
+export type StepOneErrors = Partial<Record<keyof NewListingDraft, string>>;
+
+/** The order the fields appear in: the first one with an error is scrolled to. */
+export const STEP_ONE_FIELD_ORDER = [
+  "category",
+  "listingType",
+  "city",
+  "municipality",
+  "street",
+  "streetNumber",
+  "surfaceM2",
+  "rooms",
+  "priceEur",
+  "totalPriceEur",
+  "storeyFloorNumber",
+  "groundOther",
+  "description",
+] as const satisfies readonly (keyof NewListingDraft)[];
+
 /**
  * The listing's details — web port of flatswipe/src/components/newListing/
  * NewListingStepOne.tsx with the same fields, order and input rules, laid out
@@ -47,9 +67,12 @@ type DraftChange = <Key extends keyof NewListingDraft>(key: Key, value: NewListi
 export function ListingDetailsForm({
   draft,
   onDraftChange,
+  errors = {},
 }: {
   draft: NewListingDraft;
   onDraftChange: DraftChange;
+  /** Shown under their fields; each input carries data-field for scrolling to it. */
+  errors?: StepOneErrors;
 }) {
   const { t } = useTranslation();
   const descriptionId = useId();
@@ -132,6 +155,8 @@ export function ListingDetailsForm({
           label={t("newListing.cityLabel")}
           placeholder={t("newListing.cityPlaceholder")}
           value={draft.city}
+          error={errors.city}
+          fieldKey="city"
           onChangeText={(value) => onDraftChange("city", value)}
           onSelect={(suggestion) => {
             if (suggestion.municipality) onDraftChange("municipality", suggestion.municipality);
@@ -145,6 +170,8 @@ export function ListingDetailsForm({
           label={t("newListing.municipalityLabel")}
           placeholder={t("newListing.municipalityPlaceholder")}
           value={draft.municipality}
+          error={errors.municipality}
+          fieldKey="municipality"
           onChangeText={(value) => onDraftChange("municipality", value)}
           fetchSuggestions={(query) => searchMunicipalities(query, { city: draft.city || null })}
           queryKey={(query) =>
@@ -156,6 +183,8 @@ export function ListingDetailsForm({
           label={t("newListing.streetLabel")}
           placeholder={t("newListing.streetPlaceholder")}
           value={draft.street}
+          error={errors.street}
+          fieldKey="street"
           onChangeText={(value) => onDraftChange("street", value)}
           fetchSuggestions={(query) => searchStreets(query, draft.city)}
           queryKey={(query) =>
@@ -168,6 +197,8 @@ export function ListingDetailsForm({
           label={t("newListing.streetNumberLabel")}
           placeholder={t("newListing.streetNumberPlaceholder")}
           value={draft.streetNumber}
+          error={errors.streetNumber}
+          data-field="streetNumber"
           onChangeText={(value) => onDraftChange("streetNumber", value)}
           inputMode="numeric"
         />
@@ -175,6 +206,8 @@ export function ListingDetailsForm({
           label={t("newListing.surfaceLabel")}
           placeholder={t("newListing.surfacePlaceholder")}
           value={draft.surfaceM2}
+          error={errors.surfaceM2}
+          data-field="surfaceM2"
           onChangeText={(value) => onDraftChange("surfaceM2", sanitizeDecimalInput(value))}
           inputMode="decimal"
         />
@@ -182,6 +215,8 @@ export function ListingDetailsForm({
           label={t("newListing.roomsLabel")}
           placeholder={t("newListing.roomsPlaceholder")}
           value={draft.rooms}
+          error={errors.rooms}
+          data-field="rooms"
           onChangeText={(value) => onDraftChange("rooms", sanitizeDecimalInput(value))}
           inputMode="decimal"
         />
@@ -189,6 +224,8 @@ export function ListingDetailsForm({
           label={isSale ? t("newListing.salePriceLabel") : t("newListing.rentPriceLabel")}
           placeholder={isSale ? t("newListing.salePricePlaceholder") : t("newListing.rentPricePlaceholder")}
           value={draft.priceEur}
+          error={errors.priceEur}
+          data-field="priceEur"
           onChangeText={(value) => onDraftChange("priceEur", value)}
           inputMode="numeric"
         />
@@ -198,6 +235,8 @@ export function ListingDetailsForm({
             placeholder={calculatedTotal != null ? formatEuros(calculatedTotal) : t("newListing.totalPricePlaceholder")}
             hint={t("newListing.totalPriceHint")}
             value={draft.totalPriceEur}
+            error={errors.totalPriceEur}
+            data-field="totalPriceEur"
             onChangeText={(value) => onDraftChange("totalPriceEur", sanitizeIntegerInput(value))}
             inputMode="numeric"
           />
@@ -250,6 +289,8 @@ export function ListingDetailsForm({
             label={t("newListing.storeyFloorNumberLabel")}
             placeholder={t("newListing.storeyFloorNumberPlaceholder")}
             value={draft.storeyFloorNumber}
+            error={errors.storeyFloorNumber}
+            data-field="storeyFloorNumber"
             onChangeText={(value) => onDraftChange("storeyFloorNumber", value)}
             inputMode="numeric"
           />
@@ -274,6 +315,8 @@ export function ListingDetailsForm({
             label={t("newListing.groundOtherLabel")}
             placeholder={t("newListing.groundOtherPlaceholder")}
             value={draft.groundOther}
+            error={errors.groundOther}
+            data-field="groundOther"
             onChangeText={(value) => onDraftChange("groundOther", value)}
           />
         ) : null}
