@@ -14,7 +14,7 @@ import SuitcaseIcon from "@assets/icons/suitcase-icon.svg";
 import { OpenInMapsMenu } from "@/components/listing/OpenInMapsMenu";
 import { formatListingMetric } from "@/lib/listingFormat";
 import type { Listing } from "@/types/types";
-import { formatEuros, getListingTotalPrice } from "@/utils/listingPrice";
+import { formatEuros, getListingPricePerSquare, getListingTotalPrice } from "@/utils/listingPrice";
 import { hasMappableAddress, listingMapAddress } from "@/utils/mapLinks";
 import { useMemo, useState, type FC, type SVGProps } from "react";
 import { useTranslation } from "react-i18next";
@@ -33,6 +33,8 @@ export function ListingSpecs({ listing }: { listing: Listing }) {
   const mapAddress = useMemo(() => listingMapAddress(listing), [listing]);
   const canOpenInMaps = hasMappableAddress(mapAddress);
   const totalPrice = getListingTotalPrice(listing);
+  // Worked out from the total when only the total was entered.
+  const pricePerSquare = getListingPricePerSquare(listing);
 
   const specs: Spec[] = [];
   const push = (condition: unknown, spec: Spec) => {
@@ -45,11 +47,11 @@ export function ListingSpecs({ listing }: { listing: Listing }) {
     label: t("listing.detailsPrice"),
     value: totalPrice != null ? formatEuros(totalPrice) : "",
   });
-  push(listing.listing_type === "forSale" && listing.price_eur != null, {
+  push(pricePerSquare != null, {
     key: "pricePerSquare",
     icon: EuroIcon,
     label: t("listing.detailsPricePerSquare"),
-    value: listing.price_eur != null ? formatEuros(listing.price_eur) : "",
+    value: pricePerSquare != null ? formatEuros(pricePerSquare) : "",
   });
   push(listing.surface_m2 != null, {
     key: "surface",
