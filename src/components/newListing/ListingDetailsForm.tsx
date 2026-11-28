@@ -84,13 +84,16 @@ export function ListingDetailsForm({
   });
 
   // The country is stored but not asked (one option is no question) — filled
-  // in silently, falling back to Serbia, like the app.
+  // in silently, falling back to Serbia, like the app. Watches draft.state
+  // too: a restored draft (saved without it), "Start over" or an old listing
+  // being edited empties it after the countries have loaded, and with nobody
+  // refilling it the first step failed with "State is required" under the city.
   useEffect(() => {
     if (!draft.state) {
       onDraftChange("state", countries?.[0]?.name ?? "Srbija");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [countries]);
+  }, [countries, draft.state]);
 
   const options = useMemo(() => {
     const of = <T extends string>(values: readonly T[], key: string) =>
