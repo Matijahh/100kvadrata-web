@@ -101,12 +101,17 @@ export function ProfileView() {
   // having listings, "What you're looking for" sets and saved tabs. The
   // profile arrives after the first render, so the section is corrected once
   // it does.
+  // Only once the profile has actually loaded: right after a page load the
+  // session is still being restored, the profile query hasn't started, and
+  // "not loading" doesn't yet mean "not an admin". Deciding then sent an
+  // admin's ?section=flagged link to Objave.
   const isAdmin = currentUser?.isAdmin === true;
+  const hasProfile = currentUser !== null;
   useEffect(() => {
     const isAdminSection = ADMIN_SECTIONS.includes(section);
     if (isAdmin && !isAdminSection) setSection("adminPosts");
-    else if (!isAdmin && !isLoadingProfile && isAdminSection) setSection("yourListings");
-  }, [isAdmin, isLoadingProfile, section]);
+    else if (!isAdmin && hasProfile && isAdminSection) setSection("yourListings");
+  }, [isAdmin, hasProfile, section]);
 
   const userListingsQuery = useQuery({
     queryKey: queryKeys.userListings(userId),
