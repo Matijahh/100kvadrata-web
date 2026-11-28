@@ -22,6 +22,8 @@ export const queryKeys = {
   ownMarketingPosts: (userId: string) => ["marketingPosts", "own", userId] as const,
   // Admin-only (FEAT-43). Not per user: every admin sees the same queue.
   flaggedListings: ["flaggedListings"] as const,
+  // Admin-only: users reported from a chat. Same queue for every admin.
+  reportedUsers: ["reportedUsers"] as const,
   // Admin-only "Admin igra". Per user: the board puts each admin's own
   // character first.
   growthProgress: (userId: string) => ["growthProgress", userId] as const,

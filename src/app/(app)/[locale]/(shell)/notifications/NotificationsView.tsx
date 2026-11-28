@@ -92,6 +92,17 @@ export function NotificationsView() {
       return;
     }
 
+    // A reported user (admins only): their profile with the review buttons,
+    // or the users queue if the account is gone.
+    if (notification.type === "user_reported") {
+      router.push(
+        notification.actorId
+          ? `/user/${notification.actorId}?from=reported`
+          : "/profile?section=flagged&flagged=users",
+      );
+      return;
+    }
+
     // A removal notice (FEAT-43) opens the explanation in the reader's
     // language: the row only carries the listing's address (title) and the
     // reason code (body). There is no listing left to open.
@@ -122,10 +133,17 @@ export function NotificationsView() {
     if (notification.listingId != null) router.push(`/listing/${notification.listingId}`);
   };
 
-  const actionText = (type: Notification["type"], reason?: string | null) => {
-    switch (type) {
+  const actionText = (notification: Notification) => {
+    const reason = notification.body;
+    switch (notification.type) {
       case "listing_reported":
         return t("moderation.reportedText", {
+          reason: t(reason === "spam" ? "moderation.reasonSpamLower" : "moderation.reasonInappropriateLower"),
+        });
+      case "user_reported":
+        // The actor is the reported user; whoever reported them stays anonymous.
+        return t("moderation.userReportedText", {
+          username: notification.actor?.username ?? t("notifications.unknownActor"),
           reason: t(reason === "spam" ? "moderation.reasonSpamLower" : "moderation.reasonInappropriateLower"),
         });
       case "like":
@@ -210,7 +228,8 @@ export function NotificationsView() {
                   <span className="relative shrink-0">
                     {notification.type === "admin" ||
                     notification.type === "listing_removed" ||
-                    notification.type === "listing_reported" ? (
+                    notification.type === "listing_reported" ||
+                    notification.type === "user_reported" ? (
                       // Black like the app icon: the logo's lettering is white.
                       <span className="flex h-[50px] w-[50px] items-center justify-center rounded-full bg-[#161722]">
                         <Logo width={34} height={20} aria-hidden />
@@ -230,7 +249,7 @@ export function NotificationsView() {
                   <span className="min-w-0 flex-1">
                     <span className="line-clamp-2 text-[15px] text-text">
                       <span className="font-semibold">
-                        {notification.type === "listing_reported"
+                        {notification.type === "listing_reported" || notification.type === "user_reported"
                           ? t("moderation.reportedSender")
                           : notification.type === "admin" || notification.type === "listing_removed"
                           ? t("admin.senderName")
@@ -240,7 +259,7 @@ export function NotificationsView() {
                       </span>{" "}
                       {notification.type === "admin"
                         ? notification.title
-                        : actionText(notification.type, notification.body)}
+                        : actionText(notification)}
                     </span>
                     <span className="mt-0.5 block text-xs text-text-muted">
                       {formatRelativeTime(notification.createdAt, t)}

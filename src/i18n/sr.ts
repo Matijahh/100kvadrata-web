@@ -874,6 +874,25 @@ export const sr = {
     reasonInappropriateLower: "neprimeren sadržaj",
     reportedSender: "Nova prijava:",
     reportedText: "oglas je prijavljen zbog: {{reason}}",
+    // Reported users ("Prijavi korisnika" u četu).
+    flaggedViewLabel: "Šta je prijavljeno",
+    flaggedListingsView: "Oglasi",
+    flaggedUsersView: "Korisnici",
+    reportedUsersEmpty: "Trenutno nema prijavljenih korisnika.",
+    reportedUsersLoadError:
+      "Nismo uspeli da učitamo prijavljene korisnike. Proveri internet vezu i pokušaj ponovo.",
+    userReportedText: "korisnik {{username}} je prijavljen zbog: {{reason}}",
+    bannedBadge: "Blokiran",
+    accountIsBanned: "Ovaj nalog je blokiran.",
+    dismissUserMessage:
+      "Korisnik {{username}} može da nastavi da koristi 100m² i nestaje sa ove liste. Niko ne dobija obaveštenje.",
+    blockAccount: "Blokiraj nalog",
+    blockAccountTitle: "Blokirati korisnika {{username}}?",
+    blockAccountMessage:
+      "Korisnik se odjavljuje sa svih uređaja i ne može ponovo da se prijavi. Oglasi ovog korisnika ostaju objavljeni. Ovo može da se poništi samo u SQL editoru.",
+    blockAccountConfirm: "Blokiraj",
+    accountBlocked: "Nalog je blokiran.",
+    blockAccountError: "Nismo uspeli da blokiramo nalog. Pokušaj ponovo.",
   },
   // The admin-only "Statistika" tab on the profile.
   adminStats: {

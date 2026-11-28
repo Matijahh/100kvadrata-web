@@ -855,6 +855,25 @@ export const en = {
     reasonInappropriateLower: "inappropriate content",
     reportedSender: "New report:",
     reportedText: "a listing was reported for {{reason}}",
+    // Reported users ("Report user" in a chat).
+    flaggedViewLabel: "What was reported",
+    flaggedListingsView: "Listings",
+    flaggedUsersView: "Users",
+    reportedUsersEmpty: "No reported users right now.",
+    reportedUsersLoadError:
+      "We couldn't load reported users. Check your connection and try again.",
+    userReportedText: "{{username}} was reported for {{reason}}",
+    bannedBadge: "Blocked",
+    accountIsBanned: "This account is blocked.",
+    dismissUserMessage:
+      "{{username}} can keep using 100m² and leaves this list. Nobody is notified.",
+    blockAccount: "Block account",
+    blockAccountTitle: "Block {{username}}?",
+    blockAccountMessage:
+      "They're logged out everywhere and can't sign in again. Their listings stay up. Only the SQL editor can undo this.",
+    blockAccountConfirm: "Block",
+    accountBlocked: "Account blocked.",
+    blockAccountError: "We couldn't block this account. Please try again.",
   },
   // The admin-only "Statistika" tab on the profile.
   adminStats: {

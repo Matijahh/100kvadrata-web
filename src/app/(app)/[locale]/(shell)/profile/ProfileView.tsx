@@ -12,7 +12,7 @@ import FlagIcon from "@assets/icons/flag-icon.svg";
 import ImageIcon from "@assets/icons/image-icon.svg";
 import { AdminPostsSection } from "@/components/profile/AdminPostsSection";
 import { AdminStatsSection } from "@/components/profile/AdminStatsSection";
-import { FlaggedListingsSection } from "@/components/profile/FlaggedListingsSection";
+import { FlaggedSection } from "@/components/profile/FlaggedSection";
 import HouseFilledIcon from "@assets/icons/house-icon-filled.svg";
 import HouseIcon from "@assets/icons/house-icon.svg";
 import MenuIcon from "@assets/icons/menu-icon.svg";
@@ -320,7 +320,7 @@ export function ProfileView() {
       <div role="tabpanel" className="pt-5">
         {section === "adminPosts" && isAdmin ? <AdminPostsSection userId={userId} /> : null}
 
-        {section === "flagged" && isAdmin ? <FlaggedListingsSection /> : null}
+        {section === "flagged" && isAdmin ? <FlaggedSection /> : null}
 
         {section === "adminStats" && isAdmin ? <AdminStatsSection /> : null}
 

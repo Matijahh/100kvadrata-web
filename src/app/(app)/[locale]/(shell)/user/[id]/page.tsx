@@ -12,7 +12,12 @@ import { UserProfileView } from "./UserProfileView";
 // it needs an account, and robots.txt keeps crawlers out of the app, so there
 // is no per-profile robots rule.
 
-type PageProps = { params: Promise<{ locale: string; id: string }> };
+type PageProps = {
+  params: Promise<{ locale: string; id: string }>;
+  // `from=reported`: an admin came from the reported users queue or a
+  // user_reported notification, so the page offers dismiss / block.
+  searchParams: Promise<{ from?: string }>;
+};
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -54,8 +59,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function UserProfilePage({ params }: PageProps) {
+export default async function UserProfilePage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { from } = await searchParams;
   const profile = await getProfile(id);
 
   if (!profile) {
@@ -67,5 +73,11 @@ export default async function UserProfilePage({ params }: PageProps) {
   // browser with the visitor's session.
   const listings: Listing[] | null = await fetchUserListings(id).catch(() => null);
 
-  return <UserProfileView initialProfile={profile} initialListings={listings} />;
+  return (
+    <UserProfileView
+      initialProfile={profile}
+      initialListings={listings}
+      fromReported={from === "reported"}
+    />
+  );
 }

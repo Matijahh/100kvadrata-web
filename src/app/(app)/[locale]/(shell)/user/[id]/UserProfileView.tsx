@@ -11,12 +11,14 @@ import { EmptyState, Spinner } from "@/components/genericComponents/EmptyState";
 import { ListingCard, ListingGrid } from "@/components/listing/ListingCard";
 import { PreferenceCard } from "@/components/profile/PreferenceCard";
 import { ProfileCard } from "@/components/profile/ProfileCard";
+import { ReportedUserReview } from "@/components/profile/ReportedUserReview";
 import { useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/cn";
 import { queryKeys } from "@/lib/queryKeys";
 import { fetchUserListings } from "@/services/listings";
 import { fetchPreferenceSets } from "@/services/preferences";
 import { fetchProfile } from "@/services/profile";
+import { fetchReportedUsers } from "@/services/reports";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { useDirectMessage } from "@/hooks/useDirectMessage";
 import ChatIcon from "@assets/icons/chat-icon.svg";
@@ -38,9 +40,12 @@ type Section = "listings" | "preferences";
 export function UserProfileView({
   initialProfile,
   initialListings,
+  fromReported = false,
 }: {
   initialProfile: Profile;
   initialListings: Listing[] | null;
+  /** Opened from the reported users queue or a user_reported notification. */
+  fromReported?: boolean;
 }) {
   const { t } = useTranslation();
   const router = useRouter();
@@ -105,6 +110,19 @@ export function UserProfileView({
   // no need for the person to have said what they are looking for.
   const canAdminMessage = currentUser?.isAdmin === true && !!sessionUser && sessionUser.id !== id;
 
+  // Reported from a chat: the admin's review. The summary comes from the same
+  // queue the Flagged tab shows, so once the reports are dismissed (here or by
+  // another admin) the buttons go away.
+  const isReviewingReports = fromReported && canAdminMessage;
+  const reportedUsersQuery = useQuery({
+    queryKey: queryKeys.reportedUsers,
+    queryFn: fetchReportedUsers,
+    enabled: isReviewingReports,
+  });
+  const reportSummary = isReviewingReports
+    ? (reportedUsersQuery.data?.find((reported) => reported.profile.id === id) ?? null)
+    : null;
+
   const tabs: { value: Section; label: string; icon: FC<SVGProps<SVGSVGElement>>; activeIcon: FC<SVGProps<SVGSVGElement>> }[] =
     sections.map((section) =>
       section === "listings"
@@ -144,6 +162,13 @@ export function UserProfileView({
           ) : undefined
         }
       />
+      {reportSummary ? (
+        // Back to the queue it came from once handled.
+        <ReportedUserReview
+          reported={reportSummary}
+          onDone={() => router.replace("/profile?section=flagged&flagged=users")}
+        />
+      ) : null}
       <OfferListingDialog
         buyer={isOfferOpen && canOffer ? profile : null}
         currentUserId={sessionUser?.id ?? null}

@@ -494,6 +494,9 @@ export type BuyerFilters = {
 // 'feedback' tells every admin someone sent "Report a problem": actor is the
 // sender (null once they delete their account), body the message, title
 // where it was sent from ("platform · app version · route").
+// 'user_reported' tells every admin a user was reported from a chat: actor is
+// the REPORTED user (so the row can name them), body the reason code. Whoever
+// reported them stays anonymous.
 export type NotificationType =
   | "like"
   | "save"
@@ -502,7 +505,8 @@ export type NotificationType =
   | "admin"
   | "listing_removed"
   | "listing_reported"
-  | "feedback";
+  | "feedback"
+  | "user_reported";
 
 // The same two reasons a user can report a listing for.
 export type ListingRemovalReason = "spam" | "inappropriate";
@@ -513,6 +517,17 @@ export type FlaggedListing = Listing & {
   spamReportCount: number;
   inappropriateReportCount: number;
   lastReportedAt: string;
+};
+
+/** A user reported from a chat, in the "Users" side of the Flagged tab. */
+export type ReportedUser = {
+  profile: Profile;
+  reportCount: number;
+  spamReportCount: number;
+  inappropriateReportCount: number;
+  lastReportedAt: string;
+  /** Already blocked: by an admin, or after 3 removed listings. */
+  isBanned: boolean;
 };
 
 export type Notification = {

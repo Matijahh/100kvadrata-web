@@ -1,7 +1,8 @@
 // AUTO-SYNCED from flatswipe — edit there, then run `npm run sync-shared`.
 import { supabase } from "@/lib/supabase";
 import { mapListingsWithProfiles } from "@/services/listings";
-import { FlaggedListing, ListingRemovalReason } from "@/types/types";
+import { mapProfileRowToUser } from "@/services/profile";
+import { FlaggedListing, ListingRemovalReason, ReportedUser } from "@/types/types";
 
 export type ReportReason = ListingRemovalReason;
 
@@ -153,4 +154,52 @@ export const dismissListingReports = async (listingId: number) => {
     .eq("target_type", "listing")
     .eq("listing_id", listingId)
     .throwOnError();
+};
+
+// ---------------------------------------------------------------------------
+// Reported users ("Report user" in a chat)
+// ---------------------------------------------------------------------------
+//
+// Admin-only on the server too (20261130_reported_users.sql).
+
+type ReportedUserRow = {
+  profile: Parameters<typeof mapProfileRowToUser>[0];
+  report_count: number;
+  spam_count: number;
+  inappropriate_count: number;
+  last_reported_at: string;
+  is_banned: boolean;
+};
+
+/** Every reported user, newest report first. */
+export const fetchReportedUsers = async (): Promise<ReportedUser[]> => {
+  const { data } = await supabase.rpc("get_reported_users").throwOnError();
+
+  return ((data ?? []) as ReportedUserRow[]).map((row) => ({
+    profile: mapProfileRowToUser(row.profile),
+    reportCount: row.report_count,
+    spamReportCount: row.spam_count,
+    inappropriateReportCount: row.inappropriate_count,
+    lastReportedAt: row.last_reported_at,
+    isBanned: row.is_banned,
+  }));
+};
+
+/** The user did nothing wrong: drops their reports so they leave the queue. */
+export const dismissUserReports = async (userId: string) => {
+  await supabase
+    .from("reports")
+    .delete()
+    .eq("target_type", "user")
+    .eq("reported_user_id", userId)
+    .throwOnError();
+};
+
+/**
+ * Blocks the account: it can't sign in again and every session ends. Their
+ * reports are cleared and the ban is recorded. Admin accounts can't be
+ * blocked (CANNOT_BAN_ADMIN). Undo in the SQL editor with unban_account().
+ */
+export const banReportedUser = async (userId: string) => {
+  await supabase.rpc("ban_reported_user", { p_user_id: userId }).throwOnError();
 };
